@@ -1,0 +1,114 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ReleasePilot — Manual Dispatch Workflow (GitHub Actions)
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Trigger release note generation manually from the GitHub Actions UI.
+# Useful for ad-hoc releases, retrospective notes, or testing.
+#
+# HOW TO USE:
+#   1. Copy this file to .github/workflows/release-notes-manual.yml
+#   2. Push to your repository
+#   3. Go to Actions → "Generate Release Notes (Manual)" → Run workflow
+#
+# Docs: https://github.com/polprog-tech/ReleasePilot/blob/main/docs/github-integration.md
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: "Generate Release Notes (Manual)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      audience:
+        description: "Target audience"
+        type: choice
+        options:
+          - changelog
+          - user
+          - technical
+          - summary
+          - executive
+          - customer
+        default: changelog
+      formats:
+        description: "Output formats (comma-separated: markdown,pdf,docx)"
+        type: string
+        default: "markdown"
+      language:
+        description: "Output language"
+        type: choice
+        options: [en, pl, de, fr, es, it, pt, nl, uk, cs]
+        default: en
+      version:
+        description: "Version label (e.g. 2.1.0)"
+        type: string
+        default: ""
+      from-ref:
+        description: "Start ref (tag/commit). Leave empty for auto-detect."
+        type: string
+        default: ""
+      to-ref:
+        description: "End ref (tag/commit)"
+        type: string
+        default: "HEAD"
+      since:
+        description: "Since date (YYYY-MM-DD) — enables date-range mode"
+        type: string
+        default: ""
+      branch:
+        description: "Branch to analyze (for date-range mode)"
+        type: string
+        default: ""
+
+jobs:
+  generate:
+    name: Release Notes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ReleasePilot
+        run: |
+          python -m pip install --quiet "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+
+      - name: Generate release notes
+        run: |
+          set -euo pipefail
+          mkdir -p release-notes
+
+          IFS=',' read -ra FORMATS <<< "${{ inputs.formats }}"
+
+          COMMON_ARGS=(--audience "${{ inputs.audience }}" --language "${{ inputs.language }}")
+
+          [ -n "${{ inputs.version }}" ]  && COMMON_ARGS+=(--version "${{ inputs.version }}")
+          [ -n "${{ inputs.from-ref }}" ] && COMMON_ARGS+=(--from "${{ inputs.from-ref }}")
+          [ "${{ inputs.to-ref }}" != "HEAD" ] && COMMON_ARGS+=(--to "${{ inputs.to-ref }}")
+          [ -n "${{ inputs.since }}" ]    && COMMON_ARGS+=(--since "${{ inputs.since }}")
+          [ -n "${{ inputs.branch }}" ]   && COMMON_ARGS+=(--branch "${{ inputs.branch }}")
+
+          for fmt in "${FORMATS[@]}"; do
+            fmt=$(echo "$fmt" | xargs)
+            case "$fmt" in
+              markdown)  EXT=".md" ;;
+              plaintext) EXT=".txt" ;;
+              json)      EXT=".json" ;;
+              pdf)       EXT=".pdf" ;;
+              docx)      EXT=".docx" ;;
+              *)         continue ;;
+            esac
+            releasepilot export "${COMMON_ARGS[@]}" --format "$fmt" -o "release-notes/RELEASE_NOTES${EXT}"
+          done
+
+          ls -la release-notes/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes/
+          retention-days: 30

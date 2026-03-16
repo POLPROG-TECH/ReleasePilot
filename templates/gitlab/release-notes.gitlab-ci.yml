@@ -1,0 +1,108 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ReleasePilot — Reusable GitLab CI Template
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Include this template in your .gitlab-ci.yml:
+#
+#   include:
+#     - remote: 'https://raw.githubusercontent.com/polprog-tech/ReleasePilot/main/templates/gitlab/release-notes.gitlab-ci.yml'
+#
+# Or copy it locally and include from your repo:
+#
+#   include:
+#     - local: 'ci/release-notes.gitlab-ci.yml'
+#
+# Then extend the hidden job:
+#
+#   release-notes:
+#     extends: .releasepilot
+#     variables:
+#       RP_AUDIENCE: "user"
+#       RP_FORMATS: "markdown,pdf"
+#
+# Docs: https://github.com/polprog-tech/ReleasePilot/blob/main/docs/gitlab-integration.md
+# ──────────────────────────────────────────────────────────────────────────────
+
+# ── Variables (override in your pipeline) ─────────────────────────────────────
+
+variables:
+  RP_PYTHON_VERSION: "3.12"
+  RP_AUDIENCE: "changelog"
+  RP_FORMATS: "markdown"
+  RP_LANGUAGE: "en"
+  RP_APP_NAME: ""
+  RP_TITLE: ""
+  RP_VERSION: ""
+  RP_BRANCH: ""
+  RP_SINCE: ""
+  RP_FROM_REF: ""
+  RP_TO_REF: "HEAD"
+  RP_SHOW_AUTHORS: "false"
+  RP_SHOW_HASHES: "false"
+  RP_OUTPUT_DIR: "release-notes"
+  RP_SOURCE_FILE: ""
+  RP_INSTALL_SPEC: "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+
+# ── Reusable hidden job ──────────────────────────────────────────────────────
+
+.releasepilot:
+  image: python:${RP_PYTHON_VERSION}-slim
+  stage: release
+  variables:
+    GIT_DEPTH: 0  # Full clone for tag/ref detection
+  before_script:
+    - pip install --quiet "${RP_INSTALL_SPEC}"
+    - releasepilot --version
+  script:
+    - |
+      set -euo pipefail
+      mkdir -p "${RP_OUTPUT_DIR}"
+
+      # Build common args
+      COMMON_ARGS="--audience ${RP_AUDIENCE} --language ${RP_LANGUAGE}"
+
+      [ -n "${RP_APP_NAME}" ]    && COMMON_ARGS="${COMMON_ARGS} --app-name '${RP_APP_NAME}'"
+      [ -n "${RP_TITLE}" ]       && COMMON_ARGS="${COMMON_ARGS} --title '${RP_TITLE}'"
+      [ -n "${RP_BRANCH}" ]      && COMMON_ARGS="${COMMON_ARGS} --branch ${RP_BRANCH}"
+      [ -n "${RP_SINCE}" ]       && COMMON_ARGS="${COMMON_ARGS} --since ${RP_SINCE}"
+      [ -n "${RP_FROM_REF}" ]    && COMMON_ARGS="${COMMON_ARGS} --from ${RP_FROM_REF}"
+      [ "${RP_TO_REF}" != "HEAD" ] && COMMON_ARGS="${COMMON_ARGS} --to ${RP_TO_REF}"
+      [ -n "${RP_SOURCE_FILE}" ] && COMMON_ARGS="${COMMON_ARGS} --source-file ${RP_SOURCE_FILE}"
+
+      if [ "${RP_SHOW_AUTHORS}" = "true" ]; then
+        COMMON_ARGS="${COMMON_ARGS} --show-authors"
+      fi
+      if [ "${RP_SHOW_HASHES}" = "true" ]; then
+        COMMON_ARGS="${COMMON_ARGS} --show-hashes"
+      fi
+
+      # Auto-detect version from CI_COMMIT_TAG
+      VERSION="${RP_VERSION}"
+      if [ -z "${VERSION}" ] && [ -n "${CI_COMMIT_TAG:-}" ]; then
+        VERSION="${CI_COMMIT_TAG#v}"
+      fi
+      [ -n "${VERSION}" ] && COMMON_ARGS="${COMMON_ARGS} --version ${VERSION}"
+
+      # Generate each format
+      IFS=',' read -ra FORMATS <<< "${RP_FORMATS}"
+      for fmt in "${FORMATS[@]}"; do
+        fmt=$(echo "$fmt" | xargs)
+        case "$fmt" in
+          markdown)  EXT=".md" ;;
+          plaintext) EXT=".txt" ;;
+          json)      EXT=".json" ;;
+          pdf)       EXT=".pdf" ;;
+          docx)      EXT=".docx" ;;
+          *)         echo "WARNING: Unknown format: ${fmt}"; continue ;;
+        esac
+        echo "Generating ${fmt}..."
+        eval releasepilot export ${COMMON_ARGS} --format "$fmt" -o "${RP_OUTPUT_DIR}/RELEASE_NOTES${EXT}"
+      done
+
+      echo ""
+      echo "Generated artifacts:"
+      ls -la "${RP_OUTPUT_DIR}/"
+  artifacts:
+    paths:
+      - ${RP_OUTPUT_DIR}/
+    expire_in: 30 days

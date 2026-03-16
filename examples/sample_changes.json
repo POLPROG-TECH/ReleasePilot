@@ -1,0 +1,95 @@
+{
+  "changes": [
+    {
+      "title": "Add OAuth2 authentication support",
+      "description": "Full OAuth2 flow with PKCE support for third-party integrations",
+      "category": "feature",
+      "scope": "auth",
+      "authors": ["alice"],
+      "pr_number": 142,
+      "issue_numbers": [98, 103],
+      "importance": "high"
+    },
+    {
+      "title": "Implement real-time notification system",
+      "category": "feature",
+      "scope": "notifications",
+      "authors": ["bob"],
+      "pr_number": 156
+    },
+    {
+      "title": "Add dark mode support",
+      "category": "feature",
+      "scope": "ui",
+      "authors": ["charlie"],
+      "pr_number": 161
+    },
+    {
+      "title": "Fix session token refresh race condition",
+      "description": "Tokens could expire mid-request under high concurrency",
+      "category": "bugfix",
+      "scope": "auth",
+      "authors": ["alice"],
+      "pr_number": 158,
+      "issue_numbers": [155]
+    },
+    {
+      "title": "Fix pagination off-by-one error",
+      "category": "bugfix",
+      "scope": "api",
+      "authors": ["dave"],
+      "pr_number": 160
+    },
+    {
+      "title": "Optimize dashboard query performance",
+      "description": "Reduced P95 query time from 800ms to 120ms by adding composite indexes",
+      "category": "performance",
+      "scope": "dashboard",
+      "authors": ["bob"],
+      "pr_number": 157
+    },
+    {
+      "title": "Patch XSS vulnerability in comment rendering",
+      "category": "security",
+      "scope": "comments",
+      "authors": ["alice"],
+      "pr_number": 159,
+      "importance": "high"
+    },
+    {
+      "title": "Remove deprecated /api/v1 endpoints",
+      "description": "All v1 API endpoints have been removed. Migrate to /api/v2.",
+      "category": "feature",
+      "scope": "api",
+      "breaking": true,
+      "authors": ["dave"],
+      "pr_number": 150,
+      "issue_numbers": [120]
+    },
+    {
+      "title": "Deprecate legacy webhook format",
+      "description": "The old webhook payload format is deprecated and will be removed in v4.0",
+      "category": "deprecation",
+      "scope": "webhooks",
+      "authors": ["charlie"]
+    },
+    {
+      "title": "Improve error messages for invalid API requests",
+      "category": "improvement",
+      "scope": "api",
+      "authors": ["dave"],
+      "pr_number": 162
+    },
+    {
+      "title": "Update API documentation",
+      "category": "documentation",
+      "scope": "docs",
+      "authors": ["alice"]
+    },
+    {
+      "title": "Migrate CI to GitHub Actions",
+      "category": "infrastructure",
+      "authors": ["bob"]
+    }
+  ]
+}

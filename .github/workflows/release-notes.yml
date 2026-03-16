@@ -1,0 +1,100 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ReleasePilot — Tag-Triggered Release Notes (GitHub Actions)
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Automatically generates release notes when a version tag is pushed.
+# Uploads artifacts and attaches notes to the GitHub Release.
+#
+# HOW TO USE:
+#   1. Copy this file to .github/workflows/release-notes.yml in YOUR repo
+#   2. Configure the env variables below
+#   3. Push a tag: git tag v1.2.0 && git push origin v1.2.0
+#
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: Release Notes
+
+on:
+  push:
+    tags:
+      - "v*"            # Triggers on v1.0.0, v2.1.0-beta, etc.
+
+env:
+  # ── Customize these for your project ────────────────
+  AUDIENCE: "user"                  # changelog | user | technical | summary | executive | customer
+  FORMATS: "markdown,pdf"          # Comma-separated: markdown, plaintext, json, pdf, docx
+  LANGUAGE: "en"                   # en, pl, de, fr, es, it, pt, nl, uk, cs
+  APP_NAME: ""                     # Your app name (empty = auto-detect from repo)
+  SHOW_AUTHORS: "false"
+  SHOW_HASHES: "false"
+  # ────────────────────────────────────────────────────
+
+jobs:
+  release-notes:
+    name: Generate Release Notes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ReleasePilot
+        run: pip install --quiet "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+
+      - name: Detect version
+        id: meta
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate
+        run: |
+          set -euo pipefail
+          mkdir -p release-notes
+
+          COMMON_ARGS="--audience ${AUDIENCE} --language ${LANGUAGE} --version ${{ steps.meta.outputs.version }}"
+          [ -n "${APP_NAME}" ] && COMMON_ARGS="${COMMON_ARGS} --app-name '${APP_NAME}'"
+          [ "${SHOW_AUTHORS}" = "true" ] && COMMON_ARGS="${COMMON_ARGS} --show-authors"
+          [ "${SHOW_HASHES}" = "true" ] && COMMON_ARGS="${COMMON_ARGS} --show-hashes"
+
+          IFS=',' read -ra FMT_ARR <<< "${FORMATS}"
+          for fmt in "${FMT_ARR[@]}"; do
+            fmt=$(echo "$fmt" | xargs)
+            case "$fmt" in
+              markdown)  EXT=".md" ;;
+              plaintext) EXT=".txt" ;;
+              json)      EXT=".json" ;;
+              pdf)       EXT=".pdf" ;;
+              docx)      EXT=".docx" ;;
+              *)         continue ;;
+            esac
+            eval releasepilot export ${COMMON_ARGS} --format "$fmt" -o "release-notes/RELEASE_NOTES${EXT}"
+          done
+          ls -la release-notes/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes/
+
+      - name: Attach to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+
+          # Upload files to the release
+          for file in release-notes/*; do
+            [ -f "$file" ] && gh release upload "$TAG" "$file" --clobber || true
+          done
+
+          # Set markdown as the release body
+          if [ -f "release-notes/RELEASE_NOTES.md" ]; then
+            gh release edit "$TAG" --notes-file "release-notes/RELEASE_NOTES.md" || true
+          fi

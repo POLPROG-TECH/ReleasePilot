@@ -1,0 +1,70 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ReleasePilot — Manual Trigger Pipeline (GitLab CI)
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Generates release notes on manual trigger from GitLab UI.
+# Uses pipeline variables for configuration.
+#
+# HOW TO USE:
+#   1. Copy this file into your repository (e.g. ci/release-notes-manual.gitlab-ci.yml)
+#   2. Include it from your .gitlab-ci.yml:
+#
+#      include:
+#        - local: 'ci/release-notes-manual.gitlab-ci.yml'
+#
+#   3. Go to CI/CD → Pipelines → Run pipeline
+#   4. Set variables in the "Run pipeline" form
+#
+# Docs: https://github.com/polprog-tech/ReleasePilot/blob/main/docs/gitlab-integration.md
+# ──────────────────────────────────────────────────────────────────────────────
+
+stages:
+  - release
+
+release-notes:manual:
+  stage: release
+  image: python:3.12-slim
+  variables:
+    GIT_DEPTH: 0
+  rules:
+    - when: manual
+      allow_failure: true
+  before_script:
+    - pip install --quiet "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+  script:
+    - |
+      set -euo pipefail
+      mkdir -p release-notes
+
+      # All variables can be set in the GitLab "Run pipeline" UI
+      AUDIENCE="${RP_AUDIENCE:-changelog}"
+      FORMATS="${RP_FORMATS:-markdown}"
+      LANGUAGE="${RP_LANGUAGE:-en}"
+
+      COMMON_ARGS="--audience ${AUDIENCE} --language ${LANGUAGE}"
+
+      [ -n "${RP_VERSION:-}" ]  && COMMON_ARGS="${COMMON_ARGS} --version ${RP_VERSION}"
+      [ -n "${RP_FROM_REF:-}" ] && COMMON_ARGS="${COMMON_ARGS} --from ${RP_FROM_REF}"
+      [ -n "${RP_TO_REF:-}" ]   && COMMON_ARGS="${COMMON_ARGS} --to ${RP_TO_REF}"
+      [ -n "${RP_SINCE:-}" ]    && COMMON_ARGS="${COMMON_ARGS} --since ${RP_SINCE}"
+      [ -n "${RP_BRANCH:-}" ]   && COMMON_ARGS="${COMMON_ARGS} --branch ${RP_BRANCH}"
+
+      IFS=',' read -ra FORMATS_ARR <<< "${FORMATS}"
+      for fmt in "${FORMATS_ARR[@]}"; do
+        fmt=$(echo "$fmt" | xargs)
+        case "$fmt" in
+          markdown)  EXT=".md" ;;
+          plaintext) EXT=".txt" ;;
+          json)      EXT=".json" ;;
+          pdf)       EXT=".pdf" ;;
+          docx)      EXT=".docx" ;;
+          *)         continue ;;
+        esac
+        eval releasepilot export ${COMMON_ARGS} --format "$fmt" -o "release-notes/RELEASE_NOTES${EXT}"
+      done
+
+      ls -la release-notes/
+  artifacts:
+    paths:
+      - release-notes/
+    expire_in: 30 days

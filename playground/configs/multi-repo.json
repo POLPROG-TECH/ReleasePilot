@@ -1,0 +1,10 @@
+{
+  "repos": [
+    "playground/repos/atlas-multi-a",
+    "playground/repos/atlas-multi-b"
+  ],
+  "audience": "changelog",
+  "format": "markdown",
+  "language": "en",
+  "show_authors": true
+}

@@ -1,0 +1,99 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ReleasePilot — Scheduled Release Notes (GitHub Actions)
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Generates release notes on a schedule (e.g. weekly, monthly).
+# Useful for sprint summaries, monthly stakeholder reports, or regular changelogs.
+#
+# HOW TO USE:
+#   1. Copy this file to .github/workflows/release-notes-schedule.yml
+#   2. Adjust the cron schedule to match your release cadence
+#   3. Configure the 'since-days' value (default: 14 = last 2 weeks)
+#   4. Push to your repository
+#
+# Docs: https://github.com/polprog-tech/ReleasePilot/blob/main/docs/github-integration.md
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: "Scheduled Release Notes"
+
+on:
+  schedule:
+    # Every Monday at 08:00 UTC — adjust to your cadence
+    - cron: "0 8 * * 1"
+  workflow_dispatch:  # Allow manual trigger too
+
+env:
+  # ── Configuration ───────────────────────────────────
+  # Adjust these to match your project:
+  AUDIENCE: "executive"
+  FORMATS: "markdown,pdf"
+  LANGUAGE: "en"
+  BRANCH: "main"
+  SINCE_DAYS: "14"        # Generate notes for the last N days
+  APP_NAME: ""            # Leave empty to auto-detect from repo name
+  TITLE: "Sprint Report"
+  # ────────────────────────────────────────────────────
+
+jobs:
+  generate:
+    name: Scheduled Release Notes
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ReleasePilot
+        run: |
+          python -m pip install --quiet "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+
+      - name: Calculate since date
+        id: dates
+        run: |
+          SINCE_DATE=$(date -u -d "-${SINCE_DAYS} days" +%Y-%m-%d 2>/dev/null \
+                    || date -u -v-${SINCE_DAYS}d +%Y-%m-%d)
+          echo "since=${SINCE_DATE}" >> "$GITHUB_OUTPUT"
+          echo "Generated since date: ${SINCE_DATE}"
+
+      - name: Generate release notes
+        run: |
+          set -euo pipefail
+          mkdir -p release-notes
+
+          IFS=',' read -ra FORMATS_ARR <<< "${FORMATS}"
+
+          COMMON_ARGS=(
+            --audience "${AUDIENCE}"
+            --language "${LANGUAGE}"
+            --branch "${BRANCH}"
+            --since "${{ steps.dates.outputs.since }}"
+          )
+
+          [ -n "${APP_NAME}" ] && COMMON_ARGS+=(--app-name "${APP_NAME}")
+          [ -n "${TITLE}" ]    && COMMON_ARGS+=(--title "${TITLE}")
+
+          for fmt in "${FORMATS_ARR[@]}"; do
+            fmt=$(echo "$fmt" | xargs)
+            case "$fmt" in
+              markdown)  EXT=".md" ;;
+              plaintext) EXT=".txt" ;;
+              json)      EXT=".json" ;;
+              pdf)       EXT=".pdf" ;;
+              docx)      EXT=".docx" ;;
+              *)         continue ;;
+            esac
+            releasepilot export "${COMMON_ARGS[@]}" --format "$fmt" -o "release-notes/RELEASE_NOTES${EXT}"
+          done
+
+          ls -la release-notes/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ steps.dates.outputs.since }}
+          path: release-notes/
+          retention-days: 90

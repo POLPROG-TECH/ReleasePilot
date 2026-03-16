@@ -1,0 +1,74 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ReleasePilot — Scheduled Pipeline (GitLab CI)
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Generates release notes on a schedule (e.g. weekly sprint reports).
+# Configure the schedule in GitLab: CI/CD → Schedules.
+#
+# HOW TO USE:
+#   1. Copy this file to your repository (e.g. ci/release-notes-schedule.gitlab-ci.yml)
+#   2. Include it from your .gitlab-ci.yml:
+#
+#      include:
+#        - local: 'ci/release-notes-schedule.gitlab-ci.yml'
+#
+#   3. Create a pipeline schedule in GitLab (CI/CD → Schedules)
+#   4. Set variable RP_SCHEDULE_RUN=true in the schedule
+#
+# Docs: https://github.com/polprog-tech/ReleasePilot/blob/main/docs/gitlab-integration.md
+# ──────────────────────────────────────────────────────────────────────────────
+
+stages:
+  - release
+
+release-notes:scheduled:
+  stage: release
+  image: python:3.12-slim
+  variables:
+    GIT_DEPTH: 0
+    # ── Configuration ─────────────────────────────────
+    RP_AUDIENCE: "executive"
+    RP_FORMATS: "markdown,pdf"
+    RP_LANGUAGE: "en"
+    RP_BRANCH: "main"
+    RP_SINCE_DAYS: "14"
+    RP_TITLE: "Sprint Report"
+    # ──────────────────────────────────────────────────
+  rules:
+    - if: '$RP_SCHEDULE_RUN == "true"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - when: manual
+      allow_failure: true
+  before_script:
+    - pip install --quiet "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+  script:
+    - |
+      set -euo pipefail
+      mkdir -p release-notes
+
+      # Calculate since date
+      SINCE_DATE=$(date -u -d "-${RP_SINCE_DAYS} days" +%Y-%m-%d)
+      echo "Generating notes since: ${SINCE_DATE}"
+
+      COMMON_ARGS="--audience ${RP_AUDIENCE} --language ${RP_LANGUAGE} --branch ${RP_BRANCH} --since ${SINCE_DATE}"
+      [ -n "${RP_TITLE}" ] && COMMON_ARGS="${COMMON_ARGS} --title '${RP_TITLE}'"
+
+      IFS=',' read -ra FORMATS_ARR <<< "${RP_FORMATS}"
+      for fmt in "${FORMATS_ARR[@]}"; do
+        fmt=$(echo "$fmt" | xargs)
+        case "$fmt" in
+          markdown)  EXT=".md" ;;
+          plaintext) EXT=".txt" ;;
+          json)      EXT=".json" ;;
+          pdf)       EXT=".pdf" ;;
+          docx)      EXT=".docx" ;;
+          *)         continue ;;
+        esac
+        eval releasepilot export ${COMMON_ARGS} --format "$fmt" -o "release-notes/RELEASE_NOTES${EXT}"
+      done
+
+      ls -la release-notes/
+  artifacts:
+    paths:
+      - release-notes/
+    expire_in: 90 days

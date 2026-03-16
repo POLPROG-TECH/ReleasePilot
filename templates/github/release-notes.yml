@@ -1,0 +1,244 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ReleasePilot — Reusable GitHub Actions Workflow
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Generates release notes using ReleasePilot and uploads them as artifacts.
+# Optionally attaches notes to a GitHub Release.
+#
+# USAGE: Call this workflow from your repository:
+#
+#   jobs:
+#     release-notes:
+#       uses: polprog-tech/ReleasePilot/.github/workflows/release-notes.yml@main
+#       with:
+#         audience: user
+#         formats: "markdown,pdf"
+#
+# Or copy templates/github/release-notes.yml into your .github/workflows/.
+#
+# Docs: https://github.com/polprog-tech/ReleasePilot/blob/main/docs/github-integration.md
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: Generate Release Notes
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version to use"
+        type: string
+        default: "3.12"
+      audience:
+        description: "Target audience (changelog, user, technical, summary, executive, customer)"
+        type: string
+        default: "changelog"
+      formats:
+        description: "Comma-separated output formats (markdown, plaintext, json, pdf, docx)"
+        type: string
+        default: "markdown"
+      language:
+        description: "Output language code (en, pl, de, fr, es, it, pt, nl, uk, cs)"
+        type: string
+        default: "en"
+      app-name:
+        description: "Application/product name for the document title"
+        type: string
+        default: ""
+      title:
+        description: "Custom title phrase (e.g. 'Monthly Release')"
+        type: string
+        default: ""
+      version:
+        description: "Release version label. If empty, auto-detected from tag."
+        type: string
+        default: ""
+      branch:
+        description: "Branch to analyze (for date-range mode)"
+        type: string
+        default: ""
+      since:
+        description: "Collect commits since date (YYYY-MM-DD)"
+        type: string
+        default: ""
+      from-ref:
+        description: "Start ref (tag/commit). Auto-detects latest tag if empty."
+        type: string
+        default: ""
+      to-ref:
+        description: "End ref (tag/commit). Defaults to HEAD."
+        type: string
+        default: "HEAD"
+      show-authors:
+        description: "Include author names in output"
+        type: boolean
+        default: false
+      show-hashes:
+        description: "Include commit hashes in output"
+        type: boolean
+        default: false
+      output-dir:
+        description: "Directory for output files"
+        type: string
+        default: "release-notes"
+      artifact-name:
+        description: "Name of the uploaded artifact"
+        type: string
+        default: "release-notes"
+      attach-to-release:
+        description: "Attach generated notes to the GitHub Release (requires tag trigger)"
+        type: boolean
+        default: false
+      releasepilot-version:
+        description: "ReleasePilot version/ref to install (pip spec or git ref)"
+        type: string
+        default: "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+      install-extras:
+        description: "Extra pip packages to install (e.g. 'deep-translator' for translation)"
+        type: string
+        default: ""
+      source-file:
+        description: "Path to JSON file with structured changes (skips git)"
+        type: string
+        default: ""
+
+jobs:
+  generate:
+    name: Release Notes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history required for tag/ref range detection
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install ReleasePilot
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet "${{ inputs.releasepilot-version }}"
+          if [ -n "${{ inputs.install-extras }}" ]; then
+            python -m pip install --quiet ${{ inputs.install-extras }}
+          fi
+          releasepilot --version
+
+      - name: Detect version from tag
+        id: version
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create output directory
+        run: mkdir -p "${{ inputs.output-dir }}"
+
+      - name: Generate release notes
+        run: |
+          set -euo pipefail
+
+          IFS=',' read -ra FORMATS <<< "${{ inputs.formats }}"
+
+          # Build common arguments
+          COMMON_ARGS=(
+            --audience "${{ inputs.audience }}"
+            --language "${{ inputs.language }}"
+          )
+
+          if [ -n "${{ inputs.app-name }}" ]; then
+            COMMON_ARGS+=(--app-name "${{ inputs.app-name }}")
+          fi
+          if [ -n "${{ inputs.title }}" ]; then
+            COMMON_ARGS+=(--title "${{ inputs.title }}")
+          fi
+          if [ -n "${{ steps.version.outputs.version }}" ]; then
+            COMMON_ARGS+=(--version "${{ steps.version.outputs.version }}")
+          fi
+          if [ -n "${{ inputs.branch }}" ]; then
+            COMMON_ARGS+=(--branch "${{ inputs.branch }}")
+          fi
+          if [ -n "${{ inputs.since }}" ]; then
+            COMMON_ARGS+=(--since "${{ inputs.since }}")
+          fi
+          if [ -n "${{ inputs.from-ref }}" ]; then
+            COMMON_ARGS+=(--from "${{ inputs.from-ref }}")
+          fi
+          if [ "${{ inputs.to-ref }}" != "HEAD" ]; then
+            COMMON_ARGS+=(--to "${{ inputs.to-ref }}")
+          fi
+          if [ "${{ inputs.show-authors }}" = "true" ]; then
+            COMMON_ARGS+=(--show-authors)
+          fi
+          if [ "${{ inputs.show-hashes }}" = "true" ]; then
+            COMMON_ARGS+=(--show-hashes)
+          fi
+          if [ -n "${{ inputs.source-file }}" ]; then
+            COMMON_ARGS+=(--source-file "${{ inputs.source-file }}")
+          fi
+
+          # Generate each format
+          for fmt in "${FORMATS[@]}"; do
+            fmt=$(echo "$fmt" | xargs)  # trim whitespace
+            echo "::group::Generating ${fmt} output"
+
+            case "$fmt" in
+              markdown)  EXT=".md" ;;
+              plaintext) EXT=".txt" ;;
+              json)      EXT=".json" ;;
+              pdf)       EXT=".pdf" ;;
+              docx)      EXT=".docx" ;;
+              *)         echo "::warning::Unknown format: ${fmt}"; continue ;;
+            esac
+
+            OUTPUT_FILE="${{ inputs.output-dir }}/RELEASE_NOTES${EXT}"
+
+            releasepilot export \
+              "${COMMON_ARGS[@]}" \
+              --format "$fmt" \
+              -o "$OUTPUT_FILE"
+
+            echo "✓ Generated: ${OUTPUT_FILE}"
+            echo "::endgroup::"
+          done
+
+          # List generated files
+          echo ""
+          echo "Generated artifacts:"
+          ls -la "${{ inputs.output-dir }}/"
+
+      - name: Upload release notes artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.output-dir }}/
+          retention-days: 30
+
+      - name: Attach to GitHub Release
+        if: inputs.attach-to-release && startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+
+          # Upload each generated file to the release
+          for file in "${{ inputs.output-dir }}"/*; do
+            if [ -f "$file" ]; then
+              echo "Uploading $(basename "$file") to release ${TAG}..."
+              gh release upload "$TAG" "$file" --clobber || true
+            fi
+          done
+
+          # If markdown was generated, set it as the release body
+          MD_FILE="${{ inputs.output-dir }}/RELEASE_NOTES.md"
+          if [ -f "$MD_FILE" ]; then
+            echo "Setting release body from ${MD_FILE}..."
+            gh release edit "$TAG" --notes-file "$MD_FILE" || true
+          fi

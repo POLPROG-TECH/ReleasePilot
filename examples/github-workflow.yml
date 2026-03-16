@@ -1,0 +1,38 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Example: Minimal GitHub Actions workflow using ReleasePilot
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# Copy this file to .github/workflows/release-notes.yml in your repository.
+# This is the simplest possible setup — generates Markdown release notes on tag push.
+#
+# For more options, see: docs/github-integration.md
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: Release Notes
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@main"
+
+      - run: |
+          VERSION="${GITHUB_REF#refs/tags/v}"
+          releasepilot export --audience changelog --version "$VERSION" -o RELEASE_NOTES.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md

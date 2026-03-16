@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Lint
+        run: python -m ruff check src/ tests/
+
+      - name: Test
+        run: python -m pytest --tb=short -q
+
+      - name: Packaging sanity check
+        run: |
+          python -m pip install build
+          python -m build --sdist --wheel
+          ls -la dist/

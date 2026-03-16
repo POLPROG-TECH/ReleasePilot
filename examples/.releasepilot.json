@@ -1,0 +1,19 @@
+{
+  "$schema": "./schema/releasepilot.schema.json",
+  "app_name": "MyApp",
+  "audience": "user",
+  "format": "markdown",
+  "language": "en",
+  "branch": "main",
+  "show_authors": true,
+  "show_hashes": false,
+  "output_dir": "release-notes",
+  "overwrite": true,
+  "export_formats": ["markdown", "pdf"],
+  "ci": {
+    "enabled": true,
+    "artifact_name": "release-notes",
+    "fail_on_empty": false,
+    "attach_to_release": true
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/polprog-tech/ReleasePilot/schema/releasepilot.schema.json",
+  "title": "ReleasePilot Configuration",
+  "description": "Schema for .releasepilot.json configuration files. All fields are optional — CLI arguments always override config values.",
+  "type": "object",
+  "properties": {
+    "app_name": {
+      "type": "string",
+      "description": "Application or product name displayed at the top of generated documents. If omitted, the repository directory name is used."
+    },
+    "audience": {
+      "type": "string",
+      "enum": ["technical", "user", "summary", "changelog", "customer", "executive", "narrative", "customer-narrative"],
+      "description": "Target audience mode for the generated release notes.",
+      "default": "changelog"
+    },
+    "format": {
+      "type": "string",
+      "enum": ["markdown", "plaintext", "json", "pdf", "docx"],
+      "description": "Output format for generated release notes.",
+      "default": "markdown"
+    },
+    "language": {
+      "type": "string",
+      "enum": ["en", "pl", "de", "fr", "es", "it", "pt", "nl", "uk", "cs"],
+      "description": "Output language for section headings and labels.",
+      "default": "en"
+    },
+    "branch": {
+      "type": "string",
+      "description": "Git branch to analyse. Used with date-range mode. If omitted, auto-detected or defaults to HEAD."
+    },
+    "title": {
+      "type": "string",
+      "description": "Custom title phrase for the release notes (e.g. 'Monthly Release Overview')."
+    },
+    "version": {
+      "type": "string",
+      "description": "Release version label (e.g. '2.1.0'). Appended to the document title."
+    },
+    "show_authors": {
+      "type": "boolean",
+      "description": "Include commit author names in the output.",
+      "default": false
+    },
+    "show_hashes": {
+      "type": "boolean",
+      "description": "Include short commit hashes in the output.",
+      "default": false
+    },
+    "repos": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of repository paths for multi-repository mode."
+    },
+    "output_dir": {
+      "type": "string",
+      "description": "Directory for generated output files. Used by CI pipelines and the export command. Relative paths are resolved from the repository root."
+    },
+    "overwrite": {
+      "type": "boolean",
+      "description": "Allow overwriting existing output files without prompting. Recommended for CI environments.",
+      "default": false
+    },
+    "export_formats": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["markdown", "plaintext", "json", "pdf", "docx"]
+      },
+      "description": "List of output formats to generate. CI pipelines use this to produce multiple artifacts in one run. If omitted, only the single 'format' value is used."
+    },
+    "ci": {
+      "type": "object",
+      "description": "CI/CD-specific configuration. These settings only affect pipeline behavior and are ignored in interactive/local usage.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable CI mode. Disables interactive prompts, enables overwrite, and uses non-TTY-safe output.",
+          "default": false
+        },
+        "artifact_name": {
+          "type": "string",
+          "description": "Name for CI artifacts (e.g. GitHub Actions artifact name or GitLab CI artifact label).",
+          "default": "release-notes"
+        },
+        "fail_on_empty": {
+          "type": "boolean",
+          "description": "Exit with non-zero status if no meaningful changes are found. Useful for gating release pipelines.",
+          "default": false
+        },
+        "attach_to_release": {
+          "type": "boolean",
+          "description": "Hint for CI templates to attach generated notes to a GitHub/GitLab release.",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

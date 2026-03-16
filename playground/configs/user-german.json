@@ -1,0 +1,8 @@
+{
+  "app_name": "Acme Web",
+  "audience": "user",
+  "format": "markdown",
+  "language": "de",
+  "show_authors": false,
+  "show_hashes": false
+}
