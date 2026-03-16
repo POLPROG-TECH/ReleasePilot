@@ -1,6 +1,4 @@
-"""Phase 16 tests: overwrite default, footer wording, title structure,
-audience-aware paths, translation labels, ReleaseRange.app_name/subtitle.
-"""
+"""Tests for title/subtitle composition, ReleaseRange.app_name, audience-aware filenames, and translation label completeness."""
 
 from __future__ import annotations
 

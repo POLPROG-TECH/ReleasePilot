@@ -553,12 +553,12 @@ class TestGuideValidation:
         runner = CliRunner()
 
         """WHEN entering an invalid audience choice then a valid one."""
-        # Flow: branch=1(main), time=3(30d), audience=6(invalid)→1(valid), format=1(md),
+        # Flow: branch=1(main), time=3(30d), audience=9(invalid)→1(valid), format=1(md),
         # app_name=(empty), language=1(en), save=n
         result = runner.invoke(
             cli,
             ["guide", str(tmp_path)],
-            input="1\n3\n6\n1\n1\n\n1\nn\n",
+            input="1\n3\n9\n1\n1\n\n1\nn\n",
         )
 
         """THEN the workflow completes successfully."""

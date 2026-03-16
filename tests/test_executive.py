@@ -33,6 +33,22 @@ from releasepilot.domain.models import (
 )
 from releasepilot.rendering.executive_md import ExecutiveMarkdownRenderer
 
+
+def _pdf_available() -> bool:
+    try:
+        import reportlab  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _docx_available() -> bool:
+    try:
+        import docx  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
 
@@ -466,6 +482,7 @@ class TestExecutiveJsonRenderer:
 # ── Executive PDF renderer tests ─────────────────────────────────────────────
 
 
+@pytest.mark.skipif(not _pdf_available(), reason="reportlab not installed")
 class TestExecutivePdfRenderer:
     """Scenarios for rendering an executive brief to PDF."""
 
@@ -494,6 +511,7 @@ class TestExecutivePdfRenderer:
 # ── Executive DOCX renderer tests ────────────────────────────────────────────
 
 
+@pytest.mark.skipif(not _docx_available(), reason="python-docx not installed")
 class TestExecutiveDocxRenderer:
     """Scenarios for rendering an executive brief to DOCX."""
 
@@ -588,6 +606,7 @@ class TestCliExecutiveAudience:
         data = json.loads(result.output)
         assert data["type"] == "executive_brief"
 
+    @pytest.mark.skipif(not _pdf_available(), reason="reportlab not installed")
     def test_export_executive_pdf(self, tmp_path):
         """GIVEN sample changes and executive audience."""
         runner = CliRunner()
@@ -609,6 +628,7 @@ class TestCliExecutiveAudience:
         data = (tmp_path / "brief.pdf").read_bytes()
         assert data[:5] == b"%PDF-"
 
+    @pytest.mark.skipif(not _docx_available(), reason="python-docx not installed")
     def test_export_executive_docx(self, tmp_path):
         """GIVEN sample changes and executive audience."""
         runner = CliRunner()

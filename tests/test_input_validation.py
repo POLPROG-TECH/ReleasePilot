@@ -1,6 +1,4 @@
-"""Phase 17 tests: custom date validation, subtitle validation,
-and verification of existing Phase 15/16 implementations.
-"""
+"""Tests for date input validation, subtitle length capping, and cross-verification of git, title, and config features."""
 
 from __future__ import annotations
 

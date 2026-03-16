@@ -32,6 +32,22 @@ from releasepilot.rendering.narrative_md import NarrativeMarkdownRenderer
 from releasepilot.rendering.narrative_plain import NarrativePlaintextRenderer
 from tests.conftest import make_change_item as _make_item
 
+
+def _pdf_available() -> bool:
+    try:
+        import reportlab  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _docx_available() -> bool:
+    try:
+        import docx  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
 
@@ -355,6 +371,7 @@ class TestNarrativeRendering:
         output = NarrativePlaintextRenderer().render(brief)
         assert "no notable changes" in output.lower()
 
+    @pytest.mark.skipif(not _pdf_available(), reason="reportlab not installed")
     def test_pdf_produces_valid_bytes(self, rich_notes: ReleaseNotes):
         """GIVEN a composed brief WHEN rendering PDF THEN valid PDF bytes produced."""
         from releasepilot.rendering.narrative_pdf import NarrativePdfRenderer
@@ -363,6 +380,7 @@ class TestNarrativeRendering:
         assert data[:5] == b"%PDF-"
         assert len(data) > 1000
 
+    @pytest.mark.skipif(not _docx_available(), reason="python-docx not installed")
     def test_docx_produces_valid_bytes(self, rich_notes: ReleaseNotes):
         """GIVEN a composed brief WHEN rendering DOCX THEN valid DOCX (ZIP) bytes produced."""
         from releasepilot.rendering.narrative_docx import NarrativeDocxRenderer
@@ -371,6 +389,7 @@ class TestNarrativeRendering:
         assert data[:2] == b"PK"
         assert len(data) > 1000
 
+    @pytest.mark.skipif(not _pdf_available(), reason="reportlab not installed")
     @pytest.mark.parametrize("customer_facing", [False, True])
     def test_pdf_customer_mode(self, rich_notes: ReleaseNotes, customer_facing: bool):
         """GIVEN either narrative mode WHEN rendering PDF THEN produces valid output."""
@@ -379,6 +398,7 @@ class TestNarrativeRendering:
         data = NarrativePdfRenderer().render_bytes(brief)
         assert data[:5] == b"%PDF-"
 
+    @pytest.mark.skipif(not _docx_available(), reason="python-docx not installed")
     @pytest.mark.parametrize("customer_facing", [False, True])
     def test_docx_customer_mode(self, rich_notes: ReleaseNotes, customer_facing: bool):
         """GIVEN either narrative mode WHEN rendering DOCX THEN produces valid output."""
@@ -538,6 +558,7 @@ class TestNarrativeCLI:
         assert result.exit_code == 0, result.output
         assert "Release Summary" in output.read_text() or "Overview" in output.read_text()
 
+    @pytest.mark.skipif(not _pdf_available(), reason="reportlab not installed")
     def test_generate_narrative_pdf(self, tmp_path):
         """GIVEN source file WHEN running generate --audience narrative --format pdf THEN PDF written."""
         from click.testing import CliRunner
@@ -555,6 +576,7 @@ class TestNarrativeCLI:
         assert result.exit_code == 0, result.output
         assert "Written to" in result.output
 
+    @pytest.mark.skipif(not _docx_available(), reason="python-docx not installed")
     def test_generate_narrative_docx(self, tmp_path):
         """GIVEN source file WHEN running generate --audience narrative --format docx THEN DOCX written."""
         from click.testing import CliRunner
@@ -572,6 +594,7 @@ class TestNarrativeCLI:
         assert result.exit_code == 0, result.output
         assert "Written to" in result.output
 
+    @pytest.mark.skipif(not _pdf_available(), reason="reportlab not installed")
     def test_export_narrative_pdf(self, tmp_path):
         """GIVEN source file WHEN running export --audience narrative --format pdf THEN PDF file written."""
         from click.testing import CliRunner
@@ -592,6 +615,7 @@ class TestNarrativeCLI:
         data = output.read_bytes()
         assert data[:5] == b"%PDF-"
 
+    @pytest.mark.skipif(not _docx_available(), reason="python-docx not installed")
     def test_export_customer_narrative_docx(self, tmp_path):
         """GIVEN source file WHEN exporting customer-narrative as DOCX THEN valid DOCX."""
         from click.testing import CliRunner

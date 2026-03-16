@@ -1,4 +1,4 @@
-"""Phase 14 tests: first-commit fix, richer stats, JSON config, docs."""
+"""Tests for JSON configuration loading, JSON schema validation, first-commit detection, and enriched pipeline metadata."""
 
 from __future__ import annotations
 

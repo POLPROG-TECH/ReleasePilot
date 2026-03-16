@@ -1,4 +1,4 @@
-"""Phase 15 tests: branch validation, git arg order, subtitle, overwrite."""
+"""Tests for git argument ordering, branch validation, custom title/subtitle step, and overwrite confirmation."""
 
 from __future__ import annotations
 

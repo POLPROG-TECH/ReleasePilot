@@ -1,4 +1,4 @@
-"""Tests for Phase 11: app name, title composition, i18n, footer."""
+"""Tests for internationalization: i18n labels, translator fallback, and multilingual rendering."""
 
 from __future__ import annotations
 

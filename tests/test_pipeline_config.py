@@ -1,4 +1,4 @@
-"""Tests for Phase 12: pipeline stats, config file, repo-name default, multi-repo."""
+"""Tests for pipeline statistics, TOML/pyproject config loading, repo-name detection, and multi-repo support."""
 
 from __future__ import annotations
 

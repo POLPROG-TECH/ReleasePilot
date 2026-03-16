@@ -1,4 +1,4 @@
-"""Phase 18 tests: Stats, translation, customer mode, days input, audience default."""
+"""Tests for customer audience view, enhanced pipeline stats, days-based date input, executive metrics, and translation integration."""
 
 from __future__ import annotations
 

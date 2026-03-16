@@ -1,4 +1,4 @@
-"""Tests for Phase 13: date-range transparency, config validation, footer, guide UX."""
+"""Tests for config validation warnings, field sanitisation, date-range labels, and end-to-end config loading."""
 
 from __future__ import annotations
 
@@ -240,51 +240,6 @@ class TestDateRangeLabel:
 
         """THEN the resulting title contains the since_date."""
         assert "2025-01-15" in rr.title
-
-
-# ── PDF style tests ──────────────────────────────────────────────────────────
-
-
-class TestPdfStyles:
-    """Scenarios for PDF paragraph style configuration."""
-
-    def test_app_name_centered_title_left(self):
-        """GIVEN the sample stylesheet and custom paragraph styles."""
-        from reportlab.lib import colors
-        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-
-        styles = getSampleStyleSheet()
-
-        """WHEN AppName and ReleaseTitle styles are created."""
-        app_name_style = ParagraphStyle(
-            "AppName", parent=styles["Title"],
-            fontSize=28, alignment=1,
-            textColor=colors.HexColor("#1a1a2e"),
-        )
-        title_style = ParagraphStyle(
-            "ReleaseTitle", parent=styles["Title"],
-            fontSize=22, alignment=0,
-            textColor=colors.HexColor("#1a1a2e"),
-        )
-
-        """THEN app_name is centered and title is left-aligned."""
-        assert app_name_style.alignment == 1  # CENTER
-        assert title_style.alignment == 0  # LEFT
-
-    def test_footer_style_small(self):
-        """GIVEN the sample stylesheet."""
-        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-
-        styles = getSampleStyleSheet()
-
-        """WHEN a Footer style is created with fontSize 7."""
-        footer_style = ParagraphStyle(
-            "Footer", parent=styles["Normal"],
-            fontSize=7, alignment=1,
-        )
-
-        """THEN the font size is 7pt."""
-        assert footer_style.fontSize == 7
 
 
 # ── Config file with validation end-to-end ──────────────────────────────────

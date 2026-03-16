@@ -15,8 +15,12 @@ from releasepilot.domain.models import (
     ReleaseRange,
     SourceReference,
 )
-from releasepilot.rendering.docx_renderer import DocxRenderer
-from releasepilot.rendering.pdf import PdfRenderer
+
+_reportlab = pytest.importorskip("reportlab", reason="reportlab not installed")
+_docx = pytest.importorskip("docx", reason="python-docx not installed")
+
+from releasepilot.rendering.docx_renderer import DocxRenderer  # noqa: E402
+from releasepilot.rendering.pdf import PdfRenderer  # noqa: E402
 
 
 @pytest.fixture()
@@ -283,3 +287,48 @@ class TestCLIPdfDocxExport:
             assert result.exit_code == 0
         finally:
             os.chdir(original_dir)
+
+
+# ── PDF paragraph style configuration ────────────────────────────────────────
+
+
+class TestPdfStyles:
+    """Scenarios for PDF paragraph style configuration (alignment, sizes)."""
+
+    def test_app_name_centered_title_left(self):
+        """GIVEN the sample stylesheet and custom paragraph styles."""
+        from reportlab.lib import colors
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+
+        styles = getSampleStyleSheet()
+
+        """WHEN AppName and ReleaseTitle styles are created."""
+        app_name_style = ParagraphStyle(
+            "AppName", parent=styles["Title"],
+            fontSize=28, alignment=1,
+            textColor=colors.HexColor("#1a1a2e"),
+        )
+        title_style = ParagraphStyle(
+            "ReleaseTitle", parent=styles["Title"],
+            fontSize=22, alignment=0,
+            textColor=colors.HexColor("#1a1a2e"),
+        )
+
+        """THEN app_name is centered and title is left-aligned."""
+        assert app_name_style.alignment == 1  # CENTER
+        assert title_style.alignment == 0  # LEFT
+
+    def test_footer_style_small(self):
+        """GIVEN the sample stylesheet."""
+        from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+
+        styles = getSampleStyleSheet()
+
+        """WHEN a Footer style is created with fontSize 7."""
+        footer_style = ParagraphStyle(
+            "Footer", parent=styles["Normal"],
+            fontSize=7, alignment=1,
+        )
+
+        """THEN the font size is 7pt."""
+        assert footer_style.fontSize == 7
