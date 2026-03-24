@@ -68,10 +68,12 @@ class TestOverwriteDefault:
         import inspect
 
         from releasepilot.cli.guide import _confirm_overwrite_or_rename
+
         source = inspect.getsource(_confirm_overwrite_or_rename)
 
         """THEN default_index=0 is present, making overwrite the default."""
         assert "default_index=0" in source
+
 
 # ── 2. Translation labels ───────────────────────────────────────────────────
 
@@ -127,8 +129,10 @@ class TestReleaseRangeAppName:
     def test_display_title_includes_app_name(self):
         """GIVEN a ReleaseRange with both app_name and title."""
         rr = ReleaseRange(
-            from_ref="v1", to_ref="v2",
-            app_name="LoopIt", title="Monthly Release",
+            from_ref="v1",
+            to_ref="v2",
+            app_name="LoopIt",
+            title="Monthly Release",
         )
 
         """THEN display_title combines app_name and title with an em dash."""
@@ -137,8 +141,10 @@ class TestReleaseRangeAppName:
     def test_subtitle_excludes_app_name(self):
         """GIVEN a ReleaseRange with both app_name and title."""
         rr = ReleaseRange(
-            from_ref="v1", to_ref="v2",
-            app_name="LoopIt", title="Monthly Release",
+            from_ref="v1",
+            to_ref="v2",
+            app_name="LoopIt",
+            title="Monthly Release",
         )
 
         """THEN subtitle returns only the title without app_name."""
@@ -270,6 +276,7 @@ class TestAudienceAwareFilename:
         import inspect
 
         from releasepilot.cli.guide import _step_display_and_export
+
         source = inspect.getsource(_step_display_and_export)
 
         """THEN it references all audience-aware filename constants."""
@@ -277,3 +284,30 @@ class TestAudienceAwareFilename:
         assert "WHATS_NEW" in source
         assert "RELEASE_SUMMARY" in source
         assert "CHANGELOG" in source
+
+
+# ── Regression: _compose_title empty-title handling ──────────────────────────
+
+
+class TestComposeTitleEmptyRegression:
+    """Regression tests for _compose_title when title/fallback are empty."""
+
+    def test_empty_title_version_only(self):
+        """GIVEN empty title and fallback with a version."""
+        s = _make_settings(version="2.1.0")
+
+        """WHEN _compose_title is called with empty fallback."""
+        result = _compose_title(s, "")
+
+        """THEN result is 'Version X.Y.Z' with no leading space or em-dash."""
+        assert result == "Version 2.1.0"
+
+    def test_title_with_version(self):
+        """GIVEN a title and version."""
+        s = _make_settings(title="MyApp", version="1.0")
+
+        """WHEN _compose_title is called."""
+        result = _compose_title(s, "")
+
+        """THEN result is 'MyApp — Version 1.0'."""
+        assert result == "MyApp — Version 1.0"

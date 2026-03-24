@@ -65,7 +65,9 @@ def _validate_entry(entry: dict, index: int) -> list[str]:
         problems.append(f"Entry {index}: 'authors' must be a list, got {type(authors).__name__}")
     issues = entry.get("issue_numbers")
     if issues is not None and not isinstance(issues, list):
-        problems.append(f"Entry {index}: 'issue_numbers' must be a list, got {type(issues).__name__}")
+        problems.append(
+            f"Entry {index}: 'issue_numbers' must be a list, got {type(issues).__name__}"
+        )
     return problems
 
 

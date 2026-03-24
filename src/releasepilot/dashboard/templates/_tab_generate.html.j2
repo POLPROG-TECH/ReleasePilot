@@ -1,0 +1,93 @@
+<div id="panel-generate" class="tab-panel active" role="tabpanel">
+  <div class="wizard-steps" id="wizard-steps">
+    <div class="wizard-step active" data-wiz-step="0">
+      <div class="wizard-step-num">1</div>
+      <span class="wizard-step-label" data-i18n="ui.wizard.source">Source</span>
+    </div>
+    <div class="wizard-step-line"></div>
+    <div class="wizard-step" data-wiz-step="1">
+      <div class="wizard-step-num">2</div>
+      <span class="wizard-step-label" data-i18n="ui.wizard.audience">Audience</span>
+    </div>
+    <div class="wizard-step-line"></div>
+    <div class="wizard-step" data-wiz-step="2">
+      <div class="wizard-step-num">3</div>
+      <span class="wizard-step-label" data-i18n="ui.wizard.format">Format</span>
+    </div>
+    <div class="wizard-step-line"></div>
+    <div class="wizard-step" data-wiz-step="3">
+      <div class="wizard-step-num">4</div>
+      <span class="wizard-step-label" data-i18n="ui.wizard.generate_step">Generate</span>
+    </div>
+    <div class="wizard-step-line"></div>
+    <div class="wizard-step" data-wiz-step="4">
+      <div class="wizard-step-num">5</div>
+      <span class="wizard-step-label" data-i18n="ui.wizard.preview">Preview</span>
+    </div>
+    <div class="wizard-step-line"></div>
+    <div class="wizard-step" data-wiz-step="5">
+      <div class="wizard-step-num">6</div>
+      <span class="wizard-step-label" data-i18n="ui.wizard.export_step">Export</span>
+    </div>
+  </div>
+
+  <div class="wizard-panel active" id="wiz-panel-0">
+    <h2 id="wiz-source-heading" data-i18n="ui.wizard.source_title">Source Context</h2>
+    <p id="wiz-source-desc" class="text-secondary mb-2" data-i18n="ui.wizard.source_desc">Review the repository and release range for this generation.</p>
+    <div id="wiz-source-info"></div>
+  </div>
+
+  <div class="wizard-panel" id="wiz-panel-1">
+    <h2 data-i18n="ui.wizard.audience_title">Choose Audience</h2>
+    <p class="text-secondary mb-2" data-i18n="ui.wizard.audience_desc">Select who these release notes are for. Each audience tailors the content differently.</p>
+    <div class="wizard-options" id="wiz-audience-options"></div>
+  </div>
+
+  <div class="wizard-panel" id="wiz-panel-2">
+    <h2 data-i18n="ui.wizard.format_title">Choose Format</h2>
+    <p class="text-secondary mb-2" data-i18n="ui.wizard.format_desc">Select the output format for your release notes.</p>
+    <div class="wizard-options" id="wiz-format-options"></div>
+  </div>
+
+  <div class="wizard-panel" id="wiz-panel-3">
+    <div class="wizard-progress" id="wiz-progress">
+      <div class="wizard-progress-spinner"></div>
+      <div class="wizard-progress-text" data-i18n="ui.wizard.generating">Processing pipeline&hellip;</div>
+    </div>
+    <div id="wiz-generate-result" class="hidden"></div>
+  </div>
+
+  <div class="wizard-panel" id="wiz-panel-4">
+    <h2 data-i18n="ui.wizard.preview_title">Preview</h2>
+    <p class="text-secondary mb-2" data-i18n="ui.wizard.preview_desc">Review the generated release notes below. You can switch audience or format and regenerate.</p>
+    <div class="wizard-preview-controls">
+      <span id="wiz-preview-meta" class="text-tertiary wiz-meta-text"></span>
+      <button class="btn btn-sm" onclick="wizCopyPreview()">&#128203; <span data-i18n="ui.artifacts.copy">Copy</span></button>
+      <button class="btn btn-sm btn-primary" onclick="wizGoStep(5)">&#11015; <span data-i18n="ui.wizard.export_step">Export</span></button>
+    </div>
+    <div class="wizard-preview-area" id="wiz-preview-area"></div>
+    <div class="wiz-nav-btns">
+      <button class="src-preset" onclick="wizGoStep(1)">&#8617; <span data-i18n="ui.wizard.change_audience">Change Audience</span></button>
+      <button class="src-preset" onclick="wizGoStep(2)">&#8617; <span data-i18n="ui.wizard.change_format">Change Format</span></button>
+      <button class="src-preset" onclick="wizGoStep(0)">&#8617; <span data-i18n="ui.wizard.change_source">Change Source</span></button>
+    </div>
+  </div>
+
+  <div class="wizard-panel" id="wiz-panel-5">
+    <h2 data-i18n="ui.wizard.export_title">Export</h2>
+    <p class="text-secondary mb-2" data-i18n="ui.wizard.export_desc">Download your release notes. Adjust audience, format, or filename before exporting.</p>
+    <div class="export-row"><label data-i18n="ui.wizard.audience">Audience</label><select class="form-select" id="wiz-export-audience" onchange="wizUpdateExportFormats();wizUpdateExport()"></select></div>
+    <div class="export-row"><label data-i18n="ui.wizard.format">Format</label><select class="form-select" id="wiz-export-format" onchange="wizUpdateExport()"></select></div>
+    <div class="export-row"><label data-i18n="ui.wizard.filename">Filename</label><input class="form-input" id="wiz-export-filename" value="release-notes.md"></div>
+    <div class="export-preview-snippet" id="wiz-export-preview"></div>
+    <div class="flex gap-1 mt-2">
+      <button class="btn btn-primary" onclick="wizDoExport()">&#11015; <span data-i18n="ui.wizard.download">Download</span></button>
+      <button class="btn" onclick="wizGoStep(4)">&#8592; <span data-i18n="ui.wizard.back_to_preview">Back to Preview</span></button>
+    </div>
+  </div>
+
+  <div class="wizard-footer" id="wizard-footer">
+    <button class="btn" id="wiz-prev-btn" onclick="wizPrev()">&#8592; <span data-i18n="ui.wizard.previous">Previous</span></button>
+    <button class="btn btn-primary" id="wiz-next-btn" onclick="wizNext()"><span data-i18n="ui.wizard.next">Next</span> &#8594;</button>
+  </div>
+</div>

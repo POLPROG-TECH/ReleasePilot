@@ -11,10 +11,12 @@ from dataclasses import dataclass, field
 from releasepilot.domain.enums import Audience, ChangeCategory, OutputFormat
 
 # Categories hidden from user-facing notes by default
-_DEFAULT_INTERNAL_CATEGORIES: frozenset[ChangeCategory] = frozenset({
-    ChangeCategory.REFACTOR,
-    ChangeCategory.INFRASTRUCTURE,
-})
+_DEFAULT_INTERNAL_CATEGORIES: frozenset[ChangeCategory] = frozenset(
+    {
+        ChangeCategory.REFACTOR,
+        ChangeCategory.INFRASTRUCTURE,
+    }
+)
 
 # Patterns that indicate noise commits
 _DEFAULT_NOISE_PATTERNS: tuple[str, ...] = (
@@ -86,6 +88,12 @@ class Settings:
     # Audience-specific category exclusions
     internal_categories: frozenset[ChangeCategory] = _DEFAULT_INTERNAL_CATEGORIES
 
+    # GitLab remote repository settings
+    gitlab_url: str = ""
+    gitlab_token: str = ""
+    gitlab_project: str = ""
+    gitlab_ssl_verify: bool = True
+
     @property
     def is_file_source(self) -> bool:
         return bool(self.source_file)
@@ -93,3 +101,8 @@ class Settings:
     @property
     def is_date_range(self) -> bool:
         return bool(self.since_date)
+
+    @property
+    def is_gitlab_source(self) -> bool:
+        """True when configured for remote GitLab repository analysis."""
+        return bool(self.gitlab_url and self.gitlab_project)

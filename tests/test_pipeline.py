@@ -98,6 +98,7 @@ class TestStructuredFileCollector:
 
         """THEN the category is BREAKING."""
         from releasepilot.domain.enums import ChangeCategory
+
         assert items[0].category == ChangeCategory.BREAKING
         assert items[0].is_breaking is True
 
@@ -128,7 +129,8 @@ class TestPipelineEndToEnd:
 
         """WHEN running the pipeline stages."""
         release_range = ReleaseRange(
-            from_ref="", to_ref="",
+            from_ref="",
+            to_ref="",
             version="2.0.0",
         )
         items = collect(settings, release_range)

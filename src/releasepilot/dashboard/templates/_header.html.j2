@@ -1,0 +1,66 @@
+<header class="app-header">
+  <div class="header-inner">
+    <a href="#" class="header-brand" onclick="return false">
+      <svg class="header-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5l8-3 8 3v14l-8 3-8-3z"/><path d="M12 2v20M4 5l8 3 8-3" opacity=".5"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/></svg>
+      <span class="header-title">ReleasePilot</span>
+    </a>
+    <div class="header-info">
+      <div class="header-subtitle" data-i18n="ui.header.subtitle">Release Notes Dashboard</div>
+    </div>
+    <div class="header-controls">
+      <span class="header-repo-badge d-none" id="header-repo"></span>
+      <div id="qsTriggerWrap" class="qs-trigger-wrap">
+        <button class="qs-trigger" id="qsTrigger" aria-label="Quick settings" title="Settings" aria-expanded="false" aria-controls="qsPanel" onclick="toggleQS()" data-i18n-title="ui.qs.settings" data-i18n-aria="ui.qs.settings">&#9881;</button>
+        <div class="qs-panel" id="qsPanel" onclick="event.stopPropagation()">
+      <div class="qs-section">
+        <div class="qs-section-title" data-i18n="ui.qs.language">Language</div>
+        <div class="qs-row">
+          <select class="form-select" id="qs-locale-select" onchange="applyLocale(this.value)">
+            <option value="en">English</option>
+            <option value="pl">Polski</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Português</option>
+            <option value="nl">Nederlands</option>
+            <option value="uk">Українська</option>
+            <option value="cs">Čeština</option>
+          </select>
+        </div>
+      </div>
+      <div class="qs-section">
+        <div class="qs-section-title" data-i18n="ui.qs.theme">Theme</div>
+        <div class="qs-row">
+          <div class="qs-btn-group">
+            <button class="qs-btn" data-qs-theme="light" onclick="applyTheme('light')" data-i18n="ui.theme.light">Light</button>
+            <button class="qs-btn" data-qs-theme="system" onclick="applyTheme('system')" data-i18n="ui.theme.auto">Auto</button>
+            <button class="qs-btn" data-qs-theme="dark" onclick="applyTheme('dark')" data-i18n="ui.theme.dark">Dark</button>
+            <button class="qs-btn" data-qs-theme="midnight" onclick="applyTheme('midnight')" data-i18n="ui.theme.midnight">Midnight</button>
+          </div>
+        </div>
+      </div>
+      <div class="qs-section">
+        <div class="qs-section-title" data-i18n="ui.qs.density">Density</div>
+        <div class="qs-row">
+          <div class="qs-btn-group">
+            <button class="qs-btn" data-qs-density="comfortable" onclick="applyDensity('comfortable')" data-i18n="ui.qs.comfortable">Comfortable</button>
+            <button class="qs-btn" data-qs-density="compact" onclick="applyDensity('compact')" data-i18n="ui.qs.compact">Compact</button>
+          </div>
+        </div>
+      </div>
+      <div class="qs-section">
+        <div class="qs-section-title" data-i18n="ui.qs.colors">Custom Colors</div>
+        <div class="qs-color-row mt-1"><label data-i18n="ui.qs.primary">Primary</label><input type="color" id="color-primary" value="#FB6400"></div>
+        <div class="qs-color-row mt-1"><label data-i18n="ui.qs.secondary">Secondary</label><input type="color" id="color-secondary" value="#2563eb"></div>
+        <div class="qs-color-row mt-1"><label data-i18n="ui.qs.tertiary">Tertiary</label><input type="color" id="color-tertiary" value="#7c3aed"></div>
+        <div class="qs-row mt-1">
+          <button class="btn btn-sm btn-primary" onclick="applyColors()" data-i18n="ui.qs.apply">Apply</button>
+          <button class="btn btn-sm" onclick="resetColors()" data-i18n="ui.qs.reset_colors">Reset</button>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</header>

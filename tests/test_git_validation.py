@@ -10,6 +10,7 @@ from releasepilot.sources.git import GitSourceCollector
 
 # ── Git argument ordering ────────────────────────────────────────────────────
 
+
 class TestGitArgOrder:
     """Scenarios for git CLI argument ordering."""
 
@@ -106,6 +107,7 @@ class TestGitArgOrder:
 
 # ── Branch validation ────────────────────────────────────────────────────────
 
+
 class TestBranchValidation:
     """Scenarios for branch name validation prompts."""
 
@@ -113,7 +115,7 @@ class TestBranchValidation:
         """GIVEN a list of valid branches and a prompt returning 'main'."""
         from releasepilot.cli.guide import _prompt_valid_branch
 
-        with patch("releasepilot.cli.guide.text_prompt", return_value="main"):
+        with patch("releasepilot.cli.guide_steps.text_prompt", return_value="main"):
             """WHEN _prompt_valid_branch is called."""
             result = _prompt_valid_branch(["main", "develop", "feature/x"])
 
@@ -125,8 +127,8 @@ class TestBranchValidation:
         from releasepilot.cli.guide import _prompt_valid_branch
 
         with (
-            patch("releasepilot.cli.guide.text_prompt", side_effect=["nope", "develop"]),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", side_effect=["nope", "develop"]),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_branch is called."""
             result = _prompt_valid_branch(["main", "develop"])
@@ -136,6 +138,7 @@ class TestBranchValidation:
 
 
 # ── Subtitle refactor ────────────────────────────────────────────────────────
+
 
 class TestCustomTitleStep:
     """Scenarios for the custom title step."""
@@ -154,8 +157,8 @@ class TestCustomTitleStep:
         from releasepilot.cli.guide import _step_custom_title
 
         with (
-            patch("releasepilot.cli.guide.text_prompt", return_value="Monthly Overview"),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", return_value="Monthly Overview"),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyRepo")
@@ -168,8 +171,8 @@ class TestCustomTitleStep:
         from releasepilot.cli.guide import _step_custom_title
 
         with (
-            patch("releasepilot.cli.guide.text_prompt", return_value=""),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", return_value=""),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyRepo")
@@ -188,6 +191,7 @@ class TestCustomTitleStep:
 
 
 # ── Overwrite confirmation ───────────────────────────────────────────────────
+
 
 class TestOverwriteConfirmation:
     """Scenarios for overwrite-or-rename confirmation."""
@@ -212,8 +216,8 @@ class TestOverwriteConfirmation:
         existing.write_text("old")
 
         with (
-            patch("releasepilot.cli.guide.select_one", return_value="overwrite"),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.select_one", return_value="overwrite"),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _confirm_overwrite_or_rename is called."""
             result = _confirm_overwrite_or_rename(str(existing))
@@ -229,8 +233,8 @@ class TestOverwriteConfirmation:
         existing.write_text("old")
 
         with (
-            patch("releasepilot.cli.guide.select_one", return_value="cancel"),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.select_one", return_value="cancel"),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _confirm_overwrite_or_rename is called."""
             result = _confirm_overwrite_or_rename(str(existing))
@@ -247,9 +251,9 @@ class TestOverwriteConfirmation:
         new_name = str(tmp_path / "renamed.md")
 
         with (
-            patch("releasepilot.cli.guide.select_one", return_value="rename"),
-            patch("releasepilot.cli.guide.text_prompt", return_value=new_name),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.select_one", return_value="rename"),
+            patch("releasepilot.cli.guide_steps.text_prompt", return_value=new_name),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _confirm_overwrite_or_rename is called."""
             result = _confirm_overwrite_or_rename(str(existing))
@@ -259,6 +263,7 @@ class TestOverwriteConfirmation:
 
 
 # ── Executive format default ─────────────────────────────────────────────────
+
 
 class TestExecutiveFormatDefault:
     """Scenarios for executive format defaults."""
@@ -276,7 +281,7 @@ class TestExecutiveFormatDefault:
         """GIVEN a select_one mock returning 'pdf'."""
         from releasepilot.cli.guide import _step_format_executive
 
-        with patch("releasepilot.cli.guide.select_one", return_value="pdf"):
+        with patch("releasepilot.cli.guide_steps.select_one", return_value="pdf"):
             """WHEN _step_format_executive is called."""
             result = _step_format_executive(lambda *a: 0)
 

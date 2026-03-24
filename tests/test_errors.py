@@ -116,9 +116,7 @@ class TestErrorFactories:
         """GIVEN a git error mentioning unknown revision."""
 
         """WHEN creating the error."""
-        err = git_command_failed(
-            "fatal: ambiguous argument 'v1.0.0..v1.1.0': unknown revision"
-        )
+        err = git_command_failed("fatal: ambiguous argument 'v1.0.0..v1.1.0': unknown revision")
 
         """THEN the error identifies the missing ref."""
         assert "not found" in err.summary.lower()
@@ -280,9 +278,16 @@ class TestCLIErrorMessages:
         runner = CliRunner()
 
         """WHEN running generate."""
-        result = runner.invoke(cli, [
-            "generate", "--repo", "/nonexistent/repo", "--version", "1.0.0",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--repo",
+                "/nonexistent/repo",
+                "--version",
+                "1.0.0",
+            ],
+        )
 
         """THEN it fails."""
         assert result.exit_code != 0
@@ -293,12 +298,18 @@ class TestCLIErrorMessages:
         runner = CliRunner()
 
         """WHEN running generate with the invalid ref."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--repo", str(tmp_path),
-            "--from", "v99.99.99",
-            "--to", "HEAD",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--repo",
+                str(tmp_path),
+                "--from",
+                "v99.99.99",
+                "--to",
+                "HEAD",
+            ],
+        )
 
         """THEN it fails."""
         assert result.exit_code != 0
@@ -309,11 +320,16 @@ class TestCLIErrorMessages:
         runner = CliRunner()
 
         """WHEN running generate with the bad date."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--repo", str(tmp_path),
-            "--since", "bad-date",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--repo",
+                str(tmp_path),
+                "--since",
+                "bad-date",
+            ],
+        )
 
         """THEN it fails."""
         assert result.exit_code != 0
@@ -324,11 +340,16 @@ class TestCLIErrorMessages:
         runner = CliRunner()
 
         """WHEN running export to that directory."""
-        result = runner.invoke(cli, [
-            "export",
-            "--source-file", "examples/sample_changes.json",
-            "-o", "/nonexistent/dir/out.md",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                "examples/sample_changes.json",
+                "-o",
+                "/nonexistent/dir/out.md",
+            ],
+        )
 
         """THEN it fails."""
         assert result.exit_code != 0
@@ -342,11 +363,15 @@ class TestDryRun:
         runner = CliRunner()
 
         """WHEN running generate with --dry-run."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--source-file", "examples/sample_changes.json",
-            "--dry-run",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--dry-run",
+            ],
+        )
 
         """THEN it succeeds without crashing."""
         assert result.exit_code == 0
@@ -357,12 +382,17 @@ class TestDryRun:
         runner = CliRunner()
 
         """WHEN running generate with --dry-run and --version."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--source-file", "examples/sample_changes.json",
-            "--version", "3.0.0",
-            "--dry-run",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--version",
+                "3.0.0",
+                "--dry-run",
+            ],
+        )
 
         """THEN it succeeds without crashing."""
         assert result.exit_code == 0
@@ -373,15 +403,18 @@ def _init_repo(path: Path) -> None:
     subprocess.run(["git", "init", "-b", "main", str(path)], check=True, capture_output=True)
     subprocess.run(
         ["git", "-C", str(path), "config", "user.email", "test@test.com"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     subprocess.run(
         ["git", "-C", str(path), "config", "user.name", "Test"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     (path / "README.md").write_text("# Test\n")
     subprocess.run(["git", "-C", str(path), "add", "."], check=True, capture_output=True)
     subprocess.run(
         ["git", "-C", str(path), "commit", "-m", "feat: initial commit"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )

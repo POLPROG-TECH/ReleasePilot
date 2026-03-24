@@ -20,6 +20,7 @@ from releasepilot.pipeline.orchestrator import _compose_title
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _make_settings(**overrides) -> Settings:
     defaults = {
         "repo_path": ".",
@@ -34,8 +35,11 @@ def _sample_notes(title: str = "") -> ReleaseNotes:
     from releasepilot.domain.enums import ChangeCategory
 
     rr = ReleaseRange(
-        from_ref="2025-01-01", to_ref="main", version="1.0.0",
-        title=title, release_date=date(2025, 6, 1),
+        from_ref="2025-01-01",
+        to_ref="main",
+        version="1.0.0",
+        title=title,
+        release_date=date(2025, 6, 1),
     )
     item = ChangeItem(
         id="test-1",
@@ -309,6 +313,7 @@ class TestTranslator:
         """THEN a string is returned without raising."""
         assert isinstance(result, str)
 
+
 # ── Markdown renderer i18n tests ────────────────────────────────────────────
 
 
@@ -360,7 +365,10 @@ class TestMarkdownI18n:
 
         rr = ReleaseRange(from_ref="a", to_ref="b", title="Empty")
         notes = ReleaseNotes(
-            release_range=rr, groups=(), highlights=(), breaking_changes=(),
+            release_range=rr,
+            groups=(),
+            highlights=(),
+            breaking_changes=(),
         )
         config = RenderConfig(language="pl")
 

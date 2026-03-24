@@ -18,6 +18,7 @@ def _translate(text: str, lang: str) -> str:
         return text
     try:
         from releasepilot.i18n import translate_text
+
         return translate_text(text, target_lang=lang)
     except Exception:  # noqa: BLE001
         return text
@@ -65,9 +66,11 @@ def _render_header(brief: ExecutiveBrief, lang: str) -> str:
     lines.append(f"*{brief.localized_date(lang)}*")
     if rr.version:
         from releasepilot.i18n import get_label
+
         lines.append(f"*{get_label('version', lang)} {rr.version}*")
     if brief.analysis_period:
         from releasepilot.i18n import get_label
+
         period_label = get_label("analysis_period", lang).format(
             period=brief.analysis_period,
         )
@@ -160,10 +163,7 @@ def _render_metrics(brief: ExecutiveBrief, lang: str) -> str:
 def _render_footer(lang: str) -> str:
     from releasepilot.rendering import footer_text
 
-    return (
-        "---\n"
-        f"*{footer_text(include_url=True, lang=lang)}*\n"
-    )
+    return f"---\n*{footer_text(include_url=True, lang=lang)}*\n"
 
 
 def _brief_to_dict(brief: ExecutiveBrief) -> dict:

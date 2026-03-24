@@ -1,0 +1,76 @@
+/* ===== GUIDE ===== */
+function renderGuide(){
+  var h='';
+  /* Hero */
+  h+='<div class="guide-hero">';
+  h+='<div class="guide-hero-icon">&#128640;</div>';
+  h+='<div class="guide-hero-title">'+_t('ui.guide.hero_title')+'</div>';
+  h+='<div class="guide-hero-text">'+_t('ui.guide.hero_text')+'</div>';
+  h+='<div class="mt-2"><button class="btn btn-primary" onclick="launchWizard()">&#9997;&#65039; '+_t('ui.first_run.generate')+'</button></div>';
+  h+='</div>';
+
+  /* Pipeline visualization */
+  h+='<div class="guide-section"><div class="guide-section-title">&#128736;&#65039; '+_t('ui.guide.pipeline_title')+'</div>';
+  h+='<div class="guide-pipeline">';
+  var steps=[
+    {icon:'&#128230;',name:_t('ui.guide.step_collect')},
+    {icon:'&#127991;&#65039;',name:_t('ui.guide.step_classify')},
+    {icon:'&#128683;',name:_t('ui.guide.step_filter')},
+    {icon:'&#128257;',name:_t('ui.guide.step_dedup')},
+    {icon:'&#128194;',name:_t('ui.guide.step_group')},
+    {icon:'&#127919;',name:_t('ui.guide.step_audience')},
+    {icon:'&#127912;',name:_t('ui.guide.step_render')}
+  ];
+  steps.forEach(function(s,i){
+    h+='<div class="guide-pipeline-step"><div class="guide-pipeline-step-icon">'+s.icon+'</div><div class="guide-pipeline-step-name">'+s.name+'</div></div>';
+    if(i<steps.length-1)h+='<div class="guide-pipeline-arrow">&rarr;</div>';
+  });
+  h+='</div></div>';
+
+  /* Audiences */
+  h+='<div class="guide-section"><div class="guide-section-title">&#127911; '+_t('ui.guide.audiences_title')+'</div>';
+  h+='<p class="text-secondary mb-2">'+_t('ui.guide.audiences_text')+'</p>';
+  h+='<div class="guide-cards">';
+  var auds=D.supported_audiences||Object.keys(AUDIENCE_INFO);
+  auds.forEach(function(a){
+    var info=AUDIENCE_INFO[a]||{icon:'',label:a,desc:''};
+    h+='<div class="guide-card"><div class="guide-card-icon">'+info.icon+'</div><div class="guide-card-title">'+esc(info.label)+'</div><div class="guide-card-text">'+esc(info.desc)+'</div></div>';
+  });
+  h+='</div></div>';
+
+  /* Formats */
+  h+='<div class="guide-section"><div class="guide-section-title">&#128196; '+_t('ui.guide.formats_title')+'</div>';
+  h+='<p class="text-secondary mb-2">'+_t('ui.guide.formats_text')+'</p>';
+  h+='<div class="guide-cards">';
+  var fmts=D.supported_formats||Object.keys(FORMAT_INFO);
+  fmts.forEach(function(f){
+    var info=FORMAT_INFO[f]||{icon:'',label:f,desc:''};
+    h+='<div class="guide-card"><div class="guide-card-icon">'+info.icon+'</div><div class="guide-card-title">'+esc(info.label)+'</div><div class="guide-card-text">'+esc(info.desc)+'</div></div>';
+  });
+  h+='</div></div>';
+
+  /* Tips */
+  h+='<div class="guide-section"><div class="guide-section-title">&#128161; '+_t('ui.guide.tips_title')+'</div>';
+  h+='<div class="guide-cards">';
+  h+='<div class="guide-card"><div class="guide-card-icon">&#127919;</div><div class="guide-card-title">'+_t('ui.guide.tip1_title')+'</div><div class="guide-card-text">'+_t('ui.guide.tip1_text')+'</div></div>';
+  h+='<div class="guide-card"><div class="guide-card-icon">&#128203;</div><div class="guide-card-title">'+_t('ui.guide.tip2_title')+'</div><div class="guide-card-text">'+_t('ui.guide.tip2_text')+'</div></div>';
+  h+='<div class="guide-card"><div class="guide-card-icon">&#128736;&#65039;</div><div class="guide-card-title">'+_t('ui.guide.tip3_title')+'</div><div class="guide-card-text">'+_t('ui.guide.tip3_text')+'</div></div>';
+  h+='<div class="guide-card"><div class="guide-card-icon">&#127760;</div><div class="guide-card-title">'+_t('ui.guide.tip4_title')+'</div><div class="guide-card-text">'+_t('ui.guide.tip4_text')+'</div></div>';
+  h+='</div></div>';
+
+  /* CLI Reference (collapsed) */
+  h+='<div class="guide-section"><div class="guide-section-title">&#128187; '+_t('ui.guide.cli_title')+'</div>';
+  h+='<details class="guide-cli-ref"><summary>'+_t('ui.guide.cli_show')+'</summary>';
+  h+='<pre>releasepilot generate                        # '+_t('ui.guide.cli_defaults')+'\n';
+  h+='releasepilot generate --audience customer     # '+_t('ui.guide.cli_customer')+'\n';
+  h+='releasepilot generate --format pdf            # '+_t('ui.guide.cli_pdf')+'\n';
+  h+='releasepilot preview                          # '+_t('ui.guide.cli_preview')+'\n';
+  h+='releasepilot export -o notes.md               # '+_t('ui.guide.cli_export')+'\n';
+  h+='releasepilot dashboard                        # '+_t('ui.guide.cli_dashboard')+'\n';
+  h+='releasepilot dashboard --open                 # '+_t('ui.guide.cli_open')+'\n';
+  h+='releasepilot guide                            # '+_t('ui.guide.cli_wizard')+'\n';
+  h+='releasepilot --help                           # '+_t('ui.guide.cli_help')+'</pre>';
+  h+='</details></div>';
+
+  var gc=$('#guide-content');if(gc)gc.innerHTML=h;
+}

@@ -22,9 +22,8 @@ class GitCollectionError(Exception):
     """Raised when git commands fail."""
 
 
-# Delimiter unlikely to appear in commit messages
-_FIELD_SEP = "§§§"
-_RECORD_SEP = "∞∞∞"
+_FIELD_SEP = "\x1f"  # ASCII Unit Separator — cannot appear in git output
+_RECORD_SEP = "\x1e"  # ASCII Record Separator — cannot appear in git output
 
 _GIT_LOG_FORMAT = _FIELD_SEP.join(["%H", "%an", "%aI", "%s", "%b"]) + _RECORD_SEP
 
@@ -76,13 +75,15 @@ class GitSourceCollector:
             branch: Branch name or ref to walk (default: HEAD)
         """
         validate_ref(branch)
-        raw = self._run_git([
-            "log",
-            f"--since={since}",
-            f"--pretty=format:{_GIT_LOG_FORMAT}",
-            "--no-merges",
-            branch,
-        ])
+        raw = self._run_git(
+            [
+                "log",
+                f"--since={since}",
+                f"--pretty=format:{_GIT_LOG_FORMAT}",
+                "--no-merges",
+                branch,
+            ]
+        )
         return self._parse_log(raw)
 
     def first_commit_date(self, *, branch: str = "") -> str | None:
@@ -125,10 +126,12 @@ class GitSourceCollector:
     def list_tags(self, limit: int = 10) -> list[str]:
         """Return recent tags in reverse chronological order."""
         try:
-            result = self._run_git([
-                "tag",
-                "--sort=-creatordate",
-            ])
+            result = self._run_git(
+                [
+                    "tag",
+                    "--sort=-creatordate",
+                ]
+            )
             tags = [t for t in result.strip().splitlines() if t]
             return tags[:limit] if limit else tags
         except GitCollectionError:
@@ -140,12 +143,20 @@ class GitSourceCollector:
         validate_ref(descendant)
         try:
             cmd = [
-                "git", "-C", self._repo_path,
-                "merge-base", "--is-ancestor", ancestor, descendant,
+                "git",
+                "-C",
+                self._repo_path,
+                "merge-base",
+                "--is-ancestor",
+                ancestor,
+                descendant,
             ]
             result = subprocess.run(
-                cmd, capture_output=True, text=True,
-                timeout=10, check=False,
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
             )
             return result.returncode == 0
         except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -153,12 +164,14 @@ class GitSourceCollector:
 
     def _run_git_log(self, from_ref: str, to_ref: str) -> str:
         rev_range = f"{from_ref}..{to_ref}" if from_ref else to_ref
-        return self._run_git([
-            "log",
-            f"--pretty=format:{_GIT_LOG_FORMAT}",
-            "--no-merges",
-            rev_range,
-        ])
+        return self._run_git(
+            [
+                "log",
+                f"--pretty=format:{_GIT_LOG_FORMAT}",
+                "--no-merges",
+                rev_range,
+            ]
+        )
 
     def _run_git(self, args: list[str], timeout: int = 30) -> str:
         cmd = ["git", "-C", self._repo_path] + [a for a in args if a]
@@ -193,9 +206,7 @@ class GitSourceCollector:
                 )
                 continue
 
-            raise GitCollectionError(
-                f"git command failed (exit {result.returncode}): {stderr}"
-            )
+            raise GitCollectionError(f"git command failed (exit {result.returncode}): {stderr}")
 
         # Exhausted retries
         raise last_exc or GitCollectionError("git command failed after retries")

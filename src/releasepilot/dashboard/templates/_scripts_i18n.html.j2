@@ -1,0 +1,6 @@
+/* ===== I18N ===== */
+var I18N = {{ vm.i18n_catalog_json|safe }};
+function _t(key){return(I18N[S.locale]||I18N.en)[key]||(I18N.en[key]||key)}
+function _pluralForm(locale,n){n=Math.abs(n);if(locale==='pl'){if(n===1)return'one';var m10=n%10,m100=n%100;if(m10>=2&&m10<=4&&(m100<12||m100>14))return'few';return'other'}return n===1?'one':'other'}
+function _tp(base,count,vars){var form=_pluralForm(S.locale,count);var key=base+'_'+form;var s=_t(key);if(s===key)s=_t(base+'_other');if(vars){Object.keys(vars).forEach(function(k){s=s.split('{'+k+'}').join(vars[k])})}return s.split('{count}').join(count)}
+function _fmtNum(n){try{return new Intl.NumberFormat(S.locale).format(n)}catch(e){return String(n)}}

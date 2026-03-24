@@ -18,7 +18,7 @@ class TestDateValidation:
         from releasepilot.cli.guide import _prompt_valid_date
 
         yesterday = (date.today() - timedelta(days=1)).isoformat()
-        with patch("releasepilot.cli.guide.text_prompt", return_value=yesterday):
+        with patch("releasepilot.cli.guide_steps.text_prompt", return_value=yesterday):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
@@ -32,8 +32,8 @@ class TestDateValidation:
         valid = (date.today() - timedelta(days=7)).isoformat()
         calls = iter(["not-a-date", "abc123", valid])
         with (
-            patch("releasepilot.cli.guide.text_prompt", side_effect=calls),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", side_effect=calls),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
@@ -49,8 +49,8 @@ class TestDateValidation:
         valid = (date.today() - timedelta(days=1)).isoformat()
         calls = iter([future, valid])
         with (
-            patch("releasepilot.cli.guide.text_prompt", side_effect=calls),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", side_effect=calls),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
@@ -63,7 +63,7 @@ class TestDateValidation:
         from releasepilot.cli.guide import _prompt_valid_date
 
         yesterday = (date.today() - timedelta(days=1)).isoformat()
-        with patch("releasepilot.cli.guide.text_prompt", return_value=f"  {yesterday}  "):
+        with patch("releasepilot.cli.guide_steps.text_prompt", return_value=f"  {yesterday}  "):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
@@ -82,8 +82,8 @@ class TestSubtitleValidation:
         from releasepilot.cli.guide import _step_custom_title
 
         with (
-            patch("releasepilot.cli.guide.text_prompt", return_value="  Monthly Release  "),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", return_value="  Monthly Release  "),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyApp")
@@ -96,8 +96,8 @@ class TestSubtitleValidation:
         from releasepilot.cli.guide import _step_custom_title
 
         with (
-            patch("releasepilot.cli.guide.text_prompt", return_value=""),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", return_value=""),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyApp")
@@ -111,8 +111,8 @@ class TestSubtitleValidation:
 
         long_text = "A" * 250
         with (
-            patch("releasepilot.cli.guide.text_prompt", return_value=long_text),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", return_value=long_text),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyApp")
@@ -131,7 +131,7 @@ class TestBranchValidationPresent:
         """GIVEN a user entering a valid branch name."""
         from releasepilot.cli.guide import _prompt_valid_branch
 
-        with patch("releasepilot.cli.guide.text_prompt", return_value="main"):
+        with patch("releasepilot.cli.guide_steps.text_prompt", return_value="main"):
             """WHEN _prompt_valid_branch is called."""
             result = _prompt_valid_branch(["main", "develop"])
 
@@ -144,8 +144,8 @@ class TestBranchValidationPresent:
 
         calls = iter(["nope", "main"])
         with (
-            patch("releasepilot.cli.guide.text_prompt", side_effect=calls),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", side_effect=calls),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_branch is called."""
             result = _prompt_valid_branch(["main", "develop"])
@@ -163,8 +163,10 @@ class TestTitleStructure:
     def test_display_title_with_app_name(self):
         """GIVEN a ReleaseRange with app_name and title."""
         rr = ReleaseRange(
-            from_ref="v1", to_ref="v2",
-            app_name="LoopIt", title="Release Brief",
+            from_ref="v1",
+            to_ref="v2",
+            app_name="LoopIt",
+            title="Release Brief",
         )
 
         """THEN display_title includes app_name and subtitle excludes it."""

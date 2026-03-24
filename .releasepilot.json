@@ -1,0 +1,18 @@
+{
+  "app_name": "TEST",
+  "audience": "changelog",
+  "branch": "main",
+  "ci": {
+    "artifact_name": "release-notes",
+    "attach_to_release": false,
+    "enabled": false,
+    "fail_on_empty": false
+  },
+  "export_formats": [],
+  "format": "markdown",
+  "language": "en",
+  "overwrite": false,
+  "repos": [],
+  "show_authors": false,
+  "show_hashes": false
+}

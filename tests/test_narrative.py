@@ -36,6 +36,7 @@ from tests.conftest import make_change_item as _make_item
 def _pdf_available() -> bool:
     try:
         import reportlab  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -44,9 +45,11 @@ def _pdf_available() -> bool:
 def _docx_available() -> bool:
     try:
         import docx  # noqa: F401
+
         return True
     except ImportError:
         return False
+
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -67,7 +70,11 @@ def sample_range() -> ReleaseRange:
 def rich_notes(sample_range: ReleaseRange) -> ReleaseNotes:
     """ReleaseNotes with a realistic mix of categories."""
     features = [
-        _make_item("feat: add OAuth2 authentication", description="Full OAuth2 flow with PKCE", scope="auth"),
+        _make_item(
+            "feat: add OAuth2 authentication",
+            description="Full OAuth2 flow with PKCE",
+            scope="auth",
+        ),
         _make_item("feat: add dark mode support", scope="ui"),
         _make_item("feat: implement search API", scope="api"),
     ]
@@ -76,22 +83,34 @@ def rich_notes(sample_range: ReleaseRange) -> ReleaseNotes:
         _make_item("fix: session token refresh", ChangeCategory.BUGFIX, scope="auth"),
     ]
     security = [
-        _make_item("fix: patch XSS vulnerability", ChangeCategory.SECURITY, importance=Importance.HIGH, scope="web"),
+        _make_item(
+            "fix: patch XSS vulnerability",
+            ChangeCategory.SECURITY,
+            importance=Importance.HIGH,
+            scope="web",
+        ),
     ]
     perf = [
-        _make_item("perf: optimize dashboard queries", ChangeCategory.PERFORMANCE, scope="dashboard"),
+        _make_item(
+            "perf: optimize dashboard queries", ChangeCategory.PERFORMANCE, scope="dashboard"
+        ),
     ]
     improvements = [
         _make_item("Improve error messages", ChangeCategory.IMPROVEMENT, scope="core"),
     ]
     breaking = [
         _make_item(
-            "feat(api)!: Remove legacy API endpoints", ChangeCategory.BREAKING,
-            breaking=True, scope="api", description="The v1 endpoints have been removed",
+            "feat(api)!: Remove legacy API endpoints",
+            ChangeCategory.BREAKING,
+            breaking=True,
+            scope="api",
+            description="The v1 endpoints have been removed",
         ),
     ]
     infra = [_make_item("ci: Update CI pipeline", ChangeCategory.INFRASTRUCTURE)]
-    refactor = [_make_item("refactor(db): Refactor database layer", ChangeCategory.REFACTOR, scope="db")]
+    refactor = [
+        _make_item("refactor(db): Refactor database layer", ChangeCategory.REFACTOR, scope="db")
+    ]
 
     all_items = features + bugfixes + security + perf + improvements + breaking + infra + refactor
     groups = []
@@ -252,8 +271,13 @@ class TestNarrativeValidation:
             total_facts=1,
             fact_groups=(
                 FactGroup(
-                    theme="Features", summary="1 feature added",
-                    facts=(FactItem(text="Add widget", category=ChangeCategory.FEATURE, source_ids=("x",)),),
+                    theme="Features",
+                    summary="1 feature added",
+                    facts=(
+                        FactItem(
+                            text="Add widget", category=ChangeCategory.FEATURE, source_ids=("x",)
+                        ),
+                    ),
                     category=ChangeCategory.FEATURE,
                 ),
             ),
@@ -273,8 +297,11 @@ class TestNarrativeValidation:
             total_facts=999,
             fact_groups=(
                 FactGroup(
-                    theme="Features", summary="1 feature",
-                    facts=(FactItem(text="Add x", category=ChangeCategory.FEATURE, source_ids=("x",)),),
+                    theme="Features",
+                    summary="1 feature",
+                    facts=(
+                        FactItem(text="Add x", category=ChangeCategory.FEATURE, source_ids=("x",)),
+                    ),
                     category=ChangeCategory.FEATURE,
                 ),
             ),
@@ -291,8 +318,11 @@ class TestNarrativeValidation:
             total_facts=1,
             fact_groups=(
                 FactGroup(
-                    theme="Features", summary="1 feature",
-                    facts=(FactItem(text="Add x", category=ChangeCategory.FEATURE, source_ids=("x",)),),
+                    theme="Features",
+                    summary="1 feature",
+                    facts=(
+                        FactItem(text="Add x", category=ChangeCategory.FEATURE, source_ids=("x",)),
+                    ),
                     category=ChangeCategory.FEATURE,
                 ),
             ),
@@ -322,15 +352,20 @@ class TestNarrativeRendering:
         brief = compose_narrative(rich_notes)
         output = NarrativeMarkdownRenderer().render(brief)
         body_lines = [
-            line for line in output.split("\n")
-            if line.strip() and not line.startswith("#") and not line.startswith("*")
-            and not line.startswith("---") and not line.startswith("|")
+            line
+            for line in output.split("\n")
+            if line.strip()
+            and not line.startswith("#")
+            and not line.startswith("*")
+            and not line.startswith("---")
+            and not line.startswith("|")
         ]
         for line in body_lines:
             stripped = line.strip()
             if stripped.startswith("- ") or stripped.startswith("• "):
-                assert "ReleasePilot" in line or "verified" in line, \
+                assert "ReleasePilot" in line or "verified" in line, (
                     f"Unexpected bullet point in narrative: {line}"
+                )
 
     def test_markdown_breaking_section(self, rich_notes: ReleaseNotes):
         """GIVEN notes with breaking changes WHEN rendering THEN breaking section present."""
@@ -347,10 +382,13 @@ class TestNarrativeRendering:
         assert isinstance(parsed["fact_groups"], list)
         assert parsed["total_facts"] > 0
 
-    @pytest.mark.parametrize("customer_facing,expected_mode", [
-        (False, "narrative"),
-        (True, "customer-narrative"),
-    ])
+    @pytest.mark.parametrize(
+        "customer_facing,expected_mode",
+        [
+            (False, "narrative"),
+            (True, "customer-narrative"),
+        ],
+    )
     def test_json_mode_matches_composition(self, rich_notes, customer_facing, expected_mode):
         """GIVEN customer_facing flag WHEN rendering JSON THEN mode field matches."""
         brief = compose_narrative(rich_notes, customer_facing=customer_facing)
@@ -375,6 +413,7 @@ class TestNarrativeRendering:
     def test_pdf_produces_valid_bytes(self, rich_notes: ReleaseNotes):
         """GIVEN a composed brief WHEN rendering PDF THEN valid PDF bytes produced."""
         from releasepilot.rendering.narrative_pdf import NarrativePdfRenderer
+
         brief = compose_narrative(rich_notes)
         data = NarrativePdfRenderer().render_bytes(brief)
         assert data[:5] == b"%PDF-"
@@ -384,6 +423,7 @@ class TestNarrativeRendering:
     def test_docx_produces_valid_bytes(self, rich_notes: ReleaseNotes):
         """GIVEN a composed brief WHEN rendering DOCX THEN valid DOCX (ZIP) bytes produced."""
         from releasepilot.rendering.narrative_docx import NarrativeDocxRenderer
+
         brief = compose_narrative(rich_notes)
         data = NarrativeDocxRenderer().render_bytes(brief)
         assert data[:2] == b"PK"
@@ -394,6 +434,7 @@ class TestNarrativeRendering:
     def test_pdf_customer_mode(self, rich_notes: ReleaseNotes, customer_facing: bool):
         """GIVEN either narrative mode WHEN rendering PDF THEN produces valid output."""
         from releasepilot.rendering.narrative_pdf import NarrativePdfRenderer
+
         brief = compose_narrative(rich_notes, customer_facing=customer_facing)
         data = NarrativePdfRenderer().render_bytes(brief)
         assert data[:5] == b"%PDF-"
@@ -403,6 +444,7 @@ class TestNarrativeRendering:
     def test_docx_customer_mode(self, rich_notes: ReleaseNotes, customer_facing: bool):
         """GIVEN either narrative mode WHEN rendering DOCX THEN produces valid output."""
         from releasepilot.rendering.narrative_docx import NarrativeDocxRenderer
+
         brief = compose_narrative(rich_notes, customer_facing=customer_facing)
         data = NarrativeDocxRenderer().render_bytes(brief)
         assert data[:2] == b"PK"
@@ -414,10 +456,13 @@ class TestNarrativeRendering:
 class TestNarrativeBriefModel:
     """Verifies NarrativeBrief computed properties."""
 
-    @pytest.mark.parametrize("mode,expected_label", [
-        ("narrative", "Release Summary"),
-        ("customer-narrative", "Product Update"),
-    ])
+    @pytest.mark.parametrize(
+        "mode,expected_label",
+        [
+            ("narrative", "Release Summary"),
+            ("customer-narrative", "Product Update"),
+        ],
+    )
     def test_report_title(self, sample_range, mode, expected_label):
         brief = NarrativeBrief(release_range=sample_range, overview="test", mode=mode)
         assert expected_label in brief.report_title
@@ -471,12 +516,14 @@ class TestNarrativeCLI:
 
     def test_narrative_audience_in_choices(self):
         from releasepilot.cli.app import _ALL_AUDIENCES
+
         assert "narrative" in _ALL_AUDIENCES
         assert "customer-narrative" in _ALL_AUDIENCES
 
     def test_narrative_format_choices_include_pdf_docx(self):
         """GIVEN the guided workflow THEN narrative format choices include PDF and DOCX."""
         from releasepilot.cli.guide import _FORMAT_CHOICES_NARRATIVE
+
         formats = [f[1] for f in _FORMAT_CHOICES_NARRATIVE]
         assert "pdf" in formats
         assert "docx" in formats
@@ -489,16 +536,28 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [
-                {"title": "Add user search", "category": "feature", "scope": "search"},
-                {"title": "Fix login bug", "category": "bugfix", "scope": "auth"},
-            ]
-        }))
-        result = CliRunner().invoke(cli, [
-            "generate", "--source-file", str(source),
-            "--audience", "narrative", "--from", "v1.0.0",
-        ])
+        source.write_text(
+            json.dumps(
+                {
+                    "changes": [
+                        {"title": "Add user search", "category": "feature", "scope": "search"},
+                        {"title": "Fix login bug", "category": "bugfix", "scope": "auth"},
+                    ]
+                }
+            )
+        )
+        result = CliRunner().invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                str(source),
+                "--audience",
+                "narrative",
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert "Release Summary" in result.output or "Overview" in result.output
 
@@ -509,16 +568,28 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [
-                {"title": "Add dark mode", "category": "feature"},
-                {"title": "Improve loading speed", "category": "performance"},
-            ]
-        }))
-        result = CliRunner().invoke(cli, [
-            "generate", "--source-file", str(source),
-            "--audience", "customer-narrative", "--from", "v1.0.0",
-        ])
+        source.write_text(
+            json.dumps(
+                {
+                    "changes": [
+                        {"title": "Add dark mode", "category": "feature"},
+                        {"title": "Improve loading speed", "category": "performance"},
+                    ]
+                }
+            )
+        )
+        result = CliRunner().invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                str(source),
+                "--audience",
+                "customer-narrative",
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert "Product Update" in result.output or "What's Changed" in result.output
 
@@ -529,13 +600,23 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [{"title": "Add export feature", "category": "feature"}]
-        }))
-        result = CliRunner().invoke(cli, [
-            "generate", "--source-file", str(source),
-            "--audience", "narrative", "--format", "json", "--from", "v1.0.0",
-        ])
+        source.write_text(
+            json.dumps({"changes": [{"title": "Add export feature", "category": "feature"}]})
+        )
+        result = CliRunner().invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                str(source),
+                "--audience",
+                "narrative",
+                "--format",
+                "json",
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         parsed = json.loads(result.output)
         assert parsed["type"] == "narrative_brief"
@@ -547,14 +628,24 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [{"title": "Add billing module", "category": "feature"}]
-        }))
+        source.write_text(
+            json.dumps({"changes": [{"title": "Add billing module", "category": "feature"}]})
+        )
         output = tmp_path / "narrative.md"
-        result = CliRunner().invoke(cli, [
-            "export", "--source-file", str(source),
-            "--audience", "narrative", "-o", str(output), "--from", "v1.0.0",
-        ])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                str(source),
+                "--audience",
+                "narrative",
+                "-o",
+                str(output),
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert "Release Summary" in output.read_text() or "Overview" in output.read_text()
 
@@ -566,13 +657,21 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [{"title": "Add search", "category": "feature"}]
-        }))
-        result = CliRunner().invoke(cli, [
-            "generate", "--source-file", str(source),
-            "--audience", "narrative", "--format", "pdf", "--from", "v1.0.0",
-        ])
+        source.write_text(json.dumps({"changes": [{"title": "Add search", "category": "feature"}]}))
+        result = CliRunner().invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                str(source),
+                "--audience",
+                "narrative",
+                "--format",
+                "pdf",
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert "Written to" in result.output
 
@@ -584,13 +683,23 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [{"title": "Add dashboard", "category": "feature"}]
-        }))
-        result = CliRunner().invoke(cli, [
-            "generate", "--source-file", str(source),
-            "--audience", "narrative", "--format", "docx", "--from", "v1.0.0",
-        ])
+        source.write_text(
+            json.dumps({"changes": [{"title": "Add dashboard", "category": "feature"}]})
+        )
+        result = CliRunner().invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                str(source),
+                "--audience",
+                "narrative",
+                "--format",
+                "docx",
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert "Written to" in result.output
 
@@ -602,15 +711,26 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [{"title": "Add notifications", "category": "feature"}]
-        }))
+        source.write_text(
+            json.dumps({"changes": [{"title": "Add notifications", "category": "feature"}]})
+        )
         output = tmp_path / "narrative.pdf"
-        result = CliRunner().invoke(cli, [
-            "export", "--source-file", str(source),
-            "--audience", "narrative", "--format", "pdf",
-            "-o", str(output), "--from", "v1.0.0",
-        ])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                str(source),
+                "--audience",
+                "narrative",
+                "--format",
+                "pdf",
+                "-o",
+                str(output),
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         data = output.read_bytes()
         assert data[:5] == b"%PDF-"
@@ -623,15 +743,28 @@ class TestNarrativeCLI:
         from releasepilot.cli.app import cli
 
         source = tmp_path / "changes.json"
-        source.write_text(json.dumps({
-            "changes": [{"title": "Improve onboarding flow", "category": "improvement"}]
-        }))
+        source.write_text(
+            json.dumps(
+                {"changes": [{"title": "Improve onboarding flow", "category": "improvement"}]}
+            )
+        )
         output = tmp_path / "update.docx"
-        result = CliRunner().invoke(cli, [
-            "export", "--source-file", str(source),
-            "--audience", "customer-narrative", "--format", "docx",
-            "-o", str(output), "--from", "v1.0.0",
-        ])
+        result = CliRunner().invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                str(source),
+                "--audience",
+                "customer-narrative",
+                "--format",
+                "docx",
+                "-o",
+                str(output),
+                "--from",
+                "v1.0.0",
+            ],
+        )
         assert result.exit_code == 0, result.output
         data = output.read_bytes()
         assert data[:2] == b"PK"
@@ -647,6 +780,7 @@ class TestNarrativeIsolation:
         """GIVEN rich notes WHEN rendering with standard renderer THEN bullet output unchanged."""
         from releasepilot.config.settings import RenderConfig
         from releasepilot.rendering.markdown import MarkdownRenderer
+
         output = MarkdownRenderer().render(rich_notes, RenderConfig())
         assert "- " in output
 
@@ -662,6 +796,7 @@ class TestNarrativeIsolation:
         """GIVEN same notes WHEN rendering both ways THEN outputs are distinct."""
         from releasepilot.config.settings import RenderConfig
         from releasepilot.rendering.markdown import MarkdownRenderer
+
         standard = MarkdownRenderer().render(rich_notes, RenderConfig())
         narrative = NarrativeMarkdownRenderer().render(compose_narrative(rich_notes))
         assert standard != narrative
@@ -676,11 +811,13 @@ class TestNarrativeAudienceViews:
 
     def test_narrative_preserves_all_categories(self, rich_notes: ReleaseNotes):
         from releasepilot.audience.views import apply_audience
+
         result = apply_audience(rich_notes, Audience.NARRATIVE)
         assert {g.category for g in result.groups} == {g.category for g in rich_notes.groups}
 
     def test_customer_narrative_hides_internal(self, rich_notes: ReleaseNotes):
         from releasepilot.audience.views import apply_audience
+
         result = apply_audience(rich_notes, Audience.CUSTOMER_NARRATIVE)
         result_cats = {g.category for g in result.groups}
         assert ChangeCategory.REFACTOR not in result_cats

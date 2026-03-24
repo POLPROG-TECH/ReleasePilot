@@ -51,6 +51,7 @@ class TestRecordChoice:
         """THEN the count for that choice is 3."""
         # After 3 records, count should be 3
         from releasepilot.cli.preferences import _load
+
         data = _load()
         assert data["audience"]["executive"] == 3
 
@@ -63,6 +64,7 @@ class TestRecordChoice:
 
         """THEN each key tracks its count independently."""
         from releasepilot.cli.preferences import _load
+
         data = _load()
         assert data["audience"]["user"] == 1
         assert data["format"]["pdf"] == 1

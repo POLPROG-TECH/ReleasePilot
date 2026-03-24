@@ -226,16 +226,12 @@ class NarrativeDocxRenderer:
         footer = doc.add_paragraph()
         footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
         footer_tpl = _gl("footer_generated", lang)
-        footer_text = footer_tpl.format(
-            tool=TOOL_NAME, author="__AUTHOR__", datetime=now
-        )
+        footer_text = footer_tpl.format(tool=TOOL_NAME, author="__AUTHOR__", datetime=now)
         parts = footer_text.split("__AUTHOR__")
         fr = footer.add_run(parts[0])
         fr.font.size = Pt(7.5)
         fr.font.color.rgb = _rgb(_LIGHT_GRAY)
-        _add_hyperlink(
-            footer, REPO_URL, AUTHOR, Pt(7.5), _rgb(_LIGHT_GRAY)
-        )
+        _add_hyperlink(footer, REPO_URL, AUTHOR, Pt(7.5), _rgb(_LIGHT_GRAY))
         if len(parts) > 1:
             fr2 = footer.add_run(parts[1])
             fr2.font.size = Pt(7.5)

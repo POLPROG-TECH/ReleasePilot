@@ -51,11 +51,13 @@ class UserError:
         if self.hint:
             parts.append(f"\n[dim]💡 {self.hint}[/dim]")
 
-        console.print(Panel(
-            Text.from_markup("\n".join(parts)),
-            border_style="red",
-            padding=(1, 2),
-        ))
+        console.print(
+            Panel(
+                Text.from_markup("\n".join(parts)),
+                border_style="red",
+                padding=(1, 2),
+            )
+        )
 
     def exit(self, code: int = 1) -> None:
         """Display the error and exit."""
@@ -102,8 +104,7 @@ def no_tags_found(repo_path: str) -> UserError:
     return UserError(
         summary="No tags found in repository",
         reason=(
-            "ReleasePilot tried to auto-detect the release range from tags, "
-            "but no tags were found."
+            "ReleasePilot tried to auto-detect the release range from tags, but no tags were found."
         ),
         suggestions=[
             "Use --from and --to to specify the commit range explicitly",
@@ -231,5 +232,6 @@ def _extract_ref_from_git_error(stderr: str) -> str:
     """Try to extract the problematic ref from a git error message."""
     # Pattern: "ambiguous argument 'v1.0.0..v1.1.0'"
     import re
+
     match = re.search(r"'([^']+)'", stderr)
     return match.group(1) if match else "unknown"

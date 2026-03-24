@@ -16,6 +16,7 @@ from releasepilot.domain.models import (
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _make_item(title: str, cat: ChangeCategory = ChangeCategory.FEATURE, **kw):
     return ChangeItem(id=title[:8], title=title, category=cat, **kw)
 
@@ -260,8 +261,8 @@ class TestDaysInput:
         from releasepilot.cli.guide import _prompt_valid_date
 
         with (
-            patch("releasepilot.cli.guide.text_prompt", return_value="30"),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", return_value="30"),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
@@ -277,8 +278,8 @@ class TestDaysInput:
         valid = (date.today() - timedelta(days=1)).isoformat()
         calls = iter(["0", valid])
         with (
-            patch("releasepilot.cli.guide.text_prompt", side_effect=calls),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", side_effect=calls),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
@@ -293,8 +294,8 @@ class TestDaysInput:
         valid = (date.today() - timedelta(days=1)).isoformat()
         calls = iter(["9999", valid])
         with (
-            patch("releasepilot.cli.guide.text_prompt", side_effect=calls),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", side_effect=calls),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
@@ -307,7 +308,7 @@ class TestDaysInput:
         from releasepilot.cli.guide import _prompt_valid_date
 
         yesterday = (date.today() - timedelta(days=1)).isoformat()
-        with patch("releasepilot.cli.guide.text_prompt", return_value=yesterday):
+        with patch("releasepilot.cli.guide_steps.text_prompt", return_value=yesterday):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
@@ -321,8 +322,8 @@ class TestDaysInput:
         valid = (date.today() - timedelta(days=1)).isoformat()
         calls = iter(["abc", valid])
         with (
-            patch("releasepilot.cli.guide.text_prompt", side_effect=calls),
-            patch("releasepilot.cli.guide.console"),
+            patch("releasepilot.cli.guide_steps.text_prompt", side_effect=calls),
+            patch("releasepilot.cli.guide_steps.console"),
         ):
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
@@ -350,7 +351,7 @@ class TestAudienceDefault:
         from releasepilot.cli.guide import _step_audience
 
         with patch(
-            "releasepilot.cli.guide.select_one",
+            "releasepilot.cli.guide_steps.select_one",
             return_value=Audience.EXECUTIVE,
         ) as mock_sel:
             """WHEN _step_audience is called."""

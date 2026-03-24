@@ -1,0 +1,385 @@
+/* ===== WIZARD ===== */
+function launchWizard(){
+  /* Initialize wizard with dashboard data defaults */
+  S.wizard.audience=D.audience||'changelog';
+  S.wizard.format=D.output_format||'markdown';
+  S.wizard.step=0;
+  switchTab('generate');
+}
+
+function renderWizard(){
+  wizGoStep(S.wizard.step);
+}
+
+function wizGoStep(n){
+  if(n>0&&_hasGitError())return;
+  S.wizard.step=n;
+  $$('[data-wiz-step]').forEach(function(s){
+    var si=parseInt(s.dataset.wizStep,10);
+    s.classList.toggle('active',si===n);
+    s.classList.toggle('done',si<n);
+  });
+  $$('.wizard-panel').forEach(function(p,i){p.classList.toggle('active',i===n)});
+  /* footer visibility */
+  var footer=$('#wizard-footer');
+  if(n>=4){hideEl(footer)}else{showEl(footer)}
+  var prevBtn=$('#wiz-prev-btn');if(prevBtn){prevBtn.disabled=(n===0);if(n===0)hideEl(prevBtn);else showEl(prevBtn)}
+  var nextBtn=$('#wiz-next-btn');
+  if(nextBtn){
+    if(n===2)nextBtn.innerHTML='&#9654; <span>'+_t('ui.wizard.generate_step')+'</span>';
+    else nextBtn.innerHTML='<span>'+_t('ui.wizard.next')+'</span> &#8594;';
+  }
+  /* render step content */
+  if(n===0)renderWizSource();
+  if(n===1)renderWizAudience();
+  if(n===2)renderWizFormat();
+  if(n===3)wizGenerate();
+  if(n===4)renderWizPreview();
+  if(n===5)renderWizExport();
+}
+function _hasGitError(){
+  if(!D.diagnostics||!D.diagnostics.length)return false;
+  for(var i=0;i<D.diagnostics.length;i++){
+    var d=D.diagnostics[i].toLowerCase();
+    if(d.indexOf('not a git repository')>=0||d.indexOf('git command failed')>=0||d.indexOf('fatal:')>=0)return true;
+  }
+  return false;
+}
+function wizPrev(){if(S.wizard.step>0)wizGoStep(S.wizard.step-1)}
+function wizNext(){
+  var s=S.wizard.step;
+  if(_hasGitError())return;
+  if(s<5)wizGoStep(s+1);
+}
+
+function renderWizSource(){
+  var h='';
+
+  /* ── Fatal git error — block entire wizard ── */
+  if(_hasGitError()){
+    h+='<div class="wiz-fatal-error">';
+    h+='<div class="wiz-fatal-icon">&#128721;</div>';
+    h+='<div class="wiz-fatal-title">'+_t('ui.wizard.no_repo_title')+'</div>';
+    h+='<div class="wiz-fatal-text">'+_t('ui.wizard.no_repo_text')+'</div>';
+    h+='<div class="wiz-fatal-details">';
+    D.diagnostics.forEach(function(d){h+='<div class="wiz-fatal-line">'+esc(d)+'</div>'});
+    h+='</div>';
+    h+='<div class="wiz-fatal-hint">'+_t('ui.wizard.no_repo_hint')+'</div>';
+    h+='</div>';
+    $('#wiz-source-info').innerHTML=h;
+    /* Disable wizard navigation — hide stepper, footer, heading */
+    var steps=$('#wizard-steps');if(steps)hideEl(steps);
+    var footer=$('#wizard-footer');if(footer)hideEl(footer);
+    var heading=$('#wiz-source-heading');if(heading)hideEl(heading);
+    var desc=$('#wiz-source-desc');if(desc)hideEl(desc);
+    return;
+  }
+
+  var repoName='';
+  if(D.repo_path)repoName=D.repo_path.replace(/\\/g,'/').split('/').filter(function(s){return s}).pop()||D.repo_path;
+  var displayName=D.app_name||repoName||_t('ui.wizard.unknown_repo');
+
+  /* ── Repo identity ── */
+  h+='<div class="alert alert-info wiz-repo-banner">&#128193; '+esc(displayName);
+  if(D.version)h+=' &middot; v'+esc(D.version);
+  if(D.branch)h+=' &middot; <span class="fw-600 wiz-branch-tag">'+esc(D.branch)+'</span>';
+  h+='</div>';
+
+  /* ── Current range stats (only when data exists) ── */
+  h+='<div id="wiz-stats-area">';
+  if(!D.is_empty){
+    var dates=D.changes.map(function(c){return c.date}).filter(function(d){return d}).sort();
+    if(dates.length>0){
+      var oldest=dates[0],newest=dates[dates.length-1];
+      var d1=new Date(oldest),d2=new Date(newest);
+      var diffDays=Math.max(1,Math.ceil((d2-d1)/(1000*60*60*24)));
+      h+='<div class="stat-cards wiz-stats">';
+      h+='<div class="stat-card accent"><div class="stat-card-value">'+diffDays+'</div><div class="stat-card-label">'+_t('ui.wizard.days_covered')+'</div></div>';
+      h+='<div class="stat-card"><div class="stat-card-value">'+D.total_changes+'</div><div class="stat-card-label">'+_t('ui.overview.total_changes')+'</div></div>';
+      if(D.total_breaking>0)h+='<div class="stat-card error"><div class="stat-card-value">'+D.total_breaking+'</div><div class="stat-card-label">'+_t('ui.overview.breaking')+'</div></div>';
+      h+='</div>';
+    }
+  }
+  h+='</div>';
+
+  /* ── Source mode selection — wizard-option cards ── */
+  var hasFromRef=!!D.from_ref;
+  var defaultRef=hasFromRef;
+  h+='<div class="section"><div class="section-title">'+_t('ui.wizard.source_range')+'</div>';
+  h+='<div class="wizard-options wiz-src-grid">';
+  h+='<div class="wizard-option'+(defaultRef?'':' selected')+'" id="src-opt-date" tabindex="0" role="radio" aria-checked="'+(defaultRef?'false':'true')+'" onclick="srcSelectMode(\'date\')" onkeydown="if(event.key===\'Enter\')srcSelectMode(\'date\')">';
+  h+='<div class="wizard-option-icon">&#128197;</div>';
+  h+='<div class="wizard-option-label">'+_t('ui.wizard.src_date_label')+'</div>';
+  h+='<div class="wizard-option-desc">'+_t('ui.wizard.src_date_desc')+'</div>';
+  h+='</div>';
+  h+='<div class="wizard-option'+(defaultRef?' selected':'')+'" id="src-opt-ref" tabindex="0" role="radio" aria-checked="'+(defaultRef?'true':'false')+'" onclick="srcSelectMode(\'ref\')" onkeydown="if(event.key===\'Enter\')srcSelectMode(\'ref\')">';
+  h+='<div class="wizard-option-icon">&#127991;&#65039;</div>';
+  h+='<div class="wizard-option-label">'+_t('ui.wizard.src_ref_label')+'</div>';
+  h+='<div class="wizard-option-desc">'+_t('ui.wizard.src_ref_desc')+'</div>';
+  h+='</div>';
+  h+='</div>';
+
+  /* ── Inline fields: Date mode ── */
+  var now=new Date();
+  var presets=[{key:'1m',months:1},{key:'2m',months:2},{key:'3m',months:3},{key:'1y',months:12}];
+
+  /* Restore date from D.since_date (persisted after reload) or default to 1 month */
+  var restoredDate=D.since_date||'';
+  var matchedPreset='custom';
+  if(restoredDate){
+    presets.forEach(function(p){
+      var d=new Date(now.getFullYear(),now.getMonth()-p.months,now.getDate());
+      if(_localIso(d)===restoredDate)matchedPreset=p.key;
+    });
+  }else{
+    matchedPreset='1m';
+    restoredDate=_localIso(new Date(now.getFullYear(),now.getMonth()-1,now.getDate()));
+  }
+
+  h+='<div id="src-panel-date" class="src-fields'+(defaultRef?' hidden':'')+'">';
+  h+='<div class="export-row"><label>'+_t('ui.wizard.src_preset_label')+'</label>';
+  h+='<div class="src-presets">';
+  presets.forEach(function(p){
+    var sel=p.key===matchedPreset?' selected':'';
+    h+='<button class="btn btn-sm src-preset'+sel+'" data-preset="'+p.key+'" onclick="srcPreset(\''+p.key+'\','+p.months+')">'+_t('ui.wizard.src_preset_'+p.key)+'</button>';
+  });
+  h+='<button class="btn btn-sm src-preset'+(matchedPreset==='custom'?' selected':'')+'" data-preset="custom" onclick="srcPresetCustom()">'+_t('ui.wizard.src_preset_custom')+'</button>';
+  h+='</div></div>';
+  h+='<div class="export-row"><label>'+_t('ui.first_run.since_label')+'</label><input type="date" id="src-since-date" class="form-input" value="'+esc(restoredDate)+'" onchange="_syncPresetChips();srcAutoReload()"></div>';
+  h+='<div class="export-row"><label>'+_t('ui.first_run.branch_label')+'</label><input type="text" id="src-branch-date" class="form-input" placeholder="main"'+(D.branch?' value="'+esc(D.branch)+'"':'')+' onchange="srcAutoReload()"></div>';
+  h+='</div>';
+
+  /* ── Inline fields: Ref mode ── */
+  h+='<div id="src-panel-ref" class="src-fields'+(defaultRef?'':' hidden')+'">';
+  h+='<div class="export-row"><label>'+_t('ui.wizard.from_ref')+'</label><input type="text" id="src-from-ref" class="form-input" placeholder="v1.0.0"'+(D.from_ref?' value="'+esc(D.from_ref)+'"':'')+' onchange="srcAutoReload()"></div>';
+  h+='<div class="export-row"><label>'+_t('ui.wizard.to_ref')+'</label><input type="text" id="src-to-ref" class="form-input" placeholder="HEAD" value="'+esc(D.to_ref||'HEAD')+'" onchange="srcAutoReload()"></div>';
+  h+='</div>';
+
+  /* ── Language selector ── */
+  h+='<div class="export-row wiz-src-lang-row"><label>'+_t('ui.wizard.language')+'</label>';
+  h+='<select class="form-select" id="src-language" onchange="srcLangChange(this.value)">';
+  var langs=[{c:'en',n:'English'},{c:'pl',n:'Polski'},{c:'de',n:'Deutsch'},{c:'fr',n:'Français'},{c:'es',n:'Español'},{c:'it',n:'Italiano'},{c:'pt',n:'Português'},{c:'nl',n:'Nederlands'},{c:'uk',n:'Українська'},{c:'cs',n:'Čeština'}];
+  var curLang=D.language||'en';
+  langs.forEach(function(l){h+='<option value="'+l.c+'"'+(l.c===curLang?' selected':'')+'>'+esc(l.n)+'</option>'});
+  h+='</select></div>';
+
+  /* ── Alerts ── */
+  h+='<div id="src-alerts">';
+  if(D.is_empty){
+    h+='<div class="alert alert-warning">&#9888;&#65039; '+_t('ui.wizard.no_changes_warning')+'</div>';
+    if(D.diagnostics&&D.diagnostics.length>0){
+      h+='<div class="alert alert-error wiz-diag-text">';
+      D.diagnostics.forEach(function(d){h+=esc(d)+'<br>'});
+      h+='</div>';
+    }
+  }else if(D.total_breaking>0){
+    h+='<div class="alert alert-error">&#9888;&#65039; <strong>'+_tp('ui.plural.breaking',D.total_breaking)+'</strong></div>';
+  }
+  h+='</div>';
+  h+='</div>';
+
+  $('#wiz-source-info').innerHTML=h;
+}
+
+function renderWizAudience(){
+  var h='';
+  var auds=D.supported_audiences||Object.keys(AUDIENCE_INFO);
+  auds.forEach(function(a){
+    var info=AUDIENCE_INFO[a]||{icon:'',label:a,desc:''};
+    var sel=S.wizard.audience===a?' selected':'';
+    h+='<div class="wizard-option'+sel+'" tabindex="0" role="radio" aria-checked="'+(sel?'true':'false')+'" onclick="wizSelectAudience(\''+esc(a)+'\')" onkeydown="if(event.key===\'Enter\')wizSelectAudience(\''+esc(a)+'\')">';
+    h+='<div class="wizard-option-icon">'+info.icon+'</div>';
+    h+='<div class="wizard-option-label">'+esc(info.label)+'</div>';
+    h+='<div class="wizard-option-desc">'+esc(info.desc)+'</div>';
+    h+='</div>';
+  });
+  $('#wiz-audience-options').innerHTML=h;
+}
+function wizSelectAudience(a){
+  S.wizard.audience=a;
+  renderWizAudience();
+}
+
+function renderWizFormat(){
+  var h='';
+  /* Audience-dependent format availability — matching CLI guide exactly */
+  var aud=S.wizard.audience;
+  var isExec=(aud==='executive');
+  var isNarr=(aud==='narrative'||aud==='customer-narrative');
+  var allowed;
+  if(isExec){
+    allowed=['pdf','docx','markdown','json'];
+  } else if(isNarr){
+    allowed=['pdf','docx','markdown','plaintext','json'];
+  } else {
+    allowed=['markdown','plaintext','json'];
+  }
+  /* If current format isn't in allowed list, reset to first */
+  if(allowed.indexOf(S.wizard.format)<0){
+    S.wizard.format=allowed[0];
+  }
+  /* Show audience context above options */
+  var audInfo=AUDIENCE_INFO[aud];
+  if(audInfo){
+    h+='<div class="text-secondary wiz-aud-context">'+audInfo.icon+' <strong>'+esc(audInfo.label)+'</strong> &middot; '+allowed.length+' '+_t('ui.wizard.formats_available')+'</div>';
+  }
+  var textFormats=['markdown','plaintext','json'];
+  allowed.forEach(function(f){
+    var info=FORMAT_INFO[f]||{icon:'',label:f,desc:'',ext:'.'+f};
+    var sel=S.wizard.format===f?' selected':'';
+    var isBinary=textFormats.indexOf(f)<0;
+    h+='<div class="wizard-option'+sel+'" tabindex="0" role="radio" aria-checked="'+(sel?'true':'false')+'" onclick="wizSelectFormat(\''+esc(f)+'\')" onkeydown="if(event.key===\'Enter\')wizSelectFormat(\''+esc(f)+'\')">';
+    h+='<div class="wizard-option-icon">'+info.icon+'</div>';
+    h+='<div class="wizard-option-label">'+esc(info.label);
+    if(isBinary&&(isExec||isNarr))h+=' <span class="wiz-recommend-badge">'+_t('ui.wizard.recommended')+'</span>';
+    h+='</div>';
+    h+='<div class="wizard-option-desc">'+esc(info.desc);
+    if(isBinary)h+=' <em class="wiz-binary-note">'+_t('ui.wizard.binary_note')+'</em>';
+    h+='</div>';
+    h+='</div>';
+  });
+  $('#wiz-format-options').innerHTML=h;
+}
+function wizSelectFormat(f){
+  S.wizard.format=f;
+  renderWizFormat();
+}
+
+function wizGenerate(){
+  /* Show spinner briefly, then reveal results */
+  showEl($('#wiz-progress'));
+  hideEl($('#wiz-generate-result'));
+  setTimeout(function(){
+    hideEl($('#wiz-progress'));
+    var isBinary=(S.wizard.format==='pdf'||S.wizard.format==='docx');
+    var art=findArtifact(S.wizard.audience,S.wizard.format);
+    if(!art&&isBinary)art=findArtifact(S.wizard.audience,'markdown');
+    var h='';
+    if(art){
+      h+='<div class="wizard-success">';
+      h+='<div class="wizard-success-icon">&#9989;</div>';
+      h+='<div class="wizard-success-title">'+_t('ui.wizard.generate_done')+'</div>';
+      h+='<div class="wizard-success-text">'+_t('ui.wizard.generate_done_text')+'</div>';
+      if(isBinary)h+='<div class="alert alert-info mt-2 wiz-gen-narrow">'+_t('ui.wizard.binary_preview_note')+'</div>';
+      h+='<div class="stat-cards mt-2 wiz-gen-cards">';
+      h+='<div class="stat-card accent"><div class="stat-card-value">'+D.total_changes+'</div><div class="stat-card-label">'+_t('ui.wizard.changes_count')+'</div></div>';
+      h+='<div class="stat-card"><div class="stat-card-value">'+(art.size_bytes/1024).toFixed(1)+'</div><div class="stat-card-label">'+_t('ui.wizard.kb_output')+'</div></div>';
+      h+='</div></div>';
+    }else{
+      h+='<div class="wizard-success">';
+      h+='<div class="wizard-success-icon">&#9888;&#65039;</div>';
+      h+='<div class="wizard-success-title">'+_t('ui.wizard.no_artifact')+'</div>';
+      h+='<div class="flex flex-center gap-1 mt-2">';
+      h+='<button class="btn btn-sm" onclick="wizGoStep(1)">'+_t('ui.wizard.change_audience')+'</button>';
+      h+='<button class="btn btn-sm" onclick="wizGoStep(2)">'+_t('ui.wizard.change_format')+'</button>';
+      h+='</div></div>';
+    }
+    showEl($('#wiz-generate-result'));
+    $('#wiz-generate-result').innerHTML=h;
+  },600);
+}
+
+function renderWizPreview(){
+  var art=findArtifact(S.wizard.audience,S.wizard.format);
+  var area=$('#wiz-preview-area');
+  var meta=$('#wiz-preview-meta');
+  var isBinary=(S.wizard.format==='pdf'||S.wizard.format==='docx');
+  if(isBinary){
+    /* Binary formats: show markdown fallback with explanation */
+    var fallback=findArtifact(S.wizard.audience,'markdown');
+    if(fallback){
+      area.textContent=fallback.content;
+      var info=AUDIENCE_INFO[S.wizard.audience]||{label:S.wizard.audience};
+      var finfo=FORMAT_INFO[S.wizard.format]||{label:S.wizard.format};
+      meta.innerHTML=info.label+' \u00b7 '+finfo.label+' <span class="wiz-preview-accent">'+_t('ui.wizard.binary_preview_note')+'</span>';
+    }else{
+      area.textContent=_t('ui.wizard.no_artifact');
+      meta.textContent='';
+    }
+  } else if(art){
+    area.textContent=art.content;
+    var info=AUDIENCE_INFO[S.wizard.audience]||{label:S.wizard.audience};
+    var finfo=FORMAT_INFO[S.wizard.format]||{label:S.wizard.format};
+    meta.textContent=info.label+' \u00b7 '+finfo.label+' \u00b7 '+(art.size_bytes/1024).toFixed(1)+' KB';
+  }else{
+    area.textContent=_t('ui.wizard.no_artifact');
+    meta.textContent='';
+  }
+}
+
+function wizCopyPreview(){
+  var art=findArtifact(S.wizard.audience,S.wizard.format);
+  if(art&&art.content){
+    navigator.clipboard.writeText(art.content).then(function(){
+      openModal(_t('ui.modal.copied_title'),'<p>'+_t('ui.modal.copied_text')+'</p>','<button class="btn btn-secondary" onclick="closeModal()">'+_t('ui.modal.ok')+'</button>');
+    }).catch(function(){
+      openModal(_t('ui.modal.copy_failed_title'),'<p>'+_t('ui.modal.copy_failed_text')+'</p>','<button class="btn btn-secondary" onclick="closeModal()">'+_t('ui.modal.ok')+'</button>');
+    });
+  }
+}
+
+function renderWizExport(){
+  /* populate audience select */
+  var audSel=$('#wiz-export-audience');
+  var fmtSel=$('#wiz-export-format');
+  if(audSel){
+    var h='';
+    var auds=D.supported_audiences||Object.keys(AUDIENCE_INFO);
+    auds.forEach(function(a){
+      var info=AUDIENCE_INFO[a]||{label:a};
+      h+='<option value="'+esc(a)+'"'+(S.wizard.audience===a?' selected':'')+'>'+esc(info.label)+'</option>';
+    });
+    audSel.innerHTML=h;
+  }
+  if(fmtSel){
+    wizUpdateExportFormats();
+  }
+  wizUpdateExport();
+}
+function wizUpdateExportFormats(){
+  var fmtSel=$('#wiz-export-format');
+  if(!fmtSel)return;
+  var aud=$('#wiz-export-audience')?$('#wiz-export-audience').value:S.wizard.audience;
+  var isExec=(aud==='executive');
+  var isNarr=(aud==='narrative'||aud==='customer-narrative');
+  var allowed;
+  if(isExec)allowed=['pdf','docx','markdown','json'];
+  else if(isNarr)allowed=['pdf','docx','markdown','plaintext','json'];
+  else allowed=['markdown','plaintext','json'];
+  var curFmt=fmtSel.value||S.wizard.format;
+  if(allowed.indexOf(curFmt)<0)curFmt=allowed[0];
+  var h='';
+  allowed.forEach(function(f){
+    var info=FORMAT_INFO[f]||{label:f};
+    h+='<option value="'+esc(f)+'"'+(curFmt===f?' selected':'')+'>'+esc(info.label)+'</option>';
+  });
+  fmtSel.innerHTML=h;
+}
+function wizUpdateExport(){
+  var aud=$('#wiz-export-audience').value;
+  var fmt=$('#wiz-export-format').value;
+  var info=FORMAT_INFO[fmt]||{ext:'.txt',label:fmt};
+  var fname=$('#wiz-export-filename');
+  fname.value='release-notes-'+aud+info.ext;
+  var isBinary=(fmt==='pdf'||fmt==='docx');
+  var art=findArtifact(aud,fmt);
+  if(!art&&isBinary)art=findArtifact(aud,'markdown');
+  var pre=$('#wiz-export-preview');
+  if(art){
+    pre.textContent=art.content.substring(0,500)+(art.content.length>500?'\n\u2026':'');
+    if(isBinary)pre.textContent='['+_t('ui.wizard.binary_export_note')+']\n\n'+pre.textContent;
+  }else{
+    pre.textContent=_t('ui.wizard.no_artifact');
+  }
+}
+function wizDoExport(){
+  var aud=$('#wiz-export-audience').value;
+  var fmt=$('#wiz-export-format').value;
+  var fname=$('#wiz-export-filename').value||'release-notes.md';
+  var isBinary=(fmt==='pdf'||fmt==='docx');
+  var art=findArtifact(aud,fmt);
+  if(!art&&isBinary)art=findArtifact(aud,'markdown');
+  if(!art){openModal(_t('ui.modal.no_content_title'),'<p>'+_t('ui.wizard.no_artifact')+'</p>','<button class="btn btn-secondary" onclick="closeModal()">'+_t('ui.modal.ok')+'</button>');return}
+  var blob=new Blob([art.content],{type:'text/plain;charset=utf-8'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();URL.revokeObjectURL(a.href);
+}

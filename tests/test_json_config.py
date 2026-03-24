@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 # ── First-commit detection ──────────────────────────────────────────────────
 
+
 class TestFirstCommitDate:
     """Scenarios for first_commit_date with --all flag and branch kwarg."""
 
@@ -18,7 +19,9 @@ class TestFirstCommitDate:
         from releasepilot.sources.git import GitSourceCollector
 
         git = GitSourceCollector(str(tmp_path))
-        with patch.object(git, "_run_git", return_value="commit abc123\n2025-01-15T10:00:00+00:00") as mock:
+        with patch.object(
+            git, "_run_git", return_value="commit abc123\n2025-01-15T10:00:00+00:00"
+        ) as mock:
             """WHEN first_commit_date is called without branch kwarg."""
             result = git.first_commit_date()
             args = mock.call_args[0][0]
@@ -34,7 +37,9 @@ class TestFirstCommitDate:
         from releasepilot.sources.git import GitSourceCollector
 
         git = GitSourceCollector(str(tmp_path))
-        with patch.object(git, "_run_git", return_value="commit abc123\n2025-02-01T08:00:00+00:00") as mock:
+        with patch.object(
+            git, "_run_git", return_value="commit abc123\n2025-02-01T08:00:00+00:00"
+        ) as mock:
             """WHEN first_commit_date is called with branch='develop'."""
             result = git.first_commit_date(branch="develop")
             args = mock.call_args[0][0]
@@ -59,24 +64,38 @@ class TestFirstCommitDate:
 
         repo = tmp_path / "repo"
         repo.mkdir()
-        env = {**os.environ, "GIT_AUTHOR_DATE": "2025-01-10T10:00:00+00:00",
-               "GIT_COMMITTER_DATE": "2025-01-10T10:00:00+00:00"}
+        env = {
+            **os.environ,
+            "GIT_AUTHOR_DATE": "2025-01-10T10:00:00+00:00",
+            "GIT_COMMITTER_DATE": "2025-01-10T10:00:00+00:00",
+        }
         subprocess.run(["git", "init", str(repo)], capture_output=True, check=True)
-        subprocess.run(["git", "-C", str(repo), "config", "user.email", "t@t.com"], capture_output=True)
+        subprocess.run(
+            ["git", "-C", str(repo), "config", "user.email", "t@t.com"], capture_output=True
+        )
         subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], capture_output=True)
 
         # First commit on main
         (repo / "f1.txt").write_text("a")
         subprocess.run(["git", "-C", str(repo), "add", "."], capture_output=True)
-        subprocess.run(["git", "-C", str(repo), "commit", "-m", "first"], capture_output=True, env=env)
+        subprocess.run(
+            ["git", "-C", str(repo), "commit", "-m", "first"], capture_output=True, env=env
+        )
 
         # Create a feature branch with a newer commit
         subprocess.run(["git", "-C", str(repo), "checkout", "-b", "feature"], capture_output=True)
-        env2 = {**os.environ, "GIT_AUTHOR_DATE": "2025-03-01T10:00:00+00:00",
-                "GIT_COMMITTER_DATE": "2025-03-01T10:00:00+00:00"}
+        env2 = {
+            **os.environ,
+            "GIT_AUTHOR_DATE": "2025-03-01T10:00:00+00:00",
+            "GIT_COMMITTER_DATE": "2025-03-01T10:00:00+00:00",
+        }
         (repo / "f2.txt").write_text("b")
         subprocess.run(["git", "-C", str(repo), "add", "."], capture_output=True)
-        subprocess.run(["git", "-C", str(repo), "commit", "-m", "feature commit"], capture_output=True, env=env2)
+        subprocess.run(
+            ["git", "-C", str(repo), "commit", "-m", "feature commit"],
+            capture_output=True,
+            env=env2,
+        )
 
         git = GitSourceCollector(str(repo))
 
@@ -95,6 +114,7 @@ class TestFirstCommitDate:
 
 
 # ── Richer PipelineStats ────────────────────────────────────────────────────
+
 
 class TestPipelineStats:
     """Scenarios for extended PipelineStats with category, contributor, and scope data."""
@@ -186,12 +206,29 @@ class TestPipelineStats:
         from releasepilot.pipeline.orchestrator import process_with_stats
 
         items = [
-            ChangeItem(id="1", title="add auth", raw_message="feat(auth): add auth",
-                       category=ChangeCategory.OTHER, authors=("alice",), scope="auth"),
-            ChangeItem(id="2", title="fix api", raw_message="fix(api): fix api",
-                       category=ChangeCategory.OTHER, authors=("bob",), scope="api"),
-            ChangeItem(id="3", title="docs update", raw_message="docs: update readme",
-                       category=ChangeCategory.OTHER, authors=("alice",)),
+            ChangeItem(
+                id="1",
+                title="add auth",
+                raw_message="feat(auth): add auth",
+                category=ChangeCategory.OTHER,
+                authors=("alice",),
+                scope="auth",
+            ),
+            ChangeItem(
+                id="2",
+                title="fix api",
+                raw_message="fix(api): fix api",
+                category=ChangeCategory.OTHER,
+                authors=("bob",),
+                scope="api",
+            ),
+            ChangeItem(
+                id="3",
+                title="docs update",
+                raw_message="docs: update readme",
+                category=ChangeCategory.OTHER,
+                authors=("alice",),
+            ),
         ]
         settings = Settings(filter=FilterConfig())
 
@@ -204,6 +241,7 @@ class TestPipelineStats:
 
 
 # ── JSON config loading ─────────────────────────────────────────────────────
+
 
 class TestJsonConfig:
     """Scenarios for JSON config file loading."""
@@ -342,6 +380,7 @@ class TestJsonConfig:
 
 # ── JSON Schema file exists ─────────────────────────────────────────────────
 
+
 class TestJsonSchema:
     """Scenarios for JSON Schema file validity and completeness."""
 
@@ -372,12 +411,23 @@ class TestJsonSchema:
         props = data["properties"]
 
         """THEN all expected fields are present."""
-        expected = {"app_name", "audience", "format", "language", "branch",
-                    "title", "version", "show_authors", "show_hashes", "repos"}
+        expected = {
+            "app_name",
+            "audience",
+            "format",
+            "language",
+            "branch",
+            "title",
+            "version",
+            "show_authors",
+            "show_hashes",
+            "repos",
+        }
         assert expected.issubset(set(props.keys()))
 
 
 # ── $schema key handling in validate_config ──────────────────────────────────
+
 
 class TestSchemaKeyHandling:
     """Scenarios for $schema key being silently ignored."""
@@ -387,7 +437,9 @@ class TestSchemaKeyHandling:
         from releasepilot.config.file_config import validate_config
 
         """WHEN validate_config is called."""
-        warnings = validate_config({"$schema": "./schema/releasepilot.schema.json", "app_name": "X"})
+        warnings = validate_config(
+            {"$schema": "./schema/releasepilot.schema.json", "app_name": "X"}
+        )
 
         """THEN no warnings are produced for the $schema key."""
         schema_warnings = [w for w in warnings if "$schema" in w.field]
@@ -395,6 +447,7 @@ class TestSchemaKeyHandling:
 
 
 # ── compose() metadata enrichment ───────────────────────────────────────────
+
 
 class TestComposeMetadata:
     """Scenarios for compose() storing richer metadata from stats."""
@@ -407,8 +460,13 @@ class TestComposeMetadata:
         from releasepilot.pipeline.orchestrator import PipelineStats, compose
 
         items = [
-            ChangeItem(id="1", title="feat: add X", raw_message="feat: add X",
-                       category=ChangeCategory.FEATURE, authors=("alice",)),
+            ChangeItem(
+                id="1",
+                title="feat: add X",
+                raw_message="feat: add X",
+                category=ChangeCategory.FEATURE,
+                authors=("alice",),
+            ),
         ]
         rr = ReleaseRange(from_ref="v1.0", to_ref="HEAD")
         stats = PipelineStats()

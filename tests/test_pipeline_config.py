@@ -284,9 +284,7 @@ class TestFileConfig:
     def test_dedicated_file_takes_precedence(self, tmp_path):
         """GIVEN both .releasepilot.toml and pyproject.toml exist."""
         (tmp_path / ".releasepilot.toml").write_text('app_name = "Dedicated"')
-        (tmp_path / "pyproject.toml").write_text(
-            '[tool.releasepilot]\napp_name = "Pyproject"'
-        )
+        (tmp_path / "pyproject.toml").write_text('[tool.releasepilot]\napp_name = "Pyproject"')
 
         """WHEN load_config is called."""
         cfg = load_config(str(tmp_path))
@@ -313,6 +311,7 @@ class TestMultiCommand:
         from click.testing import CliRunner
 
         from releasepilot.cli.app import cli
+
         runner = CliRunner()
 
         """WHEN multi is invoked without repo arguments."""
@@ -335,7 +334,9 @@ class TestMarkdownPipelineStats:
 
         rr = ReleaseRange(from_ref="2025-01-01", to_ref="main", title="Test")
         item = ChangeItem(
-            id="t1", title="Test change", category=ChangeCategory.FEATURE,
+            id="t1",
+            title="Test change",
+            category=ChangeCategory.FEATURE,
             source=SourceReference(commit_hash="abc123"),
         )
         notes = ReleaseNotes(
@@ -359,7 +360,9 @@ class TestMarkdownPipelineStats:
 
         rr = ReleaseRange(from_ref="2025-01-01", to_ref="main", title="Test")
         item = ChangeItem(
-            id="t1", title="Test change", category=ChangeCategory.FEATURE,
+            id="t1",
+            title="Test change",
+            category=ChangeCategory.FEATURE,
             source=SourceReference(commit_hash="abc123"),
         )
         notes = ReleaseNotes(

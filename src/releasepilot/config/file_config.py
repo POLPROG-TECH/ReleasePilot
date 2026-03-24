@@ -23,27 +23,51 @@ _USER_CONFIG_DIR = Path.home() / ".config" / "releasepilot"
 
 # ── Schema definitions ──────────────────────────────────────────────────────
 
-_VALID_AUDIENCES = {"technical", "user", "summary", "changelog", "customer", "executive", "narrative", "customer-narrative"}
+_VALID_AUDIENCES = {
+    "technical",
+    "user",
+    "summary",
+    "changelog",
+    "customer",
+    "executive",
+    "narrative",
+    "customer-narrative",
+}
 _VALID_FORMATS = {"markdown", "plaintext", "json", "pdf", "docx"}
 _VALID_LANGUAGES = {"en", "pl", "de", "fr", "es", "it", "pt", "nl", "uk", "cs"}
 
 _KNOWN_KEYS = {
-    "app_name", "app-name",
+    "app_name",
+    "app-name",
     "audience",
     "format",
     "language",
     "branch",
     "title",
     "version",
-    "show_authors", "show-authors",
-    "show_hashes", "show-hashes",
-    "accent_color", "accent-color",
+    "show_authors",
+    "show-authors",
+    "show_hashes",
+    "show-hashes",
+    "accent_color",
+    "accent-color",
     "repos",
-    "output_dir", "output-dir",
+    "output_dir",
+    "output-dir",
     "overwrite",
-    "export_formats", "export-formats",
+    "export_formats",
+    "export-formats",
     "ci",
-    "schema_version", "schema-version",
+    "schema_version",
+    "schema-version",
+    "gitlab_url",
+    "gitlab-url",
+    "gitlab_token",
+    "gitlab-token",
+    "gitlab_project",
+    "gitlab-project",
+    "gitlab_ssl_verify",
+    "gitlab-ssl-verify",
 }
 
 
@@ -92,12 +116,22 @@ class FileConfig:
 
     @property
     def is_empty(self) -> bool:
-        return not any([
-            self.app_name, self.audience, self.format, self.language,
-            self.branch, self.title, self.version, self.repos,
-            self.output_dir, self.overwrite, self.export_formats,
-            self.ci.enabled,
-        ])
+        return not any(
+            [
+                self.app_name,
+                self.audience,
+                self.format,
+                self.language,
+                self.branch,
+                self.title,
+                self.version,
+                self.repos,
+                self.output_dir,
+                self.overwrite,
+                self.export_formats,
+                self.ci.enabled,
+            ]
+        )
 
 
 def validate_config(data: dict) -> list[ConfigWarning]:
@@ -112,89 +146,137 @@ def validate_config(data: dict) -> list[ConfigWarning]:
         if key == "$schema":
             continue  # JSON Schema reference — always allowed
         if key not in _KNOWN_KEYS:
-            warnings.append(ConfigWarning(
-                field=key,
-                message=f"Unknown config key. Valid keys: {', '.join(sorted(_KNOWN_KEYS - {'app-name', 'show-authors', 'show-hashes'}))}",
-            ))
+            warnings.append(
+                ConfigWarning(
+                    field=key,
+                    message=f"Unknown config key. Valid keys: {', '.join(sorted(_KNOWN_KEYS - {'app-name', 'show-authors', 'show-hashes'}))}",
+                )
+            )
 
     # Validate enum-like fields
     audience = data.get("audience", "")
     if audience and str(audience) not in _VALID_AUDIENCES:
-        warnings.append(ConfigWarning(
-            field="audience",
-            message=f"Invalid value '{audience}'. Must be one of: {', '.join(sorted(_VALID_AUDIENCES))}",
-        ))
+        warnings.append(
+            ConfigWarning(
+                field="audience",
+                message=f"Invalid value '{audience}'. Must be one of: {', '.join(sorted(_VALID_AUDIENCES))}",
+            )
+        )
 
     fmt = data.get("format", "")
     if fmt and str(fmt) not in _VALID_FORMATS:
-        warnings.append(ConfigWarning(
-            field="format",
-            message=f"Invalid value '{fmt}'. Must be one of: {', '.join(sorted(_VALID_FORMATS))}",
-        ))
+        warnings.append(
+            ConfigWarning(
+                field="format",
+                message=f"Invalid value '{fmt}'. Must be one of: {', '.join(sorted(_VALID_FORMATS))}",
+            )
+        )
 
     lang = data.get("language", "")
     if lang and str(lang) not in _VALID_LANGUAGES:
-        warnings.append(ConfigWarning(
-            field="language",
-            message=f"Invalid value '{lang}'. Must be one of: {', '.join(sorted(_VALID_LANGUAGES))}",
-        ))
+        warnings.append(
+            ConfigWarning(
+                field="language",
+                message=f"Invalid value '{lang}'. Must be one of: {', '.join(sorted(_VALID_LANGUAGES))}",
+            )
+        )
 
     # Validate types
     repos = data.get("repos")
     if repos is not None and not isinstance(repos, list):
-        warnings.append(ConfigWarning(
-            field="repos",
-            message=f"Expected a list, got {type(repos).__name__}.",
-        ))
+        warnings.append(
+            ConfigWarning(
+                field="repos",
+                message=f"Expected a list, got {type(repos).__name__}.",
+            )
+        )
 
     export_formats = data.get("export_formats", data.get("export-formats"))
     if export_formats is not None:
         if not isinstance(export_formats, list):
-            warnings.append(ConfigWarning(
-                field="export_formats",
-                message=f"Expected a list, got {type(export_formats).__name__}.",
-            ))
+            warnings.append(
+                ConfigWarning(
+                    field="export_formats",
+                    message=f"Expected a list, got {type(export_formats).__name__}.",
+                )
+            )
         else:
             for ef in export_formats:
                 if str(ef) not in _VALID_FORMATS:
-                    warnings.append(ConfigWarning(
-                        field="export_formats",
-                        message=f"Invalid format '{ef}'. Must be one of: {', '.join(sorted(_VALID_FORMATS))}",
-                    ))
+                    warnings.append(
+                        ConfigWarning(
+                            field="export_formats",
+                            message=f"Invalid format '{ef}'. Must be one of: {', '.join(sorted(_VALID_FORMATS))}",
+                        )
+                    )
 
     ci_section = data.get("ci")
     if ci_section is not None:
         if not isinstance(ci_section, dict):
-            warnings.append(ConfigWarning(
-                field="ci",
-                message=f"Expected an object, got {type(ci_section).__name__}.",
-            ))
+            warnings.append(
+                ConfigWarning(
+                    field="ci",
+                    message=f"Expected an object, got {type(ci_section).__name__}.",
+                )
+            )
         else:
-            _ci_known_keys = {"enabled", "artifact_name", "artifact-name",
-                              "fail_on_empty", "fail-on-empty",
-                              "attach_to_release", "attach-to-release"}
+            _ci_known_keys = {
+                "enabled",
+                "artifact_name",
+                "artifact-name",
+                "fail_on_empty",
+                "fail-on-empty",
+                "attach_to_release",
+                "attach-to-release",
+            }
             for key in ci_section:
                 if key not in _ci_known_keys:
-                    warnings.append(ConfigWarning(
-                        field=f"ci.{key}",
-                        message="Unknown CI config key.",
-                    ))
+                    warnings.append(
+                        ConfigWarning(
+                            field=f"ci.{key}",
+                            message="Unknown CI config key.",
+                        )
+                    )
 
     for bool_key in ("show_authors", "show-authors", "show_hashes", "show-hashes", "overwrite"):
         val = data.get(bool_key)
         if val is not None and not isinstance(val, bool):
-            warnings.append(ConfigWarning(
-                field=bool_key,
-                message=f"Expected a boolean (true/false), got {type(val).__name__}.",
-            ))
+            warnings.append(
+                ConfigWarning(
+                    field=bool_key,
+                    message=f"Expected a boolean (true/false), got {type(val).__name__}.",
+                )
+            )
 
-    for str_key in ("app_name", "app-name", "branch", "title", "version", "output_dir", "output-dir"):
+    for str_key in (
+        "app_name",
+        "app-name",
+        "branch",
+        "title",
+        "version",
+        "output_dir",
+        "output-dir",
+    ):
         val = data.get(str_key)
         if val is not None and not isinstance(val, str):
-            warnings.append(ConfigWarning(
-                field=str_key,
-                message=f"Expected a string, got {type(val).__name__}.",
-            ))
+            warnings.append(
+                ConfigWarning(
+                    field=str_key,
+                    message=f"Expected a string, got {type(val).__name__}.",
+                )
+            )
+
+    # Validate accent_color format
+    import re as _re
+
+    accent = data.get("accent_color", data.get("accent-color", ""))
+    if accent and not _re.match(r"^#[0-9a-fA-F]{6}$", str(accent)):
+        warnings.append(
+            ConfigWarning(
+                field="accent_color",
+                message=f"Invalid hex color '{accent}'. Must match #RRGGBB format (e.g. #FB6400).",
+            )
+        )
 
     return warnings
 
@@ -299,7 +381,9 @@ def _read_toml(path: Path) -> dict | None:
         import logging
 
         logging.getLogger("releasepilot.config").warning(
-            "Failed to parse TOML file %s: %s", path, exc,
+            "Failed to parse TOML file %s: %s",
+            path,
+            exc,
         )
         return None
 
@@ -312,16 +396,22 @@ def _dict_to_config(data: dict, *, source: str = "") -> FileConfig:
     repos = [str(r) for r in repos_raw] if isinstance(repos_raw, list) else []
 
     ef_raw = data.get("export_formats", data.get("export-formats", []))
-    export_formats = [str(f) for f in ef_raw if str(f) in _VALID_FORMATS] if isinstance(ef_raw, list) else []
+    export_formats = (
+        [str(f) for f in ef_raw if str(f) in _VALID_FORMATS] if isinstance(ef_raw, list) else []
+    )
 
     ci_raw = data.get("ci", {})
     ci_cfg = CIConfig()
     if isinstance(ci_raw, dict):
         ci_cfg = CIConfig(
             enabled=bool(ci_raw.get("enabled", False)),
-            artifact_name=str(ci_raw.get("artifact_name", ci_raw.get("artifact-name", "release-notes"))),
+            artifact_name=str(
+                ci_raw.get("artifact_name", ci_raw.get("artifact-name", "release-notes"))
+            ),
             fail_on_empty=bool(ci_raw.get("fail_on_empty", ci_raw.get("fail-on-empty", False))),
-            attach_to_release=bool(ci_raw.get("attach_to_release", ci_raw.get("attach-to-release", False))),
+            attach_to_release=bool(
+                ci_raw.get("attach_to_release", ci_raw.get("attach-to-release", False))
+            ),
         )
 
     # Sanitise enum fields — use value only if valid, else empty string

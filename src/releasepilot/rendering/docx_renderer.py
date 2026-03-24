@@ -43,6 +43,7 @@ def _translate_label(text: str, lang: str) -> str:
         return text
     try:
         from releasepilot.i18n import translate_text
+
         return translate_text(text, target_lang=lang)
     except Exception:  # noqa: BLE001
         return text
@@ -52,8 +53,13 @@ class DocxRenderer:
     """Renders ReleaseNotes as a professional Word document."""
 
     def render(self, notes: ReleaseNotes, config: RenderConfig) -> str:
-        """Return empty string — DOCX is binary. Use render_bytes() instead."""
-        return ""
+        """DOCX is binary — use render_bytes() instead.
+
+        Raises NotImplementedError to prevent silent empty-string returns.
+        """
+        raise NotImplementedError(
+            "DocxRenderer.render() is not supported. Use render_bytes() for DOCX output."
+        )
 
     def render_bytes(self, notes: ReleaseNotes, config: RenderConfig) -> bytes:
         """Render release notes to a DOCX byte buffer."""
@@ -106,15 +112,16 @@ class DocxRenderer:
         subtitle_parts = []
         if rr.version:
             from releasepilot.i18n import get_label as _label
+
             subtitle_parts.append(f"{_label('version', lang)} {rr.version}")
         if rr.release_date:
             from releasepilot.i18n import get_label as _label
+
             released = _label("released_on", lang).format(date=rr.release_date.isoformat())
             subtitle_parts.append(released)
         from releasepilot.i18n import get_label as _label
-        subtitle_parts.append(
-            _label("changes_in_release", lang).format(count=notes.total_changes)
-        )
+
+        subtitle_parts.append(_label("changes_in_release", lang).format(count=notes.total_changes))
         if notes.metadata.get("pipeline_summary"):
             subtitle_parts.append(notes.metadata["pipeline_summary"])
 
@@ -230,12 +237,15 @@ def _add_horizontal_rule(doc, color: str = "FB6400") -> None:
     # Create a bottom border on the paragraph
     p_pr = para._p.get_or_add_pPr()
     p_bdr = p_pr.makeelement(qn("w:pBdr"), {})
-    bottom = p_bdr.makeelement(qn("w:bottom"), {
-        qn("w:val"): "single",
-        qn("w:sz"): "6",
-        qn("w:space"): "1",
-        qn("w:color"): color,
-    })
+    bottom = p_bdr.makeelement(
+        qn("w:bottom"),
+        {
+            qn("w:val"): "single",
+            qn("w:sz"): "6",
+            qn("w:space"): "1",
+            qn("w:color"): color,
+        },
+    )
     p_bdr.append(bottom)
     p_pr.append(p_bdr)
 

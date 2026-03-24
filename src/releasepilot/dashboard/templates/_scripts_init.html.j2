@@ -1,0 +1,218 @@
+/* ===== FIRST RUN HELPERS ===== */
+function showQuickStart(){launchWizard()}
+function showSchemaRef(){
+  openModal(_t('ui.first_run.schema'),
+    '<p class="mb-2">'+_t('ui.schema.body_intro')+'</p>'+
+    '<pre>{\n  "app_name": "MyApp",\n  "audience": "changelog",\n  "format": "markdown",\n  "language": "en",\n  "version": "1.2.0",\n  "show_authors": true,\n  "show_hashes": false\n}</pre>'+
+    '<p class="mt-2 text-secondary">'+_t('ui.schema.supported_formats')+' <code>markdown</code>, <code>plaintext</code>, <code>json</code>, <code>pdf</code>, <code>docx</code></p>'+
+    '<p class="text-secondary">'+_t('ui.schema.supported_audiences')+' <code>technical</code>, <code>user</code>, <code>summary</code>, <code>changelog</code>, <code>customer</code>, <code>executive</code>, <code>narrative</code></p>',
+    '<button class="btn btn-secondary" onclick="closeModal()">' + _t('ui.modal.close') + '</button>'
+  );
+}
+
+/* ===== SOURCE CONFIG (wizard step 0) ===== */
+function srcSelectMode(mode){
+  var dateOpt=$('#src-opt-date'),refOpt=$('#src-opt-ref');
+  var datePanel=$('#src-panel-date'),refPanel=$('#src-panel-ref');
+  if(mode==='date'){
+    dateOpt.classList.add('selected');dateOpt.setAttribute('aria-checked','true');
+    refOpt.classList.remove('selected');refOpt.setAttribute('aria-checked','false');
+    showEl(datePanel);hideEl(refPanel);
+  }else{
+    refOpt.classList.add('selected');refOpt.setAttribute('aria-checked','true');
+    dateOpt.classList.remove('selected');dateOpt.setAttribute('aria-checked','false');
+    showEl(refPanel);hideEl(datePanel);
+  }
+}
+function _localIso(d){var y=d.getFullYear(),m=String(d.getMonth()+1),dd=String(d.getDate());return y+'-'+(m.length<2?'0':'')+m+'-'+(dd.length<2?'0':'')+dd}
+function srcPreset(key,months){
+  var now=new Date();
+  var d=new Date(now.getFullYear(),now.getMonth()-months,now.getDate());
+  $('#src-since-date').value=_localIso(d);
+  $$('.src-preset').forEach(function(b){b.classList.toggle('selected',b.dataset.preset===key)});
+  srcAutoReload();
+}
+function srcPresetCustom(){
+  $$('.src-preset').forEach(function(b){b.classList.toggle('selected',b.dataset.preset==='custom')});
+  $('#src-since-date').focus();
+}
+function _syncPresetChips(){
+  var val=$('#src-since-date').value;
+  var now=new Date();
+  var presets=[{key:'1m',m:1},{key:'2m',m:2},{key:'3m',m:3},{key:'1y',m:12}];
+  var matched='custom';
+  presets.forEach(function(p){
+    var d=new Date(now.getFullYear(),now.getMonth()-p.m,now.getDate());
+    if(_localIso(d)===val)matched=p.key;
+  });
+  $$('.src-preset').forEach(function(b){b.classList.toggle('selected',b.dataset.preset===matched)});
+}
+function srcLangChange(lang){
+  S.wizard.lang=lang;
+}
+
+/* ===== AUTO-RELOAD ===== */
+var _srcDebounce=null;
+function srcAutoReload(){
+  if(_srcDebounce)clearTimeout(_srcDebounce);
+  _srcDebounce=setTimeout(_doSrcReload,400);
+}
+function _srcBuildCfg(){
+  var isDateMode=$('#src-opt-date')&&$('#src-opt-date').classList.contains('selected');
+  var cfg={};
+  if(isDateMode){
+    var sinceVal=$('#src-since-date')?$('#src-since-date').value:'';
+    if(!sinceVal)return null;
+    cfg.since_date=sinceVal;cfg.from_ref='';
+    var branchVal=$('#src-branch-date')?$('#src-branch-date').value.trim():'';
+    if(branchVal)cfg.branch=branchVal;
+  }else{
+    var fromVal=$('#src-from-ref')?$('#src-from-ref').value.trim():'';
+    if(!fromVal)return null;
+    cfg.from_ref=fromVal;cfg.since_date='';
+    var toVal=$('#src-to-ref')?$('#src-to-ref').value.trim():'';
+    if(toVal)cfg.to_ref=toVal;
+  }
+  var langSel=$('#src-language');
+  if(langSel)cfg.language=langSel.value;
+  return cfg;
+}
+function _showStatsSkeleton(){
+  var el=$('#wiz-stats-area');
+  if(!el)return;
+  el.classList.add('loading');
+  var h='<div class="stat-cards wiz-stats">';
+  for(var i=0;i<3;i++){
+    h+='<div class="stat-card skeleton">';
+    h+='<div class="skeleton-bone skeleton-value"></div>';
+    h+='<div class="skeleton-bone skeleton-label"></div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+  var alerts=$('#src-alerts');if(alerts)alerts.innerHTML='';
+}
+function _updateWizSourceStats(){
+  var el=$('#wiz-stats-area');
+  if(!el)return;
+  el.classList.remove('loading');
+  var h='';
+  if(!D.is_empty){
+    var dates=D.changes.map(function(c){return c.date}).filter(function(d){return d}).sort();
+    if(dates.length>0){
+      var oldest=dates[0],newest=dates[dates.length-1];
+      var d1=new Date(oldest),d2=new Date(newest);
+      var diffDays=Math.max(1,Math.ceil((d2-d1)/(1000*60*60*24)));
+      h+='<div class="stat-cards wiz-stats">';
+      h+='<div class="stat-card accent"><div class="stat-card-value">'+diffDays+'</div><div class="stat-card-label">'+_t('ui.wizard.days_covered')+'</div></div>';
+      h+='<div class="stat-card"><div class="stat-card-value">'+D.total_changes+'</div><div class="stat-card-label">'+_t('ui.overview.total_changes')+'</div></div>';
+      if(D.total_breaking>0)h+='<div class="stat-card error"><div class="stat-card-value">'+D.total_breaking+'</div><div class="stat-card-label">'+_t('ui.overview.breaking')+'</div></div>';
+      h+='</div>';
+    }
+  }
+  el.innerHTML=h;
+  /* alerts */
+  var alerts=$('#src-alerts');
+  if(alerts){
+    var ah='';
+    if(D.is_empty){
+      ah+='<div class="alert alert-warning">&#9888;&#65039; '+_t('ui.wizard.no_changes_warning')+'</div>';
+      if(D.diagnostics&&D.diagnostics.length>0){
+        ah+='<div class="alert alert-error wiz-diag-text">';
+        D.diagnostics.forEach(function(d){ah+=esc(d)+'<br>'});
+        ah+='</div>';
+      }
+    }else if(D.total_breaking>0){
+      ah+='<div class="alert alert-error">&#9888;&#65039; <strong>'+_tp('ui.plural.breaking',D.total_breaking)+'</strong></div>';
+    }
+    alerts.innerHTML=ah;
+  }
+}
+function _doSrcReload(){
+  var cfg=_srcBuildCfg();
+  if(!cfg)return;
+  _showStatsSkeleton();
+  var nextBtn=$('#wiz-next-btn');if(nextBtn)nextBtn.disabled=true;
+  fetch('/api/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d||!d.ok)return Promise.reject(d&&d.error||_t('ui.error.generic'));
+      return fetch('/api/dashboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    })
+    .then(function(r){return r.json()})
+    .then(function(resp){
+      if(resp&&resp.ok&&resp.data){
+        for(var k in resp.data)if(resp.data.hasOwnProperty(k))D[k]=resp.data[k];
+        _updateWizSourceStats();
+      }else{
+        var el=$('#wiz-stats-area');if(el){el.classList.remove('loading');el.innerHTML='<div class="alert alert-error">'+esc(resp&&resp.error||_t('ui.error.generic'))+'</div>';}
+      }
+      if(nextBtn)nextBtn.disabled=false;
+    })
+    .catch(function(e){
+      var el=$('#wiz-stats-area');if(el){el.classList.remove('loading');el.innerHTML='<div class="alert alert-error">'+esc(typeof e==='string'?e:(e.message||_t('ui.error.generic')))+'</div>';}
+      if(nextBtn)nextBtn.disabled=false;
+    });
+}
+
+/* ===== INIT ===== */
+function init(){
+  /* restore settings */
+  applyTheme(S.theme);
+  applyDensity(S.density);
+  applyLocale(S.locale);
+  S.changes.perPage=S.defaultRows;
+  /* restore custom colors */
+  try{var c=JSON.parse(_ls('rp-custom-colors',''));if(c&&c.p){
+    document.documentElement.style.setProperty('--custom-primary',c.p);
+    document.documentElement.style.setProperty('--custom-secondary',c.s);
+    document.documentElement.style.setProperty('--custom-tertiary',c.t);
+    $('#color-primary').value=c.p;$('#color-secondary').value=c.s;$('#color-tertiary').value=c.t;
+  }}catch(e){}
+
+  /* tab click handlers */
+  $$('.tab-btn').forEach(function(b){b.addEventListener('click',function(){switchTab(this.dataset.tab)})});
+
+  /* settings panel outside click */
+  document.addEventListener('click',function(e){if(!e.target.closest('#qsTriggerWrap'))closeQS()});
+
+  /* modal esc / backdrop */
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeQS();closeExportModal()}});
+  $('#modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal()});
+  $('#exportModalOverlay').addEventListener('click',function(e){if(e.target===this)closeExportModal()});
+
+  /* repo name in header badge */
+  var rn='';
+  if(D.repo_path){
+    rn=D.repo_path.replace(/\\/g,'/').split('/').filter(function(s){return s}).pop()||D.repo_path;
+  }
+  if(D.app_name||rn){
+    var badge=$('#header-repo');
+    badge.textContent=D.app_name||rn;
+    badge.classList.remove('d-none');
+  }
+
+  /* first run vs normal */
+  var panel=$('#first-run-panel');
+  var tabNav=$('#tabNav');
+  S.wizard.audience=D.audience||'changelog';
+  S.wizard.format=D.output_format||'markdown';
+  if(D.is_empty){
+    showEl(panel);showEl(tabNav);
+    /* Only remove .active — do NOT add .hidden (it would block switchTab) */
+    $$('.tab-panel').forEach(function(p){p.classList.remove('active')});
+    /* diagnostics */
+    if(D.diagnostics&&D.diagnostics.length>0){
+      var dh='<div class="diagnostics"><div class="diagnostics-title" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">&#128269; '+_t('ui.diagnostics.title')+' ('+D.diagnostics.length+')</div><ul class="diagnostics-list">';
+      D.diagnostics.forEach(function(d){dh+='<li>'+esc(d)+'</li>'});
+      dh+='</ul></div>';
+      $('#diagnostics-area').innerHTML=dh;
+    }
+    renderWizard();
+  } else {
+    hideEl(panel);showEl(tabNav);
+    switchTab(S.tab);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',init);

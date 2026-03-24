@@ -86,8 +86,11 @@ def _save(data: dict) -> None:
     try:
         PREFS_DIR.mkdir(parents=True, exist_ok=True)
         import tempfile
+
         fd, tmp_path = tempfile.mkstemp(
-            dir=str(PREFS_DIR), suffix=".tmp", prefix=".prefs-",
+            dir=str(PREFS_DIR),
+            suffix=".tmp",
+            prefix=".prefs-",
         )
         closed = False
         try:

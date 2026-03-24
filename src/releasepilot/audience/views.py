@@ -99,12 +99,8 @@ def _changelog_view(notes: ReleaseNotes) -> ReleaseNotes:
     Unlike _technical_view (which keeps raw titles and all metadata),
     changelog mode produces cleaner output suitable for CHANGELOG.md files.
     """
-    polished_groups = tuple(
-        _polish_group_for_users(g) for g in notes.groups
-    )
-    polished_highlights = tuple(
-        _polish_item_for_users(i) for i in notes.highlights
-    )
+    polished_groups = tuple(_polish_group_for_users(g) for g in notes.groups)
+    polished_highlights = tuple(_polish_item_for_users(i) for i in notes.highlights)
     return replace(
         notes,
         groups=polished_groups,
@@ -164,9 +160,7 @@ def _customer_view(notes: ReleaseNotes) -> ReleaseNotes:
         for polished in (_polish_group_for_users(g),)
     )
     filtered_highlights = tuple(
-        _polish_item_for_users(i)
-        for i in notes.highlights
-        if i.category not in hidden
+        _polish_item_for_users(i) for i in notes.highlights if i.category not in hidden
     )[:5]
     total = sum(len(g.items) for g in filtered_groups)
 
@@ -205,12 +199,8 @@ def _narrative_view(notes: ReleaseNotes) -> ReleaseNotes:
     infrastructure, refactoring) since the narrative composer controls
     what appears in the final text.
     """
-    polished_groups = tuple(
-        _polish_group_for_users(g) for g in notes.groups
-    )
-    polished_highlights = tuple(
-        _polish_item_for_users(i) for i in notes.highlights
-    )
+    polished_groups = tuple(_polish_group_for_users(g) for g in notes.groups)
+    polished_highlights = tuple(_polish_item_for_users(i) for i in notes.highlights)
     return replace(
         notes,
         groups=polished_groups,

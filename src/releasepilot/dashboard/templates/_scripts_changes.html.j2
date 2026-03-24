@@ -1,0 +1,97 @@
+/* ===== CHANGES TABLE ===== */
+function getFilteredChanges(){
+  var items=D.changes||[];
+  var s=S.changes;
+  if(s.search){var q=s.search.toLowerCase();items=items.filter(function(c){return c.title.toLowerCase().indexOf(q)>=0||c.scope.toLowerCase().indexOf(q)>=0||(c.authors||[]).join(' ').toLowerCase().indexOf(q)>=0||c.hash.toLowerCase().indexOf(q)>=0})}
+  if(s.category)items=items.filter(function(c){return c.category===s.category});
+  if(s.importance)items=items.filter(function(c){return c.importance===s.importance});
+  if(s.scope)items=items.filter(function(c){return c.scope===s.scope});
+  /* sort */
+  var col=s.sortCol,dir=s.sortDir==='desc'?-1:1;
+  items=items.slice().sort(function(a,b){
+    var va=(a[col]||'').toString().toLowerCase(),vb=(b[col]||'').toString().toLowerCase();
+    return va<vb?-dir:va>vb?dir:0;
+  });
+  return items;
+}
+function renderChanges(){
+  if(D.is_empty){$('#changes-content').innerHTML='<div class="empty-state"><div class="empty-state-icon">&#128196;</div><div class="empty-state-title">'+_t('ui.empty.no_changes')+'</div><div class="empty-state-text">'+_t('ui.empty.no_changes_desc')+'</div></div>';return}
+  var items=getFilteredChanges();
+  var s=S.changes;
+  var totalPages=Math.ceil(items.length/s.perPage);
+  if(s.page>totalPages)s.page=totalPages||1;
+  var paged=items.slice((s.page-1)*s.perPage,s.page*s.perPage);
+
+  /* scopes for filter */
+  var scopes={};(D.changes||[]).forEach(function(c){if(c.scope)scopes[c.scope]=1});
+  var scopeOpts=Object.keys(scopes).sort();
+
+  var h='';
+  /* filter bar */
+  h+='<div class="filter-bar">';
+  h+='<input class="form-input" type="text" placeholder="'+_t('ui.changes.search')+'" id="changes-search" value="'+esc(s.search)+'">';
+  h+='<select class="form-select" id="changes-cat"><option value="">'+_t('ui.changes.all')+' '+_t('ui.changes.category')+'</option>';
+  ['breaking','security','feature','improvement','bugfix','performance','deprecation','documentation','infrastructure','refactor','other'].forEach(function(c){h+='<option value="'+c+'"'+(s.category===c?' selected':'')+'>'+esc(_t('ui.category.'+c))+'</option>'});
+  h+='</select>';
+  h+='<select class="form-select" id="changes-imp"><option value="">'+_t('ui.changes.all')+' '+_t('ui.changes.importance')+'</option>';
+  ['high','normal','low','noise'].forEach(function(i){h+='<option value="'+i+'"'+(s.importance===i?' selected':'')+'>'+esc(_t('ui.importance.'+i))+'</option>'});
+  h+='</select>';
+  if(scopeOpts.length>0){
+    h+='<select class="form-select" id="changes-scope"><option value="">'+_t('ui.changes.all')+' '+_t('ui.changes.scope')+'</option>';
+    scopeOpts.forEach(function(sc){h+='<option value="'+esc(sc)+'"'+(s.scope===sc?' selected':'')+'>'+esc(sc)+'</option>'});
+    h+='</select>';
+  }
+  h+='<span class="filter-count">'+items.length+' / '+(D.changes||[]).length+'</span>';
+  h+='</div>';
+
+  /* table */
+  function th(label,col){
+    var cls='sortable'+(s.sortCol===col?' sorted':'');
+    var arrow=s.sortCol===col?(s.sortDir==='asc'?' &#9650;':' &#9660;'):'';
+    return '<th class="'+cls+'" onclick="sortChanges(\''+col+'\')">'+esc(label)+arrow+'</th>';
+  }
+  h+='<div class="table-wrap"><table class="data-table">';
+  h+='<thead><tr>'+th(_t('ui.changes.col_title'),'title')+th(_t('ui.changes.col_category'),'category')+th(_t('ui.changes.col_scope'),'scope')+th(_t('ui.changes.col_importance'),'importance')+th(_t('ui.changes.col_authors'),'authors')+th(_t('ui.changes.col_date'),'date')+'<th>'+_t('ui.changes.col_hash')+'</th></tr></thead><tbody>';
+  if(paged.length===0){
+    h+='<tr><td colspan="7" class="text-secondary" style="text-align:center;padding:32px">'+_t('ui.empty.no_changes')+'</td></tr>';
+  } else {
+    paged.forEach(function(c){
+      h+='<tr>';
+      h+='<td class="fw-600">'+esc(c.title)+(c.breaking?' <span class="pill pill-breaking">'+_t('ui.changes.breaking_badge')+'</span>':'')+'</td>';
+      h+='<td>'+catBadge(c.category)+'</td>';
+      h+='<td>'+esc(c.scope||'—')+'</td>';
+      h+='<td>'+impBadge(c.importance)+'</td>';
+      h+='<td>'+(c.authors||[]).map(esc).join(', ')+'</td>';
+      h+='<td class="text-secondary">'+esc(c.date||'—')+'</td>';
+      h+='<td class="text-tertiary" style="font-family:var(--font-mono);font-size:.75rem">'+esc(c.hash||'—')+'</td>';
+      h+='</tr>';
+    });
+  }
+  h+='</tbody></table></div>';
+
+  /* pagination */
+  if(totalPages>1){
+    h+='<div class="pagination"><span>'+_t('ui.changes.title')+': '+(s.page-1)*s.perPage+1+'–'+Math.min(s.page*s.perPage,items.length)+' / '+items.length+'</span>';
+    h+='<div class="pagination-controls">';
+    h+='<button onclick="pageChanges(1)"'+(s.page<=1?' disabled':'')+'>&laquo;</button>';
+    h+='<button onclick="pageChanges('+Math.max(1,s.page-1)+')"'+(s.page<=1?' disabled':'')+'>&lsaquo;</button>';
+    var start=Math.max(1,s.page-2),end=Math.min(totalPages,s.page+2);
+    for(var i=start;i<=end;i++){h+='<button onclick="pageChanges('+i+')"'+(i===s.page?' class="active"':'')+'>'+i+'</button>'}
+    h+='<button onclick="pageChanges('+Math.min(totalPages,s.page+1)+')"'+(s.page>=totalPages?' disabled':'')+'>&rsaquo;</button>';
+    h+='<button onclick="pageChanges('+totalPages+')"'+(s.page>=totalPages?' disabled':'')+'>&raquo;</button>';
+    h+='</div></div>';
+  }
+
+  $('#changes-content').innerHTML=h;
+
+  /* bind filter events */
+  var si=$('#changes-search');if(si)si.addEventListener('input',function(){S.changes.search=this.value;S.changes.page=1;renderChanges()});
+  var ci=$('#changes-cat');if(ci)ci.addEventListener('change',function(){S.changes.category=this.value;S.changes.page=1;renderChanges()});
+  var ii=$('#changes-imp');if(ii)ii.addEventListener('change',function(){S.changes.importance=this.value;S.changes.page=1;renderChanges()});
+  var sci=$('#changes-scope');if(sci)sci.addEventListener('change',function(){S.changes.scope=this.value;S.changes.page=1;renderChanges()});
+}
+function sortChanges(col){
+  if(S.changes.sortCol===col){S.changes.sortDir=S.changes.sortDir==='asc'?'desc':'asc'}else{S.changes.sortCol=col;S.changes.sortDir='asc'}
+  renderChanges();
+}
+function pageChanges(p){S.changes.page=p;renderChanges()}

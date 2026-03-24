@@ -80,12 +80,18 @@ class TestDateRangeCLI:
         since = (date.today() - timedelta(days=30)).isoformat()
 
         """WHEN running generate with --since."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--repo", str(tmp_path),
-            "--since", since,
-            "--branch", "main",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--repo",
+                str(tmp_path),
+                "--since",
+                since,
+                "--branch",
+                "main",
+            ],
+        )
 
         """THEN it succeeds."""
         assert result.exit_code == 0
@@ -97,12 +103,18 @@ class TestDateRangeCLI:
         since = (date.today() - timedelta(days=30)).isoformat()
 
         """WHEN running generate with --since and --version."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--repo", str(tmp_path),
-            "--since", since,
-            "--version", "2.0.0",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--repo",
+                str(tmp_path),
+                "--since",
+                since,
+                "--version",
+                "2.0.0",
+            ],
+        )
 
         """THEN it includes the version in output."""
         assert result.exit_code == 0
@@ -140,11 +152,13 @@ def _init_repo_with_commits(path: Path) -> None:
     subprocess.run(["git", "init", "-b", "main", str(path)], check=True, capture_output=True)
     subprocess.run(
         ["git", "-C", str(path), "config", "user.email", "test@test.com"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     subprocess.run(
         ["git", "-C", str(path), "config", "user.name", "Test"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
 
     commits = [
@@ -160,7 +174,8 @@ def _init_repo_with_commits(path: Path) -> None:
         subprocess.run(["git", "-C", str(path), "add", "."], check=True, capture_output=True)
         subprocess.run(
             ["git", "-C", str(path), "commit", "-m", message],
-            check=True, capture_output=True,
+            check=True,
+            capture_output=True,
         )
 
 
@@ -179,8 +194,8 @@ class TestDateRangeClamping:
 
         """THEN the oldest commit date is returned."""
         assert first is not None
-        # The date portion should be today (commits were just created)
-        assert date.today().isoformat() in first
+        # The date portion should be today or yesterday (timezone offset may shift)
+        assert first[:10] >= (date.today() - timedelta(days=1)).isoformat()
 
     def test_clamp_warns_when_range_exceeds_history(self, tmp_path: Path):
         """GIVEN a git repo and a date far before its history."""
@@ -192,7 +207,7 @@ class TestDateRangeClamping:
 
         """THEN the date is clamped to the first commit date."""
         assert result != "2000-01-01"
-        assert date.today().isoformat() == result
+        assert result >= (date.today() - timedelta(days=1)).isoformat()
 
     def test_clamp_preserves_valid_range(self, tmp_path: Path):
         """GIVEN a git repo and a date within its history."""

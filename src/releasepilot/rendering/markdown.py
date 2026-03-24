@@ -84,9 +84,7 @@ def _render_header(notes: ReleaseNotes, lang: str) -> str:
         lines.append(f"# {rr.display_title}")
 
     if rr.release_date:
-        released_on = get_label("released_on", lang).format(
-            date=rr.release_date.isoformat()
-        )
+        released_on = get_label("released_on", lang).format(date=rr.release_date.isoformat())
         lines.append(f"\n> {released_on}")
 
     if notes.metadata.get("summary"):
@@ -157,19 +155,23 @@ def _render_stats_block(notes: ReleaseNotes, lang: str) -> str:
     lines.append("|--------|-------|")
     lines.append(f"| {get_label('total_changes', lang)} | {notes.total_changes} |")
     if md.get("raw_count") and md.get("raw_count") != str(notes.total_changes):
-        lines.append(f"| Raw changes | {md['raw_count']} |")
+        lines.append(f"| {get_label('raw_changes', lang)} | {md['raw_count']} |")
     if md.get("filtered_out") and md["filtered_out"] != "0":
-        lines.append(f"| Filtered out | {md['filtered_out']} |")
+        lines.append(f"| {get_label('filtered_out', lang)} | {md['filtered_out']} |")
+    if md.get("deduplicated") and md["deduplicated"] != "0":
+        lines.append(f"| {get_label('deduplicated', lang)} | {md['deduplicated']} |")
+    if md.get("final_count"):
+        lines.append(f"| {get_label('final_changes', lang)} | {md['final_count']} |")
     if md.get("contributors"):
-        lines.append(f"| Contributors | {md['contributors']} |")
+        lines.append(f"| {get_label('contributors', lang)} | {md['contributors']} |")
     if md.get("first_commit_date"):
-        lines.append(f"| First commit | {md['first_commit_date']} |")
+        lines.append(f"| {get_label('first_commit', lang)} | {md['first_commit_date']} |")
     if md.get("last_commit_date"):
-        lines.append(f"| Last commit | {md['last_commit_date']} |")
+        lines.append(f"| {get_label('last_commit', lang)} | {md['last_commit_date']} |")
     if md.get("effective_branch"):
-        lines.append(f"| Branch | {md['effective_branch']} |")
+        lines.append(f"| {get_label('branch', lang)} | {md['effective_branch']} |")
     if md.get("components"):
-        lines.append(f"| Components | {md['components']} |")
+        lines.append(f"| {get_label('components', lang)} | {md['components']} |")
     lines.append("")
     return "\n".join(lines)
 
@@ -182,8 +184,9 @@ def _render_footer(notes: ReleaseNotes, lang: str) -> str:
     lines = [f"---\n*{changes_label}*"]
 
     # Pipeline transparency: show how items were reduced
-    if notes.metadata.get("pipeline_summary"):
-        lines.append(f"\n*Pipeline: {notes.metadata["pipeline_summary"]}*")
+    pipeline_summary = notes.metadata.get("pipeline_summary")
+    if pipeline_summary:
+        lines.append(f"\n*Pipeline: {pipeline_summary}*")
 
     lines.append(f"\n*{footer_text(include_url=True, lang=lang)}*\n")
     return "\n".join(lines)

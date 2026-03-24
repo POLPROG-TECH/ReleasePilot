@@ -95,7 +95,8 @@ class TestInspectRepo:
         _init_repo(tmp_path)
         subprocess.run(
             ["git", "-C", str(tmp_path), "tag", "v1.0.0"],
-            check=True, capture_output=True,
+            check=True,
+            capture_output=True,
         )
 
         """WHEN inspecting the repo."""
@@ -116,6 +117,7 @@ class TestRepoInspection:
 
         """THEN it raises a FrozenInstanceError."""
         import dataclasses
+
         with pytest.raises(dataclasses.FrozenInstanceError):
             inspection.is_valid_repo = False  # type: ignore[misc]
 
@@ -125,15 +127,18 @@ def _init_repo(path: Path, branch: str = "main") -> None:
     subprocess.run(["git", "init", "-b", branch, str(path)], check=True, capture_output=True)
     subprocess.run(
         ["git", "-C", str(path), "config", "user.email", "test@test.com"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     subprocess.run(
         ["git", "-C", str(path), "config", "user.name", "Test"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     (path / "README.md").write_text("# Test\n")
     subprocess.run(["git", "-C", str(path), "add", "."], check=True, capture_output=True)
     subprocess.run(
         ["git", "-C", str(path), "commit", "-m", "feat: initial commit"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )

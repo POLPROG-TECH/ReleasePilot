@@ -39,7 +39,11 @@ def validate_settings(settings: Settings) -> UserError | None:
         return err
 
     # Sanitize refs early to prevent command injection.
-    for ref_label, ref_value in [("from_ref", settings.from_ref), ("to_ref", settings.to_ref), ("branch", settings.branch)]:
+    for ref_label, ref_value in [
+        ("from_ref", settings.from_ref),
+        ("to_ref", settings.to_ref),
+        ("branch", settings.branch),
+    ]:
         if ref_value:
             try:
                 validate_ref(ref_value)
@@ -81,7 +85,7 @@ def validate_settings(settings: Settings) -> UserError | None:
             return UserError(
                 summary=f"'{settings.from_ref}' is not an ancestor of '{settings.to_ref}'",
                 reason="The starting ref is not reachable from the ending ref, "
-                       "which would produce an empty or misleading diff.",
+                "which would produce an empty or misleading diff.",
                 suggestions=[
                     "Swap --from and --to if the order is reversed",
                     "Verify the tags/branches belong to the same lineage",
@@ -136,6 +140,7 @@ def validate_export_format_deps(fmt: str) -> UserError | None:
             import reportlab  # noqa: F401
         except ImportError:
             from releasepilot.cli.errors import missing_export_format_deps
+
             return missing_export_format_deps("PDF")
 
     if fmt == "docx":
@@ -143,6 +148,7 @@ def validate_export_format_deps(fmt: str) -> UserError | None:
             import docx  # noqa: F401
         except ImportError:
             from releasepilot.cli.errors import missing_export_format_deps
+
             return missing_export_format_deps("DOCX")
 
     return None
@@ -156,7 +162,10 @@ def _validate_git_repo(repo_path: str) -> UserError | None:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "rev-parse", "--git-dir"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         if result.returncode != 0:
             return not_a_git_repo(repo_path)
@@ -183,13 +192,19 @@ def _validate_ref(repo_path: str, ref: str) -> UserError | None:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "rev-parse", "--verify", f"{ref}^{{commit}}"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         if result.returncode != 0:
             # Try without ^{commit} in case it's a different kind of ref
             result2 = subprocess.run(
                 ["git", "-C", repo_path, "rev-parse", "--verify", ref],
-                capture_output=True, text=True, timeout=10, check=False,
+                capture_output=True,
+                text=True,
+                timeout=10,
+                check=False,
             )
             if result2.returncode != 0:
                 return ref_not_found(ref, _classify_ref(ref))
@@ -234,4 +249,5 @@ def _classify_ref(ref: str) -> str:
 def _is_writable(path: Path) -> bool:
     """Check if a path is writable."""
     import os
+
     return os.access(path, os.W_OK)

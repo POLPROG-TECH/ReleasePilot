@@ -13,18 +13,22 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 
 _log = logging.getLogger(__name__)
 
 # Sentinel for "already tried to register"
 _registered_font: str | None = None
 _init_done = False
+_init_lock = threading.Lock()
 
 # Common paths for Unicode-capable TTF files (normal, bold)
 _CANDIDATES: list[tuple[str, str | None]] = [
     # Linux — DejaVu with bold variant
-    ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
+    (
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    ),
     # macOS — Arial Unicode (single weight only)
     ("/Library/Fonts/Arial Unicode.ttf", None),
     ("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", None),
@@ -51,38 +55,40 @@ def register_unicode_font() -> str:
     """
     global _registered_font, _init_done  # noqa: PLW0603
 
-    if _init_done:
-        return _registered_font or "Helvetica"
+    with _init_lock:
+        if _init_done:
+            return _registered_font or "Helvetica"
 
-    _init_done = True
+        _init_done = True
 
-    result = _find_ttf()
-    if result is None:
-        _log.debug("No Unicode TTF font found — using Helvetica fallback")
-        return "Helvetica"
+        result = _find_ttf()
+        if result is None:
+            _log.debug("No Unicode TTF font found — using Helvetica fallback")
+            return "Helvetica"
 
-    normal_path, bold_path = result
+        normal_path, bold_path = result
 
-    try:
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
+        try:
+            from reportlab.pdfbase import pdfmetrics
+            from reportlab.pdfbase.ttfonts import TTFont
 
-        pdfmetrics.registerFont(TTFont("UnicodeSans", normal_path))
+            pdfmetrics.registerFont(TTFont("UnicodeSans", normal_path))
 
-        # Register bold — use dedicated bold file if available, else reuse normal
-        bold_src = bold_path or normal_path
-        pdfmetrics.registerFont(TTFont("UnicodeSans-Bold", bold_src))
+            # Register bold — use dedicated bold file if available, else reuse normal
+            bold_src = bold_path or normal_path
+            pdfmetrics.registerFont(TTFont("UnicodeSans-Bold", bold_src))
 
-        from reportlab.pdfbase.pdfmetrics import registerFontFamily
-        registerFontFamily(
-            "UnicodeSans",
-            normal="UnicodeSans",
-            bold="UnicodeSans-Bold",
-        )
+            from reportlab.pdfbase.pdfmetrics import registerFontFamily
 
-        _registered_font = "UnicodeSans"
-        _log.debug("Registered Unicode font from %s", normal_path)
-        return "UnicodeSans"
-    except Exception:  # noqa: BLE001
-        _log.debug("Failed to register Unicode font", exc_info=True)
-        return "Helvetica"
+            registerFontFamily(
+                "UnicodeSans",
+                normal="UnicodeSans",
+                bold="UnicodeSans-Bold",
+            )
+
+            _registered_font = "UnicodeSans"
+            _log.debug("Registered Unicode font from %s", normal_path)
+            return "UnicodeSans"
+        except Exception:  # noqa: BLE001
+            _log.debug("Failed to register Unicode font", exc_info=True)
+            return "Helvetica"

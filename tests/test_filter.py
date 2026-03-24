@@ -40,7 +40,9 @@ class TestNoisePatternFiltering:
     def test_fixup_commits_filtered(self):
         """GIVEN a fixup commit."""
         items = [
-            ChangeItem(id="f1", title="fixup! previous commit", raw_message="fixup! previous commit"),
+            ChangeItem(
+                id="f1", title="fixup! previous commit", raw_message="fixup! previous commit"
+            ),
         ]
         config = FilterConfig()
 
@@ -101,8 +103,12 @@ class TestCategoryFiltering:
     def test_exclude_specific_category(self):
         """GIVEN items and a config excluding REFACTOR."""
         items = [
-            ChangeItem(id="c1", title="Add feature", category=ChangeCategory.FEATURE, raw_message="x"),
-            ChangeItem(id="c2", title="Refactor code", category=ChangeCategory.REFACTOR, raw_message="y"),
+            ChangeItem(
+                id="c1", title="Add feature", category=ChangeCategory.FEATURE, raw_message="x"
+            ),
+            ChangeItem(
+                id="c2", title="Refactor code", category=ChangeCategory.REFACTOR, raw_message="y"
+            ),
         ]
         config = FilterConfig(exclude_categories=frozenset({ChangeCategory.REFACTOR}))
 
@@ -116,9 +122,13 @@ class TestCategoryFiltering:
     def test_include_only_specific_categories(self):
         """GIVEN items and a config including only FEATURE and BUGFIX."""
         items = [
-            ChangeItem(id="i1", title="Add thing", category=ChangeCategory.FEATURE, raw_message="x"),
+            ChangeItem(
+                id="i1", title="Add thing", category=ChangeCategory.FEATURE, raw_message="x"
+            ),
             ChangeItem(id="i2", title="Fix thing", category=ChangeCategory.BUGFIX, raw_message="y"),
-            ChangeItem(id="i3", title="Docs update", category=ChangeCategory.DOCUMENTATION, raw_message="z"),
+            ChangeItem(
+                id="i3", title="Docs update", category=ChangeCategory.DOCUMENTATION, raw_message="z"
+            ),
         ]
         config = FilterConfig(
             include_categories=frozenset({ChangeCategory.FEATURE, ChangeCategory.BUGFIX})

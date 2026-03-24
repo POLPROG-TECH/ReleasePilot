@@ -1,5 +1,7 @@
 """Rendering package for ReleasePilot."""
 
+__all__ = ["REPO_URL", "AUTHOR", "TOOL_NAME", "footer_text"]
+
 REPO_URL = "https://github.com/polprog-tech/ReleasePilot"
 AUTHOR = "POLPROG"
 TOOL_NAME = "ReleasePilot"

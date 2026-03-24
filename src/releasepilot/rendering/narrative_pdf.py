@@ -208,9 +208,7 @@ class NarrativePdfRenderer:
             overview_heading_text = get_label("narrative_overview", lang)
 
         overview_heading = Paragraph(overview_heading_text, s_heading)
-        overview_text = Paragraph(
-            _esc(_translate(brief.overview, lang)), s_overview
-        )
+        overview_text = Paragraph(_esc(_translate(brief.overview, lang)), s_overview)
         overview_table = Table(
             [[overview_heading], [Spacer(1, 4)], [overview_text]],
             colWidths=[w - 20],
@@ -234,9 +232,7 @@ class NarrativePdfRenderer:
         # BODY PARAGRAPHS — continuous prose
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         for paragraph in brief.body_paragraphs:
-            story.append(
-                Paragraph(_esc(_translate(paragraph, lang)), s_body)
-            )
+            story.append(Paragraph(_esc(_translate(paragraph, lang)), s_body))
 
         if brief.body_paragraphs:
             story.append(Spacer(1, 8))
@@ -247,13 +243,9 @@ class NarrativePdfRenderer:
         if brief.breaking_notice:
             breaking_heading = Paragraph(
                 get_label("narrative_breaking", lang),
-                ParagraphStyle(
-                    "BreakingHead", parent=s_heading, textColor=c_warn
-                ),
+                ParagraphStyle("BreakingHead", parent=s_heading, textColor=c_warn),
             )
-            breaking_body = Paragraph(
-                _esc(_translate(brief.breaking_notice, lang)), s_warn
-            )
+            breaking_body = Paragraph(_esc(_translate(brief.breaking_notice, lang)), s_warn)
             breaking_table = Table(
                 [[breaking_heading], [Spacer(1, 4)], [breaking_body]],
                 colWidths=[w - 24],
@@ -271,9 +263,7 @@ class NarrativePdfRenderer:
                 )
             )
             # Wrap with left accent border
-            warn_wrapper = Table(
-                [[breaking_table]], colWidths=[w - 20]
-            )
+            warn_wrapper = Table([[breaking_table]], colWidths=[w - 20])
             warn_wrapper.setStyle(
                 TableStyle(
                     [

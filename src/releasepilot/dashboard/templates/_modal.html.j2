@@ -1,0 +1,23 @@
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="exportModalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:620px">
+    <div class="modal-title" data-i18n="ui.export.title">Export Release Notes</div>
+    <div class="modal-body">
+      <div class="export-row"><label data-i18n="ui.wizard.audience">Audience</label><select class="form-select" id="export-audience" onchange="updateExportModal()"></select></div>
+      <div class="export-row"><label data-i18n="ui.wizard.format">Format</label><select class="form-select" id="export-format" onchange="updateExportModal()"></select></div>
+      <div class="export-row"><label data-i18n="ui.wizard.filename">Filename</label><input class="form-input" id="export-filename" value="release-notes.md"></div>
+      <div class="export-preview-snippet" id="export-preview-snippet"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeExportModal()" data-i18n="ui.modal.cancel">Cancel</button>
+      <button class="btn btn-primary" onclick="doExportFromModal()">&#11015; <span data-i18n="ui.wizard.download">Download</span></button>
+    </div>
+  </div>
+</div>

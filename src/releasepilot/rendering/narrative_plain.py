@@ -35,7 +35,9 @@ class NarrativePlaintextRenderer:
             parts.append(brief.closing)
             parts.append("")
 
-        parts.append(f"({brief.total_facts} changes from {len(brief.source_item_ids)} source items)")
+        parts.append(
+            f"({brief.total_facts} changes from {len(brief.source_item_ids)} source items)"
+        )
 
         return "\n".join(parts)
 

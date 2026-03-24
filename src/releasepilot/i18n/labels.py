@@ -1,14 +1,18 @@
-"""Static label translations for ReleasePilot renderers.
-
-Each label key maps to a dict of language code → translated string.
-Placeholders like ``{count}``, ``{tool}``, and ``{date}`` are preserved
-literally and must be filled by the caller via :pymethod:`str.format`.
-"""
+"""Static label translations for ReleasePilot renderers."""
 
 from __future__ import annotations
 
 SUPPORTED_LANGUAGES: tuple[str, ...] = (
-    "en", "pl", "de", "fr", "es", "it", "pt", "nl", "uk", "cs",
+    "en",
+    "pl",
+    "de",
+    "fr",
+    "es",
+    "it",
+    "pt",
+    "nl",
+    "uk",
+    "cs",
 )
 
 _LABELS: dict[str, dict[str, str]] = {
@@ -480,16 +484,119 @@ _LABELS: dict[str, dict[str, str]] = {
         "uk": "Цей підсумок базується на {fact_count} перевірених фактах з {source_count} змін джерела.",
         "cs": "Toto shrnutí je založeno na {fact_count} ověřených faktech z {source_count} zdrojových změn.",
     },
+    "raw_changes": {
+        "en": "Raw changes",
+        "pl": "Surowe zmiany",
+        "de": "Rohe Änderungen",
+        "fr": "Changements bruts",
+        "es": "Cambios sin procesar",
+        "it": "Modifiche grezze",
+        "pt": "Alterações brutas",
+        "nl": "Ruwe wijzigingen",
+        "uk": "Необроблені зміни",
+        "cs": "Nezpracované změny",
+    },
+    "filtered_out": {
+        "en": "Filtered out",
+        "pl": "Odfiltrowane",
+        "de": "Herausgefiltert",
+        "fr": "Filtrés",
+        "es": "Filtrados",
+        "it": "Filtrate",
+        "pt": "Filtradas",
+        "nl": "Uitgefilterd",
+        "uk": "Відфільтровані",
+        "cs": "Odfiltrováno",
+    },
+    "deduplicated": {
+        "en": "Deduplicated",
+        "pl": "Zdeduplikowane",
+        "de": "Dedupliziert",
+        "fr": "Dédupliqués",
+        "es": "Deduplicados",
+        "it": "Deduplicati",
+        "pt": "Deduplicadas",
+        "nl": "Gededupliceerd",
+        "uk": "Дедупліковані",
+        "cs": "Deduplikováno",
+    },
+    "final_changes": {
+        "en": "Final changes",
+        "pl": "Końcowe zmiany",
+        "de": "Endgültige Änderungen",
+        "fr": "Changements finaux",
+        "es": "Cambios finales",
+        "it": "Modifiche finali",
+        "pt": "Alterações finais",
+        "nl": "Definitieve wijzigingen",
+        "uk": "Остаточні зміни",
+        "cs": "Konečné změny",
+    },
+    "first_commit": {
+        "en": "First commit",
+        "pl": "Pierwszy commit",
+        "de": "Erster Commit",
+        "fr": "Premier commit",
+        "es": "Primer commit",
+        "it": "Primo commit",
+        "pt": "Primeiro commit",
+        "nl": "Eerste commit",
+        "uk": "Перший коміт",
+        "cs": "První commit",
+    },
+    "last_commit": {
+        "en": "Last commit",
+        "pl": "Ostatni commit",
+        "de": "Letzter Commit",
+        "fr": "Dernier commit",
+        "es": "Último commit",
+        "it": "Ultimo commit",
+        "pt": "Último commit",
+        "nl": "Laatste commit",
+        "uk": "Останній коміт",
+        "cs": "Poslední commit",
+    },
+    "branch": {
+        "en": "Branch",
+        "pl": "Gałąź",
+        "de": "Branch",
+        "fr": "Branche",
+        "es": "Rama",
+        "it": "Branch",
+        "pt": "Branch",
+        "nl": "Branch",
+        "uk": "Гілка",
+        "cs": "Větev",
+    },
+    "components": {
+        "en": "Components",
+        "pl": "Komponenty",
+        "de": "Komponenten",
+        "fr": "Composants",
+        "es": "Componentes",
+        "it": "Componenti",
+        "pt": "Componentes",
+        "nl": "Componenten",
+        "uk": "Компоненти",
+        "cs": "Komponenty",
+    },
+    "contributors": {
+        "en": "Contributors",
+        "pl": "Współtwórcy",
+        "de": "Mitwirkende",
+        "fr": "Contributeurs",
+        "es": "Colaboradores",
+        "it": "Contributori",
+        "pt": "Contribuidores",
+        "nl": "Bijdragers",
+        "uk": "Учасники",
+        "cs": "Přispěvatelé",
+    },
 }
 
 
 def get_label(key: str, lang: str = "en") -> str:
-    """Return a translated label for *key* in the given language.
-
-    Falls back to English when *lang* is unsupported or *key* is missing
-    for that language.  Returns *key* itself when even the English
-    translation is absent.
-    """
+    """Return translated label, falling back to English then *key*."""
     translations = _LABELS.get(key)
     if translations is None:
         return key

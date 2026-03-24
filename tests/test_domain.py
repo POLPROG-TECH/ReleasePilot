@@ -41,7 +41,9 @@ class TestChangeItem:
     def test_sort_key_deterministic(self):
         """GIVEN two items with different categories and scopes."""
         item_a = ChangeItem(id="a", title="Fix bug", category=ChangeCategory.BUGFIX, scope="api")
-        item_b = ChangeItem(id="b", title="Add feature", category=ChangeCategory.FEATURE, scope="ui")
+        item_b = ChangeItem(
+            id="b", title="Add feature", category=ChangeCategory.FEATURE, scope="ui"
+        )
 
         """WHEN comparing their sort keys."""
         key_a = item_a.sort_key
@@ -68,6 +70,7 @@ class TestChangeItem:
 
         """THEN it raises a FrozenInstanceError."""
         import dataclasses
+
         with __import__("pytest").raises(dataclasses.FrozenInstanceError):
             item.title = "Modified"  # type: ignore[misc]
 

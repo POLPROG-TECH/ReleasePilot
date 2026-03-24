@@ -1,8 +1,5 @@
-"""Regression tests for production audit fixes.
-
-Each test class covers a specific bug found during the deep audit.
-Tests are designed to fail on the original buggy code and pass on the fix.
-"""
+"""Regression tests for dedup logic, audience views, git tags, i18n
+compatibility, settings config override, and guide preferences."""
 
 from __future__ import annotations
 
@@ -56,11 +53,14 @@ def _make_notes(
         items = [_make_item()]
     if groups is None:
         from releasepilot.processing.grouper import group_changes
+
         groups = tuple(group_changes(items))
     return ReleaseNotes(
         release_range=ReleaseRange(
-            from_ref="v1.0.0", to_ref="v1.1.0",
-            version="1.1.0", title="Release 1.1.0",
+            from_ref="v1.0.0",
+            to_ref="v1.1.0",
+            version="1.1.0",
+            title="Release 1.1.0",
         ),
         groups=groups,
         highlights=(),
@@ -69,14 +69,12 @@ def _make_notes(
     )
 
 
-# ── Fix #1: _pick_best_item timestamp tiebreaker ────────────────────────────
+# ── _pick_best_item timestamp tiebreaker ─────────────────────────────────────
 
 
 class TestDedupTimestampFallback:
-    """Regression: _pick_best_item used `i.timestamp or i.timestamp` which is
-    a no-op and crashes when comparing None timestamps via `max()`.
-    Fix: use `i.timestamp or datetime.min` as a safe fallback.
-    """
+    """_pick_best_item uses datetime.min fallback for None timestamps to ensure
+    max() comparison works without TypeError."""
 
     def test_pick_best_with_none_timestamps(self):
         """GIVEN items where all timestamps are None (PR merge scenario)."""
@@ -84,14 +82,18 @@ class TestDedupTimestampFallback:
 
         items = [
             _make_item(
-                id="t1", title="WIP commit",
-                commit_hash="a1", pr_number=99,
+                id="t1",
+                title="WIP commit",
+                commit_hash="a1",
+                pr_number=99,
                 timestamp=None,
             ),
             _make_item(
-                id="t2", title="Final commit",
+                id="t2",
+                title="Final commit",
                 description="Detailed description of the change",
-                commit_hash="a2", pr_number=99,
+                commit_hash="a2",
+                pr_number=99,
                 timestamp=None,
             ),
         ]
@@ -108,13 +110,17 @@ class TestDedupTimestampFallback:
         ts = datetime(2025, 6, 1, tzinfo=UTC)
         items = [
             _make_item(
-                id="m1", title="Old change",
-                commit_hash="b1", pr_number=50,
+                id="m1",
+                title="Old change",
+                commit_hash="b1",
+                pr_number=50,
                 timestamp=None,
             ),
             _make_item(
-                id="m2", title="New change",
-                commit_hash="b2", pr_number=50,
+                id="m2",
+                title="New change",
+                commit_hash="b2",
+                pr_number=50,
                 timestamp=ts,
             ),
         ]
@@ -125,14 +131,12 @@ class TestDedupTimestampFallback:
         assert result[0].timestamp == ts
 
 
-# ── Fix #2: _summary_view used unpolished items ─────────────────────────────
+# ── _summary_view uses polished items ────────────────────────────────────────
 
 
 class TestSummaryViewPolishedItems:
-    """Regression: _summary_view sliced items from the *original* group `g`
-    instead of the polished group, so titles were not capitalized.
-    Fix: use `polished.items[:max_per_group]` instead of `g.items[:max_per_group]`.
-    """
+    """_summary_view slices items from the polished group so titles are
+    capitalized in summary output."""
 
     def test_summary_items_are_polished(self):
         """GIVEN a group with lowercase-starting titles."""
@@ -154,25 +158,30 @@ class TestSummaryViewPolishedItems:
                     )
 
 
-# ── Fix #3: _customer_view double-polishing ──────────────────────────────────
+# ── _customer_view single polishing pass ─────────────────────────────────────
 
 
 class TestCustomerViewSinglePolish:
-    """Regression: _customer_view called _polish_group_for_users(g) twice per group,
-    wasting computation and producing inconsistent results if polishing was
-    non-idempotent.
-    Fix: use `for polished in (_polish_group_for_users(g),)` pattern.
-    """
+    """_customer_view polishes each group exactly once, producing consistent
+    capitalized titles and respecting the max-items-per-group limit."""
 
     def test_customer_items_are_polished(self):
         """GIVEN items with lowercase titles in customer-visible categories."""
         from releasepilot.audience.views import apply_audience
 
         items = [
-            _make_item(id="c1", title="fix payment processing error",
-                       category=ChangeCategory.BUGFIX, commit_hash="d1"),
-            _make_item(id="c2", title="add export feature",
-                       category=ChangeCategory.FEATURE, commit_hash="d2"),
+            _make_item(
+                id="c1",
+                title="fix payment processing error",
+                category=ChangeCategory.BUGFIX,
+                commit_hash="d1",
+            ),
+            _make_item(
+                id="c2",
+                title="add export feature",
+                category=ChangeCategory.FEATURE,
+                commit_hash="d2",
+            ),
         ]
         notes = _make_notes(items)
 
@@ -190,8 +199,12 @@ class TestCustomerViewSinglePolish:
         from releasepilot.audience.views import apply_audience
 
         items = [
-            _make_item(id=f"cm{i}", title=f"Feature number {i}",
-                       category=ChangeCategory.FEATURE, commit_hash=f"hash{i}")
+            _make_item(
+                id=f"cm{i}",
+                title=f"Feature number {i}",
+                category=ChangeCategory.FEATURE,
+                commit_hash=f"hash{i}",
+            )
             for i in range(10)
         ]
         notes = _make_notes(items)
@@ -202,14 +215,12 @@ class TestCustomerViewSinglePolish:
             assert len(group.items) <= 5
 
 
-# ── Fix #4: list_tags invalid --count flag ───────────────────────────────────
+# ── list_tags limit slicing ───────────────────────────────────────────────────
 
 
 class TestListTagsLimit:
-    """Regression: list_tags passed `--count=N` which is not a valid git-tag flag.
-    This caused a silent git error (swallowed by the except clause).
-    Fix: fetch all tags sorted, then slice in Python with `tags[:limit]`.
-    """
+    """list_tags fetches all sorted tags and slices in Python with
+    tags[:limit] to honour the requested limit."""
 
     def test_list_tags_with_limit(self, tmp_path):
         """GIVEN a git repo with 5 tags."""
@@ -220,15 +231,22 @@ class TestListTagsLimit:
         subprocess.run(["git", "init", str(repo)], capture_output=True, check=True)
         subprocess.run(
             ["git", "-C", str(repo), "commit", "--allow-empty", "-m", "init"],
-            capture_output=True, check=True,
-            env={"GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "t@t.com",
-                 "GIT_COMMITTER_NAME": "Test", "GIT_COMMITTER_EMAIL": "t@t.com",
-                 "HOME": str(tmp_path), "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"},
+            capture_output=True,
+            check=True,
+            env={
+                "GIT_AUTHOR_NAME": "Test",
+                "GIT_AUTHOR_EMAIL": "t@t.com",
+                "GIT_COMMITTER_NAME": "Test",
+                "GIT_COMMITTER_EMAIL": "t@t.com",
+                "HOME": str(tmp_path),
+                "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+            },
         )
         for i in range(1, 6):
             subprocess.run(
                 ["git", "-C", str(repo), "tag", f"v{i}.0.0"],
-                capture_output=True, check=True,
+                capture_output=True,
+                check=True,
             )
 
         from releasepilot.sources.git import GitSourceCollector
@@ -250,15 +268,22 @@ class TestListTagsLimit:
         subprocess.run(["git", "init", str(repo)], capture_output=True, check=True)
         subprocess.run(
             ["git", "-C", str(repo), "commit", "--allow-empty", "-m", "init"],
-            capture_output=True, check=True,
-            env={"GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "t@t.com",
-                 "GIT_COMMITTER_NAME": "Test", "GIT_COMMITTER_EMAIL": "t@t.com",
-                 "HOME": str(tmp_path), "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"},
+            capture_output=True,
+            check=True,
+            env={
+                "GIT_AUTHOR_NAME": "Test",
+                "GIT_AUTHOR_EMAIL": "t@t.com",
+                "GIT_COMMITTER_NAME": "Test",
+                "GIT_COMMITTER_EMAIL": "t@t.com",
+                "HOME": str(tmp_path),
+                "PATH": "/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin",
+            },
         )
         for i in range(1, 8):
             subprocess.run(
                 ["git", "-C", str(repo), "tag", f"v{i}.0.0"],
-                capture_output=True, check=True,
+                capture_output=True,
+                check=True,
             )
 
         from releasepilot.sources.git import GitSourceCollector
@@ -269,14 +294,12 @@ class TestListTagsLimit:
         assert len(tags) == 7
 
 
-# ── Fix #5: _ALL_AUDIENCES missing "customer" ───────────────────────────────
+# ── _ALL_AUDIENCES includes "customer" ───────────────────────────────────────
 
 
 class TestCustomerAudienceAvailability:
-    """Regression: _ALL_AUDIENCES in app.py and _VALID_AUDIENCES in file_config.py
-    were missing "customer", even though Audience enum and views.py support it.
-    Fix: added "customer" to both lists.
-    """
+    """_ALL_AUDIENCES and _VALID_AUDIENCES both list every Audience enum value
+    including 'customer', so all views are reachable from CLI and config."""
 
     def test_customer_in_all_audiences(self):
         """GIVEN the CLI audience list."""
@@ -291,23 +314,22 @@ class TestCustomerAudienceAvailability:
         assert "customer" in _VALID_AUDIENCES
 
     def test_audience_enum_matches_all_audiences(self):
-        """All Audience enum values should appear in _ALL_AUDIENCES."""
+        """GIVEN every Audience enum member, WHEN checked, THEN it appears in _ALL_AUDIENCES."""
         from releasepilot.cli.app import _ALL_AUDIENCES
         from releasepilot.domain.enums import Audience
 
         for a in Audience:
-            assert a.value in _ALL_AUDIENCES, f"Audience.{a.name} ({a.value}) missing from _ALL_AUDIENCES"
+            assert a.value in _ALL_AUDIENCES, (
+                f"Audience.{a.name} ({a.value}) missing from _ALL_AUDIENCES"
+            )
 
 
-# ── Fix #6: _is_empty_release i18n incompatibility ──────────────────────────
+# ── _is_empty_release i18n compatibility ─────────────────────────────────────
 
 
 class TestIsEmptyReleaseI18n:
-    """Regression: _is_empty_release checked for the English-only string
-    "0 changes in this release" which never appears in any rendered output.
-    The actual empty-release output uses the i18n label 'no_notable_changes'.
-    Fix: check all supported language variants of the label.
-    """
+    """_is_empty_release checks all supported language variants of the
+    'no_notable_changes' i18n label to detect empty releases."""
 
     def test_detects_empty_english(self):
         """GIVEN empty-release English output."""
@@ -345,17 +367,13 @@ class TestIsEmptyReleaseI18n:
         assert _is_empty_release("   \n  ") is True
 
 
-# ── Fix #7: _build_settings config-override-defaults ────────────────────────
+# ── _build_settings config override with None sentinel ───────────────────────
 
 
 class TestBuildSettingsNoneSentinel:
-    """Regression: _build_settings compared CLI values to hardcoded defaults
-    (e.g. `audience != "changelog"`) to decide if the config file value should
-    override. This meant explicitly passing `--audience changelog` on the CLI
-    was silently overridden by the config file.
-    Fix: use None as default sentinel so config values only apply when user
-    didn't pass any value.
-    """
+    """_build_settings uses None as default sentinel so config-file values
+    only apply when the user did not pass a CLI flag; an explicit CLI value
+    always wins over the config file."""
 
     def test_none_audience_uses_config_value(self):
         """GIVEN audience=None (user didn't pass --audience)."""
@@ -368,8 +386,12 @@ class TestBuildSettingsNoneSentinel:
 
         with patch("releasepilot.config.file_config.load_config", return_value=mock_cfg):
             settings = _build_settings(
-                repo=".", from_ref="", to_ref="HEAD",
-                source_file="", version_str="", title="",
+                repo=".",
+                from_ref="",
+                to_ref="HEAD",
+                source_file="",
+                version_str="",
+                title="",
                 audience=None,
             )
         assert settings.audience == Audience.USER
@@ -385,8 +407,12 @@ class TestBuildSettingsNoneSentinel:
 
         with patch("releasepilot.config.file_config.load_config", return_value=mock_cfg):
             settings = _build_settings(
-                repo=".", from_ref="", to_ref="HEAD",
-                source_file="", version_str="", title="",
+                repo=".",
+                from_ref="",
+                to_ref="HEAD",
+                source_file="",
+                version_str="",
+                title="",
                 audience="changelog",
             )
         assert settings.audience == Audience.CHANGELOG
@@ -402,8 +428,12 @@ class TestBuildSettingsNoneSentinel:
 
         with patch("releasepilot.config.file_config.load_config", return_value=mock_cfg):
             settings = _build_settings(
-                repo=".", from_ref="", to_ref="HEAD",
-                source_file="", version_str="", title="",
+                repo=".",
+                from_ref="",
+                to_ref="HEAD",
+                source_file="",
+                version_str="",
+                title="",
                 lang=None,
             )
         assert settings.language == "pl"
@@ -419,8 +449,12 @@ class TestBuildSettingsNoneSentinel:
 
         with patch("releasepilot.config.file_config.load_config", return_value=mock_cfg):
             settings = _build_settings(
-                repo=".", from_ref="", to_ref="HEAD",
-                source_file="", version_str="", title="",
+                repo=".",
+                from_ref="",
+                to_ref="HEAD",
+                source_file="",
+                version_str="",
+                title="",
                 lang="en",
             )
         assert settings.language == "en"
@@ -436,23 +470,25 @@ class TestBuildSettingsNoneSentinel:
 
         with patch("releasepilot.config.file_config.load_config", return_value=mock_cfg):
             settings = _build_settings(
-                repo=".", from_ref="", to_ref="HEAD",
-                source_file="", version_str="", title="",
+                repo=".",
+                from_ref="",
+                to_ref="HEAD",
+                source_file="",
+                version_str="",
+                title="",
                 output_format=None,
             )
         from releasepilot.domain.enums import OutputFormat
+
         assert settings.output_format == OutputFormat.PLAINTEXT
 
 
-# ── Fix #8: Guide preference index 0 treated as falsy ───────────────────────
+# ── Guide preference index 0 handling ────────────────────────────────────────
 
 
 class TestGuidePreferenceIndexZero:
-    """Regression: In guide.py, `get_pref("audience", choices) or 5` treats
-    index 0 (a valid preference for the first choice) as falsy, falling back
-    to index 5 instead.
-    Fix: use `pref_idx if pref_idx is not None else default`.
-    """
+    """Guide preference lookup uses `is not None` instead of truthiness so
+    index 0 (first choice) is not mistaken for 'no preference'."""
 
     def test_preference_index_zero_not_overridden(self):
         """GIVEN a preference function returning 0 (first item in list)."""
@@ -484,11 +520,15 @@ class TestDedupEmptyInput:
     """Edge case: deduplicate should handle empty input gracefully."""
 
     def test_empty_list(self):
+        """GIVEN an empty item list, WHEN deduplicated, THEN result is empty."""
         from releasepilot.processing.dedup import deduplicate
+
         assert deduplicate([]) == []
 
     def test_single_item(self):
+        """GIVEN a single item, WHEN deduplicated, THEN it is returned unchanged."""
         from releasepilot.processing.dedup import deduplicate
+
         item = _make_item()
         result = deduplicate([item])
         assert len(result) == 1
@@ -498,21 +538,27 @@ class TestAudienceViewsEmptyNotes:
     """Edge case: audience views should handle notes with no groups."""
 
     def test_summary_empty_groups(self):
+        """GIVEN notes with no groups, WHEN summary view applied, THEN result has 0 groups."""
         from releasepilot.audience.views import apply_audience
+
         notes = _make_notes(items=[], groups=())
         result = apply_audience(notes, Audience.SUMMARY)
         assert len(result.groups) == 0
         assert result.total_changes == 0
 
     def test_customer_empty_groups(self):
+        """GIVEN notes with no groups, WHEN customer view applied, THEN result has 0 groups."""
         from releasepilot.audience.views import apply_audience
+
         notes = _make_notes(items=[], groups=())
         result = apply_audience(notes, Audience.CUSTOMER)
         assert len(result.groups) == 0
         assert result.total_changes == 0
 
     def test_user_empty_groups(self):
+        """GIVEN notes with no groups, WHEN user view applied, THEN result has 0 groups."""
         from releasepilot.audience.views import apply_audience
+
         notes = _make_notes(items=[], groups=())
         result = apply_audience(notes, Audience.USER)
         assert len(result.groups) == 0

@@ -43,6 +43,7 @@ def _translate_label(text: str, lang: str) -> str:
         return text
     try:
         from releasepilot.i18n import translate_text
+
         return translate_text(text, target_lang=lang)
     except Exception:  # noqa: BLE001
         return text
@@ -52,8 +53,13 @@ class PdfRenderer:
     """Renders ReleaseNotes as a professional PDF document."""
 
     def render(self, notes: ReleaseNotes, config: RenderConfig) -> str:
-        """Return empty string — PDF is binary. Use render_bytes() instead."""
-        return ""
+        """PDF is binary — use render_bytes() instead.
+
+        Raises NotImplementedError to prevent silent empty-string returns.
+        """
+        raise NotImplementedError(
+            "PdfRenderer.render() is not supported. Use render_bytes() for PDF output."
+        )
 
     def render_bytes(self, notes: ReleaseNotes, config: RenderConfig) -> bytes:
         """Render release notes to a PDF byte buffer."""
@@ -172,9 +178,11 @@ class PdfRenderer:
         subtitle_parts = []
         if rr.version:
             from releasepilot.i18n import get_label as _label
+
             subtitle_parts.append(f"{_label('version', lang)} {rr.version}")
         if rr.release_date:
             from releasepilot.i18n import get_label as _label
+
             released = _label("released_on", lang).format(date=rr.release_date.isoformat())
             subtitle_parts.append(released)
         if notes.metadata.get("pipeline_summary"):
@@ -185,11 +193,15 @@ class PdfRenderer:
         # Divider line
         accent = colors.HexColor(config.accent_color)
         story.append(Spacer(1, 4))
-        divider_data = [["" ]]
+        divider_data = [[""]]
         divider_table = Table(divider_data, colWidths=[doc.width])
-        divider_table.setStyle(TableStyle([
-            ("LINEBELOW", (0, 0), (-1, 0), 1, accent),
-        ]))
+        divider_table.setStyle(
+            TableStyle(
+                [
+                    ("LINEBELOW", (0, 0), (-1, 0), 1, accent),
+                ]
+            )
+        )
         story.append(divider_table)
         story.append(Spacer(1, 8))
 
@@ -199,15 +211,19 @@ class PdfRenderer:
 
             story.append(Paragraph(_label("highlights", lang), section_style))
             for item in notes.highlights:
-                story.append(Paragraph(
-                    f"• <b>{_esc(item.title)}</b>",
-                    item_style,
-                ))
+                story.append(
+                    Paragraph(
+                        f"• <b>{_esc(item.title)}</b>",
+                        item_style,
+                    )
+                )
                 if item.description:
-                    story.append(Paragraph(
-                        _esc(item.description[:200]),
-                        meta_style,
-                    ))
+                    story.append(
+                        Paragraph(
+                            _esc(item.description[:200]),
+                            meta_style,
+                        )
+                    )
 
         # ── Breaking Changes ──
         if notes.breaking_changes:
@@ -215,15 +231,19 @@ class PdfRenderer:
 
             story.append(Paragraph(_label("breaking_changes", lang), section_style))
             for item in notes.breaking_changes:
-                story.append(Paragraph(
-                    f"• {_esc(item.title)}",
-                    breaking_item_style,
-                ))
+                story.append(
+                    Paragraph(
+                        f"• {_esc(item.title)}",
+                        breaking_item_style,
+                    )
+                )
                 if item.description:
-                    story.append(Paragraph(
-                        _esc(item.description[:300]),
-                        meta_style,
-                    ))
+                    story.append(
+                        Paragraph(
+                            _esc(item.description[:300]),
+                            meta_style,
+                        )
+                    )
 
         # ── Category groups ──
         breaking_ids = {item.id for item in notes.breaking_changes}
@@ -255,7 +275,9 @@ class PdfRenderer:
 
         now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
         footer_tpl = _label("footer_generated", lang)
-        footer_html = footer_tpl.format(tool=TOOL_NAME, author=f'<link href="{REPO_URL}">{AUTHOR}</link>', datetime=now)
+        footer_html = footer_tpl.format(
+            tool=TOOL_NAME, author=f'<link href="{REPO_URL}">{AUTHOR}</link>', datetime=now
+        )
         story.append(Paragraph(footer_html, footer_style))
 
         doc.build(story)
@@ -278,8 +300,4 @@ def _item_suffix(item: ChangeItem, config: RenderConfig) -> str:
 
 def _esc(text: str) -> str:
     """Escape XML special characters for reportlab Paragraph."""
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

@@ -80,33 +80,141 @@ class ExecutiveBrief:
         """Return report date formatted for the given language."""
         d = self.release_range.release_date or date.today()
         month_names: dict[str, tuple[str, ...]] = {
-            "pl": ("", "stycznia", "lutego", "marca", "kwietnia", "maja",
-                   "czerwca", "lipca", "sierpnia", "września", "października",
-                   "listopada", "grudnia"),
-            "de": ("", "Januar", "Februar", "März", "April", "Mai",
-                   "Juni", "Juli", "August", "September", "Oktober",
-                   "November", "Dezember"),
-            "fr": ("", "janvier", "février", "mars", "avril", "mai",
-                   "juin", "juillet", "août", "septembre", "octobre",
-                   "novembre", "décembre"),
-            "es": ("", "enero", "febrero", "marzo", "abril", "mayo",
-                   "junio", "julio", "agosto", "septiembre", "octubre",
-                   "noviembre", "diciembre"),
-            "it": ("", "gennaio", "febbraio", "marzo", "aprile", "maggio",
-                   "giugno", "luglio", "agosto", "settembre", "ottobre",
-                   "novembre", "dicembre"),
-            "pt": ("", "janeiro", "fevereiro", "março", "abril", "maio",
-                   "junho", "julho", "agosto", "setembro", "outubro",
-                   "novembro", "dezembro"),
-            "nl": ("", "januari", "februari", "maart", "april", "mei",
-                   "juni", "juli", "augustus", "september", "oktober",
-                   "november", "december"),
-            "uk": ("", "січня", "лютого", "березня", "квітня", "травня",
-                   "червня", "липня", "серпня", "вересня", "жовтня",
-                   "листопада", "грудня"),
-            "cs": ("", "ledna", "února", "března", "dubna", "května",
-                   "června", "července", "srpna", "září", "října",
-                   "listopadu", "prosince"),
+            "pl": (
+                "",
+                "stycznia",
+                "lutego",
+                "marca",
+                "kwietnia",
+                "maja",
+                "czerwca",
+                "lipca",
+                "sierpnia",
+                "września",
+                "października",
+                "listopada",
+                "grudnia",
+            ),
+            "de": (
+                "",
+                "Januar",
+                "Februar",
+                "März",
+                "April",
+                "Mai",
+                "Juni",
+                "Juli",
+                "August",
+                "September",
+                "Oktober",
+                "November",
+                "Dezember",
+            ),
+            "fr": (
+                "",
+                "janvier",
+                "février",
+                "mars",
+                "avril",
+                "mai",
+                "juin",
+                "juillet",
+                "août",
+                "septembre",
+                "octobre",
+                "novembre",
+                "décembre",
+            ),
+            "es": (
+                "",
+                "enero",
+                "febrero",
+                "marzo",
+                "abril",
+                "mayo",
+                "junio",
+                "julio",
+                "agosto",
+                "septiembre",
+                "octubre",
+                "noviembre",
+                "diciembre",
+            ),
+            "it": (
+                "",
+                "gennaio",
+                "febbraio",
+                "marzo",
+                "aprile",
+                "maggio",
+                "giugno",
+                "luglio",
+                "agosto",
+                "settembre",
+                "ottobre",
+                "novembre",
+                "dicembre",
+            ),
+            "pt": (
+                "",
+                "janeiro",
+                "fevereiro",
+                "março",
+                "abril",
+                "maio",
+                "junho",
+                "julho",
+                "agosto",
+                "setembro",
+                "outubro",
+                "novembro",
+                "dezembro",
+            ),
+            "nl": (
+                "",
+                "januari",
+                "februari",
+                "maart",
+                "april",
+                "mei",
+                "juni",
+                "juli",
+                "augustus",
+                "september",
+                "oktober",
+                "november",
+                "december",
+            ),
+            "uk": (
+                "",
+                "січня",
+                "лютого",
+                "березня",
+                "квітня",
+                "травня",
+                "червня",
+                "липня",
+                "серпня",
+                "вересня",
+                "жовтня",
+                "листопада",
+                "грудня",
+            ),
+            "cs": (
+                "",
+                "ledna",
+                "února",
+                "března",
+                "dubna",
+                "května",
+                "června",
+                "července",
+                "srpna",
+                "září",
+                "října",
+                "listopadu",
+                "prosince",
+            ),
         }
         months = month_names.get(lang)
         if months:
@@ -245,17 +353,11 @@ def _generate_summary(notes: ReleaseNotes, metrics: dict[str, int]) -> str:
     if features:
         delivery_parts.append(f"{features} new {_plural(features, 'capability', 'capabilities')}")
     if bugfixes:
-        delivery_parts.append(
-            f"{bugfixes} quality {_plural(bugfixes, 'improvement')}"
-        )
+        delivery_parts.append(f"{bugfixes} quality {_plural(bugfixes, 'improvement')}")
     if improvements:
-        delivery_parts.append(
-            f"{improvements} product {_plural(improvements, 'enhancement')}"
-        )
+        delivery_parts.append(f"{improvements} product {_plural(improvements, 'enhancement')}")
     if performance:
-        delivery_parts.append(
-            f"{performance} performance {_plural(performance, 'optimization')}"
-        )
+        delivery_parts.append(f"{performance} performance {_plural(performance, 'optimization')}")
 
     if delivery_parts:
         joined = _join_natural(delivery_parts)
@@ -365,9 +467,7 @@ def _build_impact_areas(notes: ReleaseNotes) -> list[ImpactArea]:
         have = "has" if n == 1 else "have"
         summary = summary_template.format(n=n, s=s, have=have)
 
-        items = tuple(
-            _to_business_language(item.title) for item in group.items
-        )
+        items = tuple(_to_business_language(item.title) for item in group.items)
 
         areas.append(ImpactArea(title=theme_title, summary=summary, items=items))
 
@@ -393,9 +493,7 @@ def _extract_risks(notes: ReleaseNotes) -> list[str]:
     for group in notes.groups:
         if group.category == ChangeCategory.DEPRECATION:
             for item in group.items:
-                risks.append(
-                    f"Planned deprecation: {_to_business_language(item.title)}"
-                )
+                risks.append(f"Planned deprecation: {_to_business_language(item.title)}")
 
     return risks
 
@@ -408,9 +506,7 @@ def _generate_next_steps(notes: ReleaseNotes) -> list[str]:
     steps: list[str] = []
 
     if notes.breaking_changes:
-        steps.append(
-            "Review and communicate breaking changes to affected teams"
-        )
+        steps.append("Review and communicate breaking changes to affected teams")
 
     has_cat = {g.category for g in notes.groups}
 
@@ -418,9 +514,7 @@ def _generate_next_steps(notes: ReleaseNotes) -> list[str]:
         steps.append("Verify security improvements are active in production")
 
     if ChangeCategory.PERFORMANCE in has_cat:
-        steps.append(
-            "Validate performance improvements against baseline benchmarks"
-        )
+        steps.append("Validate performance improvements against baseline benchmarks")
 
     if ChangeCategory.DEPRECATION in has_cat:
         steps.append("Plan migration timeline for deprecated features")

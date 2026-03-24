@@ -1,0 +1,29 @@
+<div id="first-run-panel" class="first-run hidden">
+  <div class="first-run-icon">&#128640;</div>
+  <div class="first-run-title" data-i18n="ui.first_run.title">Welcome to ReleasePilot</div>
+  <div class="first-run-text" data-i18n="ui.first_run.text">Generate polished release notes from your git history. Choose an action below to get started.</div>
+  <div class="first-run-actions">
+    <div class="first-run-action" role="button" tabindex="0" onclick="launchWizard()" onkeydown="if(event.key==='Enter')launchWizard()">
+      <div class="first-run-action-icon">&#9997;&#65039;</div>
+      <div class="first-run-action-label" data-i18n="ui.first_run.generate">Generate Notes</div>
+      <div class="first-run-action-desc" data-i18n="ui.first_run.generate_desc">Step-by-step wizard to create release notes</div>
+      <div class="first-run-action-badge" data-i18n="ui.wizard.recommended">Recommended</div>
+    </div>
+    <div class="first-run-action" role="button" tabindex="0" onclick="switchTab('guide')" onkeydown="if(event.key==='Enter')switchTab('guide')">
+      <div class="first-run-action-icon">&#128218;</div>
+      <div class="first-run-action-label" data-i18n="ui.first_run.how_it_works">How It Works</div>
+      <div class="first-run-action-desc" data-i18n="ui.first_run.how_it_works_desc">Learn about audiences, formats &amp; pipeline</div>
+    </div>
+    <div class="first-run-action" role="button" tabindex="0" onclick="toggleQS()" onkeydown="if(event.key==='Enter')toggleQS()">
+      <div class="first-run-action-icon">&#9881;</div>
+      <div class="first-run-action-label" data-i18n="ui.first_run.settings">Settings</div>
+      <div class="first-run-action-desc" data-i18n="ui.first_run.settings_desc">Theme, language, density</div>
+    </div>
+    <div class="first-run-action" role="button" tabindex="0" onclick="showSchemaRef()" onkeydown="if(event.key==='Enter')showSchemaRef()">
+      <div class="first-run-action-icon">&#128736;&#65039;</div>
+      <div class="first-run-action-label" data-i18n="ui.first_run.schema">Configuration</div>
+      <div class="first-run-action-desc" data-i18n="ui.first_run.schema_desc">Config file reference</div>
+    </div>
+  </div>
+  <div id="diagnostics-area"></div>
+</div>

@@ -37,6 +37,7 @@ from releasepilot.rendering.executive_md import ExecutiveMarkdownRenderer
 def _pdf_available() -> bool:
     try:
         import reportlab  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -45,9 +46,11 @@ def _pdf_available() -> bool:
 def _docx_available() -> bool:
     try:
         import docx  # noqa: F401
+
         return True
     except ImportError:
         return False
+
 
 # ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -88,7 +91,9 @@ def sample_notes() -> ReleaseNotes:
             _make_item("fix: session token refresh", ChangeCategory.BUGFIX),
         ],
         ChangeCategory.SECURITY: [
-            _make_item("fix: patch XSS vulnerability", ChangeCategory.SECURITY, importance=Importance.HIGH),
+            _make_item(
+                "fix: patch XSS vulnerability", ChangeCategory.SECURITY, importance=Importance.HIGH
+            ),
         ],
         ChangeCategory.PERFORMANCE: [
             _make_item("perf: optimize dashboard queries", ChangeCategory.PERFORMANCE),
@@ -110,8 +115,7 @@ def sample_notes() -> ReleaseNotes:
     }
 
     groups = tuple(
-        ChangeGroup(category=cat, items=tuple(items))
-        for cat, items in items_by_cat.items()
+        ChangeGroup(category=cat, items=tuple(items)) for cat, items in items_by_cat.items()
     )
 
     all_items = [i for items in items_by_cat.values() for i in items]
@@ -236,7 +240,9 @@ class TestComposeExecutiveBrief:
         """THEN breaking changes produce API-related risks."""
         assert len(sample_brief.risks) >= 1
         # Should mention API endpoints removal
-        any_api_risk = any("api" in r.lower() or "endpoint" in r.lower() for r in sample_brief.risks)
+        any_api_risk = any(
+            "api" in r.lower() or "endpoint" in r.lower() for r in sample_brief.risks
+        )
         assert any_api_risk
 
     def test_risks_include_deprecations(self, sample_brief: ExecutiveBrief):
@@ -576,12 +582,18 @@ class TestCliExecutiveAudience:
         runner = CliRunner()
 
         """WHEN generating Markdown via CLI."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--source-file", "examples/sample_changes.json",
-            "--audience", "executive",
-            "--version", "3.0.0",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--audience",
+                "executive",
+                "--version",
+                "3.0.0",
+            ],
+        )
 
         """THEN output contains executive sections."""
         assert result.exit_code == 0
@@ -593,13 +605,20 @@ class TestCliExecutiveAudience:
         runner = CliRunner()
 
         """WHEN generating JSON via CLI."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--source-file", "examples/sample_changes.json",
-            "--audience", "executive",
-            "--format", "json",
-            "--version", "3.0.0",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--audience",
+                "executive",
+                "--format",
+                "json",
+                "--version",
+                "3.0.0",
+            ],
+        )
 
         """THEN output is valid executive brief JSON."""
         assert result.exit_code == 0
@@ -613,14 +632,22 @@ class TestCliExecutiveAudience:
         out = str(tmp_path / "brief.pdf")
 
         """WHEN exporting PDF via CLI."""
-        result = runner.invoke(cli, [
-            "export",
-            "--source-file", "examples/sample_changes.json",
-            "--audience", "executive",
-            "--format", "pdf",
-            "--version", "3.0.0",
-            "-o", out,
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--audience",
+                "executive",
+                "--format",
+                "pdf",
+                "--version",
+                "3.0.0",
+                "-o",
+                out,
+            ],
+        )
 
         """THEN a valid PDF file is created."""
         assert result.exit_code == 0
@@ -635,14 +662,22 @@ class TestCliExecutiveAudience:
         out = str(tmp_path / "brief.docx")
 
         """WHEN exporting DOCX via CLI."""
-        result = runner.invoke(cli, [
-            "export",
-            "--source-file", "examples/sample_changes.json",
-            "--audience", "executive",
-            "--format", "docx",
-            "--version", "3.0.0",
-            "-o", out,
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--audience",
+                "executive",
+                "--format",
+                "docx",
+                "--version",
+                "3.0.0",
+                "-o",
+                out,
+            ],
+        )
 
         """THEN a valid DOCX file is created."""
         assert result.exit_code == 0
@@ -655,12 +690,18 @@ class TestCliExecutiveAudience:
         runner = CliRunner()
 
         """WHEN generating via CLI."""
-        result = runner.invoke(cli, [
-            "generate",
-            "--source-file", "examples/sample_changes.json",
-            "--audience", "executive",
-            "--version", "3.0.0",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "generate",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--audience",
+                "executive",
+                "--version",
+                "3.0.0",
+            ],
+        )
 
         """THEN no raw commit prefixes appear."""
         assert result.exit_code == 0

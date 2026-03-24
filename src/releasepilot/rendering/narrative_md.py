@@ -53,6 +53,7 @@ def _render_header(brief: NarrativeBrief, lang: str) -> str:
     lines.append(f"*{brief.report_date}*")
     if rr.version:
         from releasepilot.i18n import get_label
+
         lines.append(f"*{get_label('version', lang)} {rr.version}*")
     lines.append("")
     lines.append("---")
@@ -103,6 +104,7 @@ def _render_footer(brief: NarrativeBrief, lang: str) -> str:
 
     # Provenance note — how many source facts back this narrative
     from releasepilot.i18n import get_label
+
     provenance = get_label("narrative_provenance", lang).format(
         fact_count=brief.total_facts,
         source_count=len(brief.source_item_ids),
@@ -118,6 +120,7 @@ def _translate(text: str, lang: str) -> str:
         return text
     try:
         from releasepilot.i18n import translate_text
+
         return translate_text(text, target_lang=lang)
     except Exception:  # noqa: BLE001
         return text

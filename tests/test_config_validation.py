@@ -232,7 +232,9 @@ class TestDateRangeLabel:
         from releasepilot.pipeline.orchestrator import build_release_range
 
         settings = Settings(
-            repo_path=".", since_date="2025-01-15", branch="main",
+            repo_path=".",
+            since_date="2025-01-15",
+            branch="main",
         )
 
         """WHEN build_release_range is called."""

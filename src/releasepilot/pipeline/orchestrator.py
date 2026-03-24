@@ -57,7 +57,8 @@ def _compose_title(settings: Settings, fallback: str) -> str:
 
     # Append version suffix if present and not already included
     if settings.version and settings.version not in result:
-        result += f" — Version {settings.version}"
+        version_part = f"Version {settings.version}"
+        result = f"{result} — {version_part}" if result else version_part
 
     return result
 
@@ -118,7 +119,11 @@ def build_release_range(
 
     # Ref-based mode
     fallback = settings.title or ""
-    title = _compose_title(settings, fallback) if (settings.app_name or settings.title) else settings.title
+    title = (
+        _compose_title(settings, fallback)
+        if (settings.app_name or settings.title or settings.version)
+        else settings.title
+    )
 
     return ReleaseRange(
         from_ref=from_ref,
@@ -169,10 +174,17 @@ class PipelineStats:
     """Tracks item counts through each pipeline stage for transparency."""
 
     __slots__ = (
-        "raw", "after_filter", "after_dedup", "final",
-        "category_counts", "contributor_count", "scopes",
-        "first_commit_date", "last_commit_date",
-        "effective_branch", "effective_date_range",
+        "raw",
+        "after_filter",
+        "after_dedup",
+        "final",
+        "category_counts",
+        "contributor_count",
+        "scopes",
+        "first_commit_date",
+        "last_commit_date",
+        "effective_branch",
+        "effective_date_range",
     )
 
     def __init__(self) -> None:
@@ -356,12 +368,14 @@ def render(
 
             raw = ExecutivePdfRenderer().render_bytes(brief, lang=lang, accent_color=accent)
             import base64
+
             return base64.b64encode(raw).decode("ascii")
         if fmt == OutputFormat.DOCX:
             from releasepilot.rendering.executive_docx import ExecutiveDocxRenderer
 
             raw = ExecutiveDocxRenderer().render_bytes(brief, lang=lang, accent_color=accent)
             import base64
+
             return base64.b64encode(raw).decode("ascii")
         # Markdown / plaintext / json → executive markdown renderer
         from releasepilot.rendering.executive_md import ExecutiveMarkdownRenderer
@@ -379,12 +393,14 @@ def render(
 
             raw = NarrativePdfRenderer().render_bytes(brief, lang=lang, accent_color=accent)
             import base64
+
             return base64.b64encode(raw).decode("ascii")
         if fmt == OutputFormat.DOCX:
             from releasepilot.rendering.narrative_docx import NarrativeDocxRenderer
 
             raw = NarrativeDocxRenderer().render_bytes(brief, lang=lang, accent_color=accent)
             import base64
+
             return base64.b64encode(raw).decode("ascii")
         if fmt == OutputFormat.PLAINTEXT:
             from releasepilot.rendering.narrative_plain import NarrativePlaintextRenderer
@@ -401,6 +417,7 @@ def render(
 
         raw = PdfRenderer().render_bytes(notes, settings.render)
         import base64
+
         return base64.b64encode(raw).decode("ascii")
 
     if fmt == OutputFormat.DOCX:
@@ -408,6 +425,7 @@ def render(
 
         raw = DocxRenderer().render_bytes(notes, settings.render)
         import base64
+
         return base64.b64encode(raw).decode("ascii")
 
     # --- Standard text formats -----------------------------------------------

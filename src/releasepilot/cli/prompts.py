@@ -29,12 +29,14 @@ console = Console(stderr=True)
 # Feature detection
 # ---------------------------------------------------------------------------
 
+
 def _use_arrow_keys() -> bool:
     """Return True if arrow-key prompts (questionary) should be used."""
     if not sys.stdin.isatty():
         return False
     try:
         import questionary  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -43,6 +45,7 @@ def _use_arrow_keys() -> bool:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def select_one[T](
     title: str,
@@ -112,6 +115,7 @@ def text_prompt(message: str, *, default: str = "") -> str:
 # Questionary (arrow-key) implementation
 # ---------------------------------------------------------------------------
 
+
 def _questionary_select[T](
     title: str,
     choices: list[tuple[str, T]],
@@ -122,14 +126,16 @@ def _questionary_select[T](
     import questionary
     from questionary import Choice, Style
 
-    style = Style([
-        ("qmark", "fg:cyan bold"),
-        ("question", "bold"),
-        ("pointer", "fg:cyan bold"),
-        ("highlighted", "fg:cyan bold"),
-        ("selected", "fg:green"),
-        ("instruction", ""),
-    ])
+    style = Style(
+        [
+            ("qmark", "fg:cyan bold"),
+            ("question", "bold"),
+            ("pointer", "fg:cyan bold"),
+            ("highlighted", "fg:cyan bold"),
+            ("selected", "fg:green"),
+            ("instruction", ""),
+        ]
+    )
 
     q_choices = [Choice(title=label, value=value) for label, value in choices]
 
@@ -166,6 +172,7 @@ def _questionary_select[T](
 # Numeric-fallback implementation
 # ---------------------------------------------------------------------------
 
+
 def _display_menu(
     title: str,
     choices: list[tuple[str, ...]],
@@ -198,7 +205,9 @@ def _numeric_select[T](
     while True:
         try:
             raw = click.prompt(
-                "Choice", default=str(default_num), show_default=False,
+                "Choice",
+                default=str(default_num),
+                show_default=False,
             )
         except (click.Abort, EOFError) as exc:
             raise SystemExit(130) from exc
@@ -210,8 +219,7 @@ def _numeric_select[T](
             num = int(raw)
         except ValueError:
             console.print(
-                f"[yellow]  ⚠ Invalid input. Please enter a number "
-                f"from 1 to {max_num}.[/yellow]",
+                f"[yellow]  ⚠ Invalid input. Please enter a number from 1 to {max_num}.[/yellow]",
             )
             console.print()
             _display_menu(title, choices, default_num, hint)

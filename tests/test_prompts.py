@@ -523,11 +523,13 @@ def _init_repo(path: Path) -> None:
     subprocess.run(["git", "init", "-b", "main", str(path)], check=True, capture_output=True)
     subprocess.run(
         ["git", "-C", str(path), "config", "user.email", "t@t.com"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     subprocess.run(
         ["git", "-C", str(path), "config", "user.name", "T"],
-        check=True, capture_output=True,
+        check=True,
+        capture_output=True,
     )
     for msg, fname in [
         ("feat: add login", "login.py"),
@@ -538,7 +540,8 @@ def _init_repo(path: Path) -> None:
         subprocess.run(["git", "-C", str(path), "add", "."], check=True, capture_output=True)
         subprocess.run(
             ["git", "-C", str(path), "commit", "-m", msg],
-            check=True, capture_output=True,
+            check=True,
+            capture_output=True,
         )
 
 

@@ -27,6 +27,7 @@ def _translate(text: str, lang: str) -> str:
         return text
     try:
         from releasepilot.i18n import translate_text
+
         return translate_text(text, target_lang=lang)
     except Exception:  # noqa: BLE001
         return text
@@ -59,7 +60,9 @@ def _rgb(hex6: str):
 class ExecutiveDocxRenderer:
     """Renders an ExecutiveBrief as a premium Word document."""
 
-    def render_bytes(self, brief: ExecutiveBrief, *, lang: str = "en", accent_color: str = "#FB6400") -> bytes:
+    def render_bytes(
+        self, brief: ExecutiveBrief, *, lang: str = "en", accent_color: str = "#FB6400"
+    ) -> bytes:
         from docx import Document
         from docx.enum.table import WD_TABLE_ALIGNMENT
         from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -166,8 +169,12 @@ class ExecutiveDocxRenderer:
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         metrics_rows = _build_metrics_rows(brief, lang)
         if len(metrics_rows) > 1:
-            _add_accent_section_heading(doc, qn,
-                get_label("release_metrics", lang), _accent_hex, _SLATE,
+            _add_accent_section_heading(
+                doc,
+                qn,
+                get_label("release_metrics", lang),
+                _accent_hex,
+                _SLATE,
             )
 
             table = doc.add_table(rows=len(metrics_rows), cols=2)
@@ -212,8 +219,12 @@ class ExecutiveDocxRenderer:
         # KEY ACHIEVEMENTS
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.key_achievements:
-            _add_accent_section_heading(doc, qn,
-                get_label("key_achievements", lang), _accent_hex, _SLATE,
+            _add_accent_section_heading(
+                doc,
+                qn,
+                get_label("key_achievements", lang),
+                _accent_hex,
+                _SLATE,
             )
             for i, item in enumerate(brief.key_achievements, 1):
                 para = doc.add_paragraph()
@@ -230,8 +241,12 @@ class ExecutiveDocxRenderer:
         # IMPACT AREAS
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         for area in brief.impact_areas:
-            _add_accent_section_heading(doc, qn,
-                _translate(area.title, lang), _accent_hex, _SLATE,
+            _add_accent_section_heading(
+                doc,
+                qn,
+                _translate(area.title, lang),
+                _accent_hex,
+                _SLATE,
             )
             sp = doc.add_paragraph()
             sp.paragraph_format.space_after = Pt(6)
@@ -284,16 +299,18 @@ class ExecutiveDocxRenderer:
         # NEXT STEPS
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.next_steps:
-            _add_accent_section_heading(doc, qn,
-                get_label("next_steps", lang), _accent_hex, _SLATE,
+            _add_accent_section_heading(
+                doc,
+                qn,
+                get_label("next_steps", lang),
+                _accent_hex,
+                _SLATE,
             )
             for step in brief.next_steps:
                 bp = doc.add_paragraph()
                 bp.paragraph_format.left_indent = Pt(16)
                 bp.paragraph_format.space_after = Pt(4)
-                bp.add_run(f"•  {_translate(step, lang)}").font.color.rgb = (
-                    _rgb(_CHARCOAL)
-                )
+                bp.add_run(f"•  {_translate(step, lang)}").font.color.rgb = _rgb(_CHARCOAL)
             doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -312,14 +329,20 @@ class ExecutiveDocxRenderer:
         footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
         footer_tpl = _gl("footer_generated", lang)
         footer_text = footer_tpl.format(
-            tool=TOOL_NAME, author="__AUTHOR__", datetime=now,
+            tool=TOOL_NAME,
+            author="__AUTHOR__",
+            datetime=now,
         )
         parts = footer_text.split("__AUTHOR__")
         fr = footer.add_run(parts[0])
         fr.font.size = Pt(7.5)
         fr.font.color.rgb = _rgb(_LIGHT_GRAY)
         _add_hyperlink(
-            footer, REPO_URL, AUTHOR, Pt(7.5), _rgb(_LIGHT_GRAY),
+            footer,
+            REPO_URL,
+            AUTHOR,
+            Pt(7.5),
+            _rgb(_LIGHT_GRAY),
         )
         if len(parts) > 1:
             fr2 = footer.add_run(parts[1])
@@ -335,7 +358,8 @@ class ExecutiveDocxRenderer:
 
 
 def _build_metrics_rows(
-    brief: ExecutiveBrief, lang: str = "en",
+    brief: ExecutiveBrief,
+    lang: str = "en",
 ) -> list[list[str]]:
     """Build translated metrics rows for the dashboard table."""
     from releasepilot.i18n import get_label
@@ -377,12 +401,15 @@ def _add_accent_rule(doc, qn, color: str, thickness: str = "18") -> None:
     para.paragraph_format.space_after = Pt(14)
     p_pr = para._p.get_or_add_pPr()
     p_bdr = p_pr.makeelement(qn("w:pBdr"), {})
-    bottom = p_bdr.makeelement(qn("w:bottom"), {
-        qn("w:val"): "single",
-        qn("w:sz"): thickness,
-        qn("w:space"): "1",
-        qn("w:color"): color,
-    })
+    bottom = p_bdr.makeelement(
+        qn("w:bottom"),
+        {
+            qn("w:val"): "single",
+            qn("w:sz"): thickness,
+            qn("w:space"): "1",
+            qn("w:color"): color,
+        },
+    )
     p_bdr.append(bottom)
     p_pr.append(p_bdr)
 
@@ -396,18 +423,25 @@ def _add_thin_rule(doc, qn, color: str) -> None:
     para.paragraph_format.space_after = Pt(8)
     p_pr = para._p.get_or_add_pPr()
     p_bdr = p_pr.makeelement(qn("w:pBdr"), {})
-    bottom = p_bdr.makeelement(qn("w:bottom"), {
-        qn("w:val"): "single",
-        qn("w:sz"): "4",
-        qn("w:space"): "1",
-        qn("w:color"): color,
-    })
+    bottom = p_bdr.makeelement(
+        qn("w:bottom"),
+        {
+            qn("w:val"): "single",
+            qn("w:sz"): "4",
+            qn("w:space"): "1",
+            qn("w:color"): color,
+        },
+    )
     p_bdr.append(bottom)
     p_pr.append(p_bdr)
 
 
 def _add_accent_section_heading(
-    doc, qn, text: str, accent_color: str, text_color: str,
+    doc,
+    qn,
+    text: str,
+    accent_color: str,
+    text_color: str,
 ) -> None:
     """Add a section heading with a left accent bar for scannability."""
     from docx.shared import Pt
@@ -424,12 +458,15 @@ def _add_accent_section_heading(
     # Left border via paragraph border XML
     p_pr = para._p.get_or_add_pPr()
     p_bdr = p_pr.makeelement(qn("w:pBdr"), {})
-    left = p_bdr.makeelement(qn("w:left"), {
-        qn("w:val"): "single",
-        qn("w:sz"): "24",
-        qn("w:space"): "8",
-        qn("w:color"): accent_color,
-    })
+    left = p_bdr.makeelement(
+        qn("w:left"),
+        {
+            qn("w:val"): "single",
+            qn("w:sz"): "24",
+            qn("w:space"): "8",
+            qn("w:color"): accent_color,
+        },
+    )
     p_bdr.append(left)
     p_pr.append(p_bdr)
 
@@ -439,12 +476,15 @@ def _add_table_bottom_border(table, qn, color: str) -> None:
     tbl = table._tbl
     tbl_pr = tbl.tblPr if tbl.tblPr is not None else tbl._add_tblPr()
     borders = tbl_pr.makeelement(qn("w:tblBorders"), {})
-    bottom = borders.makeelement(qn("w:bottom"), {
-        qn("w:val"): "single",
-        qn("w:sz"): "4",
-        qn("w:space"): "0",
-        qn("w:color"): color,
-    })
+    bottom = borders.makeelement(
+        qn("w:bottom"),
+        {
+            qn("w:val"): "single",
+            qn("w:sz"): "4",
+            qn("w:space"): "0",
+            qn("w:color"): color,
+        },
+    )
     borders.append(bottom)
     tbl_pr.append(borders)
 
@@ -454,11 +494,14 @@ def _add_table_left_border(table, qn, color: str) -> None:
     tbl = table._tbl
     tbl_pr = tbl.tblPr if tbl.tblPr is not None else tbl._add_tblPr()
     borders = tbl_pr.makeelement(qn("w:tblBorders"), {})
-    left = borders.makeelement(qn("w:left"), {
-        qn("w:val"): "single",
-        qn("w:sz"): "18",
-        qn("w:space"): "0",
-        qn("w:color"): color,
-    })
+    left = borders.makeelement(
+        qn("w:left"),
+        {
+            qn("w:val"): "single",
+            qn("w:sz"): "18",
+            qn("w:space"): "0",
+            qn("w:color"): color,
+        },
+    )
     borders.append(left)
     tbl_pr.append(borders)

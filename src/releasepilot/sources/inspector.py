@@ -111,7 +111,10 @@ def _is_git_repo(repo_path: str) -> bool:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "rev-parse", "--git-dir"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -122,7 +125,10 @@ def _list_branches(repo_path: str) -> list[str]:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "branch", "--format=%(refname:short)"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         if result.returncode != 0:
             return []
@@ -135,7 +141,10 @@ def _get_current_branch(repo_path: str) -> str:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "branch", "--show-current"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         return result.stdout.strip() if result.returncode == 0 else ""
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -154,7 +163,10 @@ def _detect_default_branch(repo_path: str, branches: list[str]) -> str:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "symbolic-ref", "refs/remotes/origin/HEAD"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         if result.returncode == 0:
             ref = result.stdout.strip()
@@ -193,7 +205,10 @@ def _list_recent_tags(repo_path: str, limit: int = 10) -> list[str]:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "tag", "--sort=-creatordate"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         if result.returncode != 0:
             return []
@@ -207,7 +222,10 @@ def _has_commits(repo_path: str) -> bool:
     try:
         result = subprocess.run(
             ["git", "-C", repo_path, "rev-parse", "HEAD"],
-            capture_output=True, text=True, timeout=10, check=False,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
         )
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):

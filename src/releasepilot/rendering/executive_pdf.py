@@ -27,6 +27,7 @@ def _translate(text: str, lang: str) -> str:
         return text
     try:
         from releasepilot.i18n import translate_text
+
         return translate_text(text, target_lang=lang)
     except Exception:  # noqa: BLE001
         return text
@@ -52,7 +53,9 @@ _RISK_BORDER = "#fca5a5"
 class ExecutivePdfRenderer:
     """Renders an ExecutiveBrief as a premium PDF document."""
 
-    def render_bytes(self, brief: ExecutiveBrief, *, lang: str = "en", accent_color: str = "#FB6400") -> bytes:
+    def render_bytes(
+        self, brief: ExecutiveBrief, *, lang: str = "en", accent_color: str = "#FB6400"
+    ) -> bytes:
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import A4
         from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -100,59 +103,99 @@ class ExecutivePdfRenderer:
         c_risk = colors.HexColor(_RISK_RED)
         c_risk_bg = colors.HexColor(_RISK_BG)
 
-
         # ── Paragraph styles ─────────────────────────────────────────────
         s_app = ParagraphStyle(
-            "AppName", parent=styles["Title"],
-            fontName=fn_b, fontSize=36, leading=42,
-            spaceAfter=2, alignment=1, textColor=c_navy,
+            "AppName",
+            parent=styles["Title"],
+            fontName=fn_b,
+            fontSize=36,
+            leading=42,
+            spaceAfter=2,
+            alignment=1,
+            textColor=c_navy,
         )
         s_title = ParagraphStyle(
-            "ReportTitle", parent=styles["Normal"],
-            fontName=fn, fontSize=16, leading=20,
-            spaceAfter=0, textColor=c_slate,
+            "ReportTitle",
+            parent=styles["Normal"],
+            fontName=fn,
+            fontSize=16,
+            leading=20,
+            spaceAfter=0,
+            textColor=c_slate,
         )
         s_meta = ParagraphStyle(
-            "Meta", parent=styles["Normal"],
-            fontName=fn, fontSize=9.5, leading=13,
-            textColor=c_meta, spaceAfter=0,
+            "Meta",
+            parent=styles["Normal"],
+            fontName=fn,
+            fontSize=9.5,
+            leading=13,
+            textColor=c_meta,
+            spaceAfter=0,
         )
         s_body = ParagraphStyle(
-            "Body", parent=styles["Normal"],
-            fontName=fn, fontSize=10.5, leading=16,
-            spaceAfter=6, textColor=c_charcoal,
+            "Body",
+            parent=styles["Normal"],
+            fontName=fn,
+            fontSize=10.5,
+            leading=16,
+            spaceAfter=6,
+            textColor=c_charcoal,
         )
         s_summary_body = ParagraphStyle(
-            "SummaryBody", parent=s_body,
-            fontSize=11, leading=17, spaceAfter=0,
+            "SummaryBody",
+            parent=s_body,
+            fontSize=11,
+            leading=17,
+            spaceAfter=0,
             textColor=c_charcoal,
         )
         s_heading = ParagraphStyle(
-            "SectionHead", parent=styles["Normal"],
-            fontName=fn_b, fontSize=12.5, leading=16,
-            textColor=c_slate, spaceAfter=0,
+            "SectionHead",
+            parent=styles["Normal"],
+            fontName=fn_b,
+            fontSize=12.5,
+            leading=16,
+            textColor=c_slate,
+            spaceAfter=0,
         )
         s_bullet = ParagraphStyle(
-            "Bullet", parent=s_body,
-            leftIndent=16, bulletIndent=4, spaceAfter=4,
+            "Bullet",
+            parent=s_body,
+            leftIndent=16,
+            bulletIndent=4,
+            spaceAfter=4,
         )
         s_numbered = ParagraphStyle(
-            "Numbered", parent=s_body,
-            leftIndent=16, spaceAfter=5,
+            "Numbered",
+            parent=s_body,
+            leftIndent=16,
+            spaceAfter=5,
         )
         s_impact_summary = ParagraphStyle(
-            "ImpactSummary", parent=s_body,
-            fontName=fn_i, fontSize=10, leading=14,
-            leftIndent=4, textColor=c_text, spaceAfter=6,
+            "ImpactSummary",
+            parent=s_body,
+            fontName=fn_i,
+            fontSize=10,
+            leading=14,
+            leftIndent=4,
+            textColor=c_text,
+            spaceAfter=6,
         )
         s_risk = ParagraphStyle(
-            "RiskBullet", parent=s_body,
-            leftIndent=12, spaceAfter=4, textColor=c_risk,
+            "RiskBullet",
+            parent=s_body,
+            leftIndent=12,
+            spaceAfter=4,
+            textColor=c_risk,
         )
         s_footer = ParagraphStyle(
-            "Footer", parent=styles["Normal"],
-            fontName=fn, fontSize=7.5, leading=10,
-            textColor=c_light, alignment=1,
+            "Footer",
+            parent=styles["Normal"],
+            fontName=fn,
+            fontSize=7.5,
+            leading=10,
+            textColor=c_light,
+            alignment=1,
         )
 
         story: list = []
@@ -183,33 +226,44 @@ class ExecutivePdfRenderer:
 
         # Thick accent divider after title block
         story.append(Spacer(1, 14))
-        story.append(HRFlowable(
-            width="100%", thickness=2.5, color=c_accent,
-            spaceAfter=0, spaceBefore=0,
-        ))
+        story.append(
+            HRFlowable(
+                width="100%",
+                thickness=2.5,
+                color=c_accent,
+                spaceAfter=0,
+                spaceBefore=0,
+            )
+        )
         story.append(Spacer(1, 18))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         # EXECUTIVE SUMMARY — highlighted panel
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         summary_heading = Paragraph(
-            get_label("executive_summary", lang), s_heading,
+            get_label("executive_summary", lang),
+            s_heading,
         )
         summary_text = Paragraph(
-            _esc(_translate(brief.executive_summary, lang)), s_summary_body,
+            _esc(_translate(brief.executive_summary, lang)),
+            s_summary_body,
         )
         summary_table = Table(
             [[summary_heading], [Spacer(1, 4)], [summary_text]],
             colWidths=[w - 20],
         )
-        summary_table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), c_bg),
-            ("LEFTPADDING", (0, 0), (-1, -1), 14),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 14),
-            ("TOPPADDING", (0, 0), (0, 0), 12),
-            ("BOTTOMPADDING", (-1, -1), (-1, -1), 14),
-            ("ROUNDEDCORNERS", [4, 4, 4, 4]),
-        ]))
+        summary_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, -1), c_bg),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 14),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+                    ("TOPPADDING", (0, 0), (0, 0), 12),
+                    ("BOTTOMPADDING", (-1, -1), (-1, -1), 14),
+                    ("ROUNDEDCORNERS", [4, 4, 4, 4]),
+                ]
+            )
+        )
         story.append(summary_table)
         story.append(Spacer(1, 16))
 
@@ -218,36 +272,45 @@ class ExecutivePdfRenderer:
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         metrics_rows = _build_metrics_rows(brief, lang)
         if len(metrics_rows) > 1:
-            story.append(_accent_heading(
-                get_label("release_metrics", lang), s_heading, c_accent, w,
-            ))
+            story.append(
+                _accent_heading(
+                    get_label("release_metrics", lang),
+                    s_heading,
+                    c_accent,
+                    w,
+                )
+            )
             story.append(Spacer(1, 8))
 
             col_w = [w * 0.60, w * 0.18]
             mt = Table(metrics_rows, colWidths=col_w)
-            mt.setStyle(TableStyle([
-                # Header row
-                ("FONTNAME", (0, 0), (-1, 0), fn_b),
-                ("FONTSIZE", (0, 0), (-1, 0), 9.5),
-                ("TEXTCOLOR", (0, 0), (-1, 0), c_slate),
-                ("BACKGROUND", (0, 0), (-1, 0), c_bg_metrics),
-                ("LINEBELOW", (0, 0), (-1, 0), 0.8, c_border),
-                # Data rows
-                ("FONTNAME", (0, 1), (-1, -1), fn),
-                ("FONTSIZE", (0, 1), (-1, -1), 10),
-                ("TEXTCOLOR", (0, 1), (-1, -1), c_charcoal),
-                ("LINEBELOW", (0, 1), (-1, -2), 0.3, colors.HexColor("#f1f5f9")),
-                ("LINEBELOW", (0, -1), (-1, -1), 0.6, c_border),
-                # Values column — bold
-                ("FONTNAME", (1, 1), (1, -1), fn_b),
-                # Spacing
-                ("TOPPADDING", (0, 0), (-1, -1), 7),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
-                ("LEFTPADDING", (0, 0), (0, -1), 12),
-                ("RIGHTPADDING", (1, 0), (1, -1), 12),
-                ("ALIGN", (1, 0), (1, -1), "RIGHT"),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ]))
+            mt.setStyle(
+                TableStyle(
+                    [
+                        # Header row
+                        ("FONTNAME", (0, 0), (-1, 0), fn_b),
+                        ("FONTSIZE", (0, 0), (-1, 0), 9.5),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), c_slate),
+                        ("BACKGROUND", (0, 0), (-1, 0), c_bg_metrics),
+                        ("LINEBELOW", (0, 0), (-1, 0), 0.8, c_border),
+                        # Data rows
+                        ("FONTNAME", (0, 1), (-1, -1), fn),
+                        ("FONTSIZE", (0, 1), (-1, -1), 10),
+                        ("TEXTCOLOR", (0, 1), (-1, -1), c_charcoal),
+                        ("LINEBELOW", (0, 1), (-1, -2), 0.3, colors.HexColor("#f1f5f9")),
+                        ("LINEBELOW", (0, -1), (-1, -1), 0.6, c_border),
+                        # Values column — bold
+                        ("FONTNAME", (1, 1), (1, -1), fn_b),
+                        # Spacing
+                        ("TOPPADDING", (0, 0), (-1, -1), 7),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+                        ("LEFTPADDING", (0, 0), (0, -1), 12),
+                        ("RIGHTPADDING", (1, 0), (1, -1), 12),
+                        ("ALIGN", (1, 0), (1, -1), "RIGHT"),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ]
+                )
+            )
             story.append(mt)
             story.append(Spacer(1, 18))
 
@@ -255,14 +318,22 @@ class ExecutivePdfRenderer:
         # KEY ACHIEVEMENTS
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.key_achievements:
-            story.append(_accent_heading(
-                get_label("key_achievements", lang), s_heading, c_accent, w,
-            ))
+            story.append(
+                _accent_heading(
+                    get_label("key_achievements", lang),
+                    s_heading,
+                    c_accent,
+                    w,
+                )
+            )
             story.append(Spacer(1, 8))
             for i, item in enumerate(brief.key_achievements, 1):
-                story.append(Paragraph(
-                    f"<b>{i}.</b>  {_esc(item)}", s_numbered,
-                ))
+                story.append(
+                    Paragraph(
+                        f"<b>{i}.</b>  {_esc(item)}",
+                        s_numbered,
+                    )
+                )
             story.append(Spacer(1, 12))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -273,7 +344,10 @@ class ExecutivePdfRenderer:
             # but let bullet items flow naturally across page breaks.
             header_block: list = [
                 _accent_heading(
-                    _esc(_translate(area.title, lang)), s_heading, c_accent, w,
+                    _esc(_translate(area.title, lang)),
+                    s_heading,
+                    c_accent,
+                    w,
                 ),
                 Spacer(1, 4),
                 Paragraph(
@@ -294,7 +368,9 @@ class ExecutivePdfRenderer:
             risk_heading = Paragraph(
                 get_label("risks_attention", lang),
                 ParagraphStyle(
-                    "RiskHead", parent=s_heading, textColor=c_risk,
+                    "RiskHead",
+                    parent=s_heading,
+                    textColor=c_risk,
                 ),
             )
             risk_items: list = [risk_heading, Spacer(1, 6)]
@@ -305,28 +381,36 @@ class ExecutivePdfRenderer:
                 [[item] for item in risk_items],
                 colWidths=[w - 24],
             )
-            risk_table.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), c_risk_bg),
-                ("LEFTPADDING", (0, 0), (-1, -1), 14),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 14),
-                ("TOPPADDING", (0, 0), (0, 0), 10),
-                ("BOTTOMPADDING", (-1, -1), (-1, -1), 10),
-                ("LINEBELOW", (0, 0), (0, 0), 0, c_risk_bg),
-                ("ROUNDEDCORNERS", [4, 4, 4, 4]),
-            ]))
+            risk_table.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, -1), c_risk_bg),
+                        ("LEFTPADDING", (0, 0), (-1, -1), 14),
+                        ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+                        ("TOPPADDING", (0, 0), (0, 0), 10),
+                        ("BOTTOMPADDING", (-1, -1), (-1, -1), 10),
+                        ("LINEBELOW", (0, 0), (0, 0), 0, c_risk_bg),
+                        ("ROUNDEDCORNERS", [4, 4, 4, 4]),
+                    ]
+                )
+            )
             # Left accent bar via outer wrapper
             risk_wrapper = Table(
                 [[risk_table]],
                 colWidths=[w - 20],
             )
-            risk_wrapper.setStyle(TableStyle([
-                ("LEFTPADDING", (0, 0), (0, 0), 4),
-                ("RIGHTPADDING", (0, 0), (0, 0), 0),
-                ("TOPPADDING", (0, 0), (0, 0), 0),
-                ("BOTTOMPADDING", (0, 0), (0, 0), 0),
-                ("LINEBELOW", (0, 0), (-1, -1), 0, colors.white),
-                ("LINEBEFORE", (0, 0), (0, -1), 3, c_risk),
-            ]))
+            risk_wrapper.setStyle(
+                TableStyle(
+                    [
+                        ("LEFTPADDING", (0, 0), (0, 0), 4),
+                        ("RIGHTPADDING", (0, 0), (0, 0), 0),
+                        ("TOPPADDING", (0, 0), (0, 0), 0),
+                        ("BOTTOMPADDING", (0, 0), (0, 0), 0),
+                        ("LINEBELOW", (0, 0), (-1, -1), 0, colors.white),
+                        ("LINEBEFORE", (0, 0), (0, -1), 3, c_risk),
+                    ]
+                )
+            )
             story.append(risk_wrapper)
             story.append(Spacer(1, 16))
 
@@ -334,24 +418,37 @@ class ExecutivePdfRenderer:
         # NEXT STEPS
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.next_steps:
-            story.append(_accent_heading(
-                get_label("next_steps", lang), s_heading, c_accent, w,
-            ))
+            story.append(
+                _accent_heading(
+                    get_label("next_steps", lang),
+                    s_heading,
+                    c_accent,
+                    w,
+                )
+            )
             story.append(Spacer(1, 6))
             for step in brief.next_steps:
-                story.append(Paragraph(
-                    f"•  {_esc(_translate(step, lang))}", s_bullet,
-                ))
+                story.append(
+                    Paragraph(
+                        f"•  {_esc(_translate(step, lang))}",
+                        s_bullet,
+                    )
+                )
             story.append(Spacer(1, 10))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         # FOOTER
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         story.append(Spacer(1, 16))
-        story.append(HRFlowable(
-            width="100%", thickness=0.5, color=c_border,
-            spaceBefore=0, spaceAfter=10,
-        ))
+        story.append(
+            HRFlowable(
+                width="100%",
+                thickness=0.5,
+                color=c_border,
+                spaceBefore=0,
+                spaceAfter=10,
+            )
+        )
         from datetime import UTC, datetime
 
         from releasepilot.rendering import AUTHOR, TOOL_NAME
@@ -359,7 +456,8 @@ class ExecutivePdfRenderer:
         now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
         footer_tpl = get_label("footer_generated", lang)
         footer_html = footer_tpl.format(
-            tool=TOOL_NAME, datetime=now,
+            tool=TOOL_NAME,
+            datetime=now,
             author=f'<link href="{REPO_URL}">{AUTHOR}</link>',
         )
         story.append(Paragraph(footer_html, s_footer))
@@ -378,18 +476,23 @@ def _accent_heading(text: str, style, accent_color, width: float):
     bar_w = 3.5
     para = Paragraph(text, style)
     t = Table([[para]], colWidths=[width - bar_w - 8])
-    t.setStyle(TableStyle([
-        ("LINEBEFORE", (0, 0), (0, -1), bar_w, accent_color),
-        ("LEFTPADDING", (0, 0), (0, 0), 10),
-        ("RIGHTPADDING", (0, 0), (0, 0), 0),
-        ("TOPPADDING", (0, 0), (0, 0), 2),
-        ("BOTTOMPADDING", (0, 0), (0, 0), 2),
-    ]))
+    t.setStyle(
+        TableStyle(
+            [
+                ("LINEBEFORE", (0, 0), (0, -1), bar_w, accent_color),
+                ("LEFTPADDING", (0, 0), (0, 0), 10),
+                ("RIGHTPADDING", (0, 0), (0, 0), 0),
+                ("TOPPADDING", (0, 0), (0, 0), 2),
+                ("BOTTOMPADDING", (0, 0), (0, 0), 2),
+            ]
+        )
+    )
     return t
 
 
 def _build_metrics_rows(
-    brief: ExecutiveBrief, lang: str = "en",
+    brief: ExecutiveBrief,
+    lang: str = "en",
 ) -> list[list[str]]:
     """Build translated metrics rows for the dashboard table."""
     from releasepilot.i18n import get_label
@@ -414,8 +517,4 @@ def _build_metrics_rows(
 
 def _esc(text: str) -> str:
     """Escape XML special characters for reportlab Paragraph."""
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")

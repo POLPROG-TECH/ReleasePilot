@@ -108,10 +108,10 @@ class TestPdfRenderer:
         renderer = PdfRenderer()
 
         """WHEN calling the string render method."""
-        result = renderer.render(sample_notes, RenderConfig())
+        with pytest.raises(NotImplementedError, match="render_bytes"):
+            renderer.render(sample_notes, RenderConfig())
 
-        """THEN it returns an empty string since PDF is binary."""
-        assert result == ""
+        """THEN it raises NotImplementedError guiding users to render_bytes()."""
 
     def test_pdf_is_nontrivial(self, sample_notes: ReleaseNotes):
         """GIVEN a PDF renderer."""
@@ -168,10 +168,10 @@ class TestDocxRenderer:
         renderer = DocxRenderer()
 
         """WHEN calling the string render method."""
-        result = renderer.render(sample_notes, RenderConfig())
+        with pytest.raises(NotImplementedError, match="render_bytes"):
+            renderer.render(sample_notes, RenderConfig())
 
-        """THEN it returns an empty string since DOCX is binary."""
-        assert result == ""
+        """THEN it raises NotImplementedError guiding users to render_bytes()."""
 
     def test_docx_can_be_opened(self, sample_notes: ReleaseNotes, tmp_path: Path):
         """GIVEN a rendered DOCX file written to disk."""
@@ -182,6 +182,7 @@ class TestDocxRenderer:
 
         """WHEN opening with python-docx."""
         from docx import Document
+
         doc = Document(str(out))
 
         """THEN it has content including the version number."""
@@ -225,13 +226,20 @@ class TestCLIPdfDocxExport:
         out = str(tmp_path / "notes.pdf")
 
         """WHEN exporting to PDF."""
-        result = runner.invoke(cli, [
-            "export",
-            "--source-file", "examples/sample_changes.json",
-            "--format", "pdf",
-            "-o", out,
-            "--version", "3.0.0",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--format",
+                "pdf",
+                "-o",
+                out,
+                "--version",
+                "3.0.0",
+            ],
+        )
 
         """THEN a valid PDF file is created."""
         assert result.exit_code == 0
@@ -248,13 +256,20 @@ class TestCLIPdfDocxExport:
         out = str(tmp_path / "notes.docx")
 
         """WHEN exporting to DOCX."""
-        result = runner.invoke(cli, [
-            "export",
-            "--source-file", "examples/sample_changes.json",
-            "--format", "docx",
-            "-o", out,
-            "--version", "3.0.0",
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "export",
+                "--source-file",
+                "examples/sample_changes.json",
+                "--format",
+                "docx",
+                "-o",
+                out,
+                "--version",
+                "3.0.0",
+            ],
+        )
 
         """THEN a valid DOCX file is created."""
         assert result.exit_code == 0
@@ -275,13 +290,18 @@ class TestCLIPdfDocxExport:
             runner = CliRunner()
 
             """WHEN generating with --format pdf."""
-            result = runner.invoke(cli, [
-                "generate",
-                "--source-file",
-                str(Path(original_dir) / "examples/sample_changes.json"),
-                "--format", "pdf",
-                "--version", "3.0.0",
-            ])
+            result = runner.invoke(
+                cli,
+                [
+                    "generate",
+                    "--source-file",
+                    str(Path(original_dir) / "examples/sample_changes.json"),
+                    "--format",
+                    "pdf",
+                    "--version",
+                    "3.0.0",
+                ],
+            )
 
             """THEN it succeeds and creates a default output file."""
             assert result.exit_code == 0
@@ -304,13 +324,17 @@ class TestPdfStyles:
 
         """WHEN AppName and ReleaseTitle styles are created."""
         app_name_style = ParagraphStyle(
-            "AppName", parent=styles["Title"],
-            fontSize=28, alignment=1,
+            "AppName",
+            parent=styles["Title"],
+            fontSize=28,
+            alignment=1,
             textColor=colors.HexColor("#1a1a2e"),
         )
         title_style = ParagraphStyle(
-            "ReleaseTitle", parent=styles["Title"],
-            fontSize=22, alignment=0,
+            "ReleaseTitle",
+            parent=styles["Title"],
+            fontSize=22,
+            alignment=0,
             textColor=colors.HexColor("#1a1a2e"),
         )
 
@@ -326,8 +350,10 @@ class TestPdfStyles:
 
         """WHEN a Footer style is created with fontSize 7."""
         footer_style = ParagraphStyle(
-            "Footer", parent=styles["Normal"],
-            fontSize=7, alignment=1,
+            "Footer",
+            parent=styles["Normal"],
+            fontSize=7,
+            alignment=1,
         )
 
         """THEN the font size is 7pt."""
