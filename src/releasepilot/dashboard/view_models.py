@@ -71,4 +71,4 @@ def _get_version() -> str:
 
         return version("releasepilot")
     except Exception:  # noqa: BLE001
-        return "1.0.0"
+        return "1.1.0"

@@ -130,6 +130,9 @@ class DashboardData:
         "docx",
     )
 
+    # --- Source identity -------------------------------------------------------
+    source_type: str = "local"  # "local", "github", "gitlab", "file", "multi"
+
     # --- Diagnostics (empty state) --------------------------------------------
     diagnostics: tuple[str, ...] = ()
     directory_exists: bool = True

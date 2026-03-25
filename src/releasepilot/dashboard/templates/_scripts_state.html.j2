@@ -10,7 +10,7 @@ var S = {
   defaultRows: parseInt(_ls('rp-rows','25'),10),
   changes: {search:'',category:'',importance:'',scope:'',sortCol:'title',sortDir:'asc',page:1,perPage:25},
   artifacts: {active:0,audienceFilter:'',formatFilter:''},
-  wizard: {step:0,audience:'changelog',format:'markdown'},
+  wizard: {step:0,audience:'changelog',format:'markdown',generated:false},
   quality: {}
 };
 document.documentElement.lang=S.locale;

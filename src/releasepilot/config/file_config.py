@@ -68,6 +68,18 @@ _KNOWN_KEYS = {
     "gitlab-project",
     "gitlab_ssl_verify",
     "gitlab-ssl-verify",
+    "github_token",
+    "github-token",
+    "github_owner",
+    "github-owner",
+    "github_repo",
+    "github-repo",
+    "github_url",
+    "github-url",
+    "github_ssl_verify",
+    "github-ssl-verify",
+    "multi_repo_sources",
+    "multi-repo-sources",
 }
 
 
@@ -111,6 +123,8 @@ class FileConfig:
     overwrite: bool = False
     export_formats: list[str] = field(default_factory=list)
     ci: CIConfig = field(default_factory=CIConfig)
+    gitlab_ssl_verify: bool = True
+    github_ssl_verify: bool = True
     source: str = ""  # Path to the config file (for diagnostics)
     warnings: list[ConfigWarning] = field(default_factory=list)
 
@@ -427,6 +441,17 @@ def _dict_to_config(data: dict, *, source: str = "") -> FileConfig:
     if lang and lang not in _VALID_LANGUAGES:
         lang = ""
 
+    # SSL verify flags (default True for safety)
+    def _ssl_bool(val: object) -> bool:
+        if isinstance(val, bool):
+            return val
+        if isinstance(val, str):
+            return val.lower() not in ("0", "false", "no")
+        return True
+
+    gitlab_ssl_val = data.get("gitlab_ssl_verify", data.get("gitlab-ssl-verify", True))
+    github_ssl_val = data.get("github_ssl_verify", data.get("github-ssl-verify", True))
+
     return FileConfig(
         app_name=str(data.get("app_name", data.get("app-name", ""))),
         audience=audience,
@@ -443,6 +468,8 @@ def _dict_to_config(data: dict, *, source: str = "") -> FileConfig:
         overwrite=bool(data.get("overwrite", False)),
         export_formats=export_formats,
         ci=ci_cfg,
+        gitlab_ssl_verify=_ssl_bool(gitlab_ssl_val),
+        github_ssl_verify=_ssl_bool(github_ssl_val),
         source=source,
         warnings=warnings,
     )

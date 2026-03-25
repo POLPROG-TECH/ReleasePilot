@@ -31,8 +31,38 @@ from releasepilot.pipeline.orchestrator import (
 class DashboardUseCase:
     """Orchestrate the full pipeline and return a :class:`DashboardData`."""
 
+    @staticmethod
+    def _resolve_source_identity(
+        settings: Settings,
+    ) -> tuple[str, str, str]:
+        """Derive (source_type, display_repo_path, display_app_name) from settings."""
+        if settings.is_github_source:
+            display_path = f"https://github.com/{settings.github_owner}/{settings.github_repo}"
+            display_name = settings.app_name or f"{settings.github_owner}/{settings.github_repo}"
+            return "github", display_path, display_name
+        if settings.is_gitlab_source:
+            display_path = settings.gitlab_url or settings.gitlab_project
+            display_name = settings.app_name or settings.gitlab_project
+            return "gitlab", display_path, display_name
+        if settings.is_file_source:
+            return "file", settings.source_file, settings.app_name
+        if settings.is_multi_repo:
+            # Build display from the actual multi-repo source list
+            labels = []
+            for src_def in settings.multi_repo_sources:
+                labels.append(
+                    src_def.get("app_label", "")
+                    or src_def.get("url", "")
+                    or src_def.get("path", "?")
+                )
+            display_path = " + ".join(labels)
+            display_name = settings.app_name or display_path
+            return "multi", display_path, display_name
+        return "local", settings.repo_path, settings.app_name
+
     def execute(self, settings: Settings) -> DashboardData:
         """Run the pipeline and build a complete dashboard payload."""
+        src_type, display_path, display_name = self._resolve_source_identity(settings)
         try:
             release_range = build_release_range(settings)
             raw_items = collect(settings, release_range)
@@ -48,13 +78,13 @@ class DashboardUseCase:
             artifacts = _build_artifacts(settings, notes)
 
             return DashboardData(
-                repo_path=settings.repo_path,
+                repo_path=display_path,
                 branch=settings.branch,
                 from_ref=settings.from_ref,
                 to_ref=settings.to_ref,
                 since_date=settings.since_date,
                 version=settings.version,
-                app_name=settings.app_name,
+                app_name=display_name,
                 total_changes=stats.final,
                 changes=entries,
                 pipeline_stats=pipeline_stats,
@@ -67,19 +97,28 @@ class DashboardUseCase:
                 language=settings.language,
                 audience=settings.audience.value,
                 output_format=settings.output_format.value,
-                directory_exists=Path(settings.repo_path).is_dir(),
+                source_type=src_type,
+                directory_exists=(
+                    Path(settings.repo_path).is_dir() if src_type == "local" else True
+                ),
             )
         except PipelineError as exc:
             return DashboardData(
-                repo_path=settings.repo_path,
+                repo_path=display_path,
                 since_date=settings.since_date,
+                source_type=src_type,
+                app_name=display_name,
                 diagnostics=(str(exc),),
-                directory_exists=Path(settings.repo_path).is_dir(),
+                directory_exists=(
+                    Path(settings.repo_path).is_dir() if src_type == "local" else True
+                ),
                 generated_at=datetime.now(UTC).isoformat(timespec="seconds"),
             )
         except Exception as exc:  # noqa: BLE001
             return DashboardData(
-                repo_path=settings.repo_path,
+                repo_path=display_path,
+                source_type=src_type,
+                app_name=display_name,
                 diagnostics=(f"Unexpected error: {exc}",),
                 generated_at=datetime.now(UTC).isoformat(timespec="seconds"),
             )

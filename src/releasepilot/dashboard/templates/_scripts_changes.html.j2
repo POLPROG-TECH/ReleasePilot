@@ -27,6 +27,8 @@ function renderChanges(){
   var scopeOpts=Object.keys(scopes).sort();
 
   var h='';
+  /* source banner */
+  h+=_sourceBannerHtml();
   /* filter bar */
   h+='<div class="filter-bar">';
   h+='<input class="form-input" type="text" placeholder="'+_t('ui.changes.search')+'" id="changes-search" value="'+esc(s.search)+'">';

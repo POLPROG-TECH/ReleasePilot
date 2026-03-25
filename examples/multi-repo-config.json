@@ -1,0 +1,24 @@
+{
+  "$schema": "../schema/releasepilot.schema.json",
+  "app_name": "POLPROG Platform",
+  "audience": "changelog",
+  "format": "markdown",
+  "language": "en",
+  "multi_repo_sources": [
+    {
+      "url": "https://github.com/POLPROG-TECH/ReleasePilot",
+      "provider": "github",
+      "app_label": "ReleasePilot"
+    },
+    {
+      "url": "https://github.com/POLPROG-TECH/ReleaseBoard",
+      "provider": "github",
+      "app_label": "ReleaseBoard"
+    }
+  ],
+  "since_date": "2026-01-01",
+  "show_authors": true,
+  "show_hashes": false,
+  "output_dir": "release-notes",
+  "overwrite": true
+}

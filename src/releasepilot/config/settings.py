@@ -94,6 +94,16 @@ class Settings:
     gitlab_project: str = ""
     gitlab_ssl_verify: bool = True
 
+    # GitHub remote repository settings
+    github_token: str = ""
+    github_owner: str = ""
+    github_repo: str = ""
+    github_url: str = "https://api.github.com"
+    github_ssl_verify: bool = True
+
+    # Multi-repository sources (list of dicts with url/path, provider, token, app_label)
+    multi_repo_sources: tuple[dict, ...] = ()
+
     @property
     def is_file_source(self) -> bool:
         return bool(self.source_file)
@@ -106,3 +116,18 @@ class Settings:
     def is_gitlab_source(self) -> bool:
         """True when configured for remote GitLab repository analysis."""
         return bool(self.gitlab_url and self.gitlab_project)
+
+    @property
+    def is_github_source(self) -> bool:
+        """True when configured for remote GitHub repository analysis."""
+        return bool(self.github_owner and self.github_repo)
+
+    @property
+    def is_remote_source(self) -> bool:
+        """True when configured for any remote repository source."""
+        return self.is_gitlab_source or self.is_github_source
+
+    @property
+    def is_multi_repo(self) -> bool:
+        """True when configured for multi-repository mode."""
+        return bool(self.multi_repo_sources)

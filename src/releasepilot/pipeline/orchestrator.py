@@ -79,6 +79,26 @@ def _repo_name(repo_path: str) -> str:
     return name if name and name != "/" else ""
 
 
+def _remote_source_name(settings: Settings) -> str:
+    """Derive a display name from remote source settings.
+
+    Returns owner/repo for GitHub, project path for GitLab, a combined label
+    for multi-repo, or empty string if the settings do not describe a remote source.
+    """
+    if settings.is_github_source:
+        return f"{settings.github_owner}/{settings.github_repo}"
+    if settings.is_gitlab_source:
+        return settings.gitlab_project or ""
+    if settings.is_multi_repo:
+        labels = []
+        for src_def in settings.multi_repo_sources:
+            labels.append(
+                src_def.get("app_label", "") or src_def.get("url", "") or src_def.get("path", "?")
+            )
+        return " + ".join(labels) if labels else ""
+    return ""
+
+
 def build_release_range(
     settings: Settings,
     on_progress: ProgressCallback = noop_progress,
@@ -87,7 +107,8 @@ def build_release_range(
     on_progress(STAGE_BUILD_RANGE)
     from_ref = settings.from_ref
     to_ref = settings.to_ref
-    app_name = settings.app_name or _repo_name(settings.repo_path)
+    # Prefer explicit app_name, then remote source name, then local repo name
+    app_name = settings.app_name or _remote_source_name(settings) or _repo_name(settings.repo_path)
 
     # Date-range mode: no ref detection needed
     if settings.is_date_range:
@@ -108,6 +129,13 @@ def build_release_range(
         )
 
     if not from_ref and not settings.is_file_source:
+        if settings.is_remote_source or settings.is_multi_repo:
+            # Remote sources cannot resolve tags locally — require explicit range
+            raise PipelineError(
+                "No --from ref specified for remote repository source. "
+                "Remote repositories require explicit --from and --to refs, "
+                "or use --since for date-based collection."
+            )
         git = GitSourceCollector(settings.repo_path)
         from_ref = git.resolve_latest_tag()
         if not from_ref:
@@ -140,12 +168,32 @@ def collect(
     release_range: ReleaseRange,
     on_progress: ProgressCallback = noop_progress,
 ) -> list[ChangeItem]:
-    """Stage 1: Collect raw change items from configured source."""
+    """Stage 1: Collect raw change items from configured source.
+
+    Dispatches to the appropriate collector based on settings:
+    - File source → StructuredFileCollector
+    - Multi-repo → MultiRepoCollector (via factory)
+    - GitHub remote → GitHubSourceCollector (via factory)
+    - GitLab remote → GitLabSourceCollector (via factory)
+    - Default → GitSourceCollector (local git)
+    """
     on_progress(STAGE_COLLECTING)
+
     if settings.is_file_source:
         collector = StructuredFileCollector(settings.source_file)
         return collector.collect(release_range)
 
+    # Remote or multi-repo sources — use the factory
+    if settings.is_multi_repo or settings.is_remote_source:
+        from releasepilot.sources.factory import create_collector_from_settings
+
+        collector = create_collector_from_settings(settings)
+        if settings.is_date_range and hasattr(collector, "collect_by_date"):
+            branch = settings.branch or "HEAD"
+            return collector.collect_by_date(settings.since_date, branch)
+        return collector.collect(release_range)
+
+    # Default: local git
     git_collector = GitSourceCollector(settings.repo_path)
 
     if settings.is_date_range:

@@ -286,10 +286,10 @@ class TestAudienceAwareFilename:
         assert "CHANGELOG" in source
 
 
-# ── Regression: _compose_title empty-title handling ──────────────────────────
+# ── _compose_title empty-title handling ──────────────────────────
 
 
-class TestComposeTitleEmptyRegression:
+class TestComposeTitleEmpty:
     """Regression tests for _compose_title when title/fallback are empty."""
 
     def test_empty_title_version_only(self):

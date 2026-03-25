@@ -602,3 +602,53 @@ class GitLabClient:
             self._cache.invalidate(f"GET:{self._base_url}/api/v4/projects/{project_id}")
         else:
             self._cache.invalidate()
+
+    # ── Group / Subgroup Discovery ─────────────────────────────────────
+
+    def list_group_projects(
+        self,
+        group_path: str,
+        *,
+        per_page: int = 100,
+        max_pages: int = 3,
+        include_subgroups: bool = True,
+    ) -> list[GitLabProject]:
+        """List projects under a GitLab group (or subgroup).
+
+        Uses ``/groups/{id}/projects`` with ``include_subgroups=true``.
+        Returns up to *per_page × max_pages* projects, sorted by
+        most-recently-active.
+        """
+        encoded = encode_project_path(group_path)
+        projects: list[GitLabProject] = []
+
+        for page in range(1, max_pages + 1):
+            params: dict[str, str] = {
+                "per_page": str(per_page),
+                "page": str(page),
+                "order_by": "last_activity_at",
+                "sort": "desc",
+                "archived": "false",
+            }
+            if include_subgroups:
+                params["include_subgroups"] = "true"
+
+            items = self._request("GET", f"/groups/{encoded}/projects", params=params)
+            if not items:
+                break
+            for item in items:
+                projects.append(
+                    GitLabProject(
+                        id=item["id"],
+                        name=item.get("name", ""),
+                        path_with_namespace=item.get("path_with_namespace", ""),
+                        default_branch=item.get("default_branch", ""),
+                        web_url=item.get("web_url", ""),
+                        visibility=item.get("visibility", ""),
+                        description=item.get("description") or "",
+                    )
+                )
+            if len(items) < per_page:
+                break
+
+        return projects

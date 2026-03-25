@@ -7,82 +7,288 @@
     <div class="wizard-step-line"></div>
     <div class="wizard-step" data-wiz-step="1">
       <div class="wizard-step-num">2</div>
-      <span class="wizard-step-label" data-i18n="ui.wizard.audience">Audience</span>
+      <span class="wizard-step-label" data-i18n="ui.wizard.repositories_step">Repositories</span>
     </div>
     <div class="wizard-step-line"></div>
     <div class="wizard-step" data-wiz-step="2">
       <div class="wizard-step-num">3</div>
-      <span class="wizard-step-label" data-i18n="ui.wizard.format">Format</span>
+      <span class="wizard-step-label" data-i18n="ui.wizard.scope_step">Scope</span>
     </div>
     <div class="wizard-step-line"></div>
     <div class="wizard-step" data-wiz-step="3">
       <div class="wizard-step-num">4</div>
-      <span class="wizard-step-label" data-i18n="ui.wizard.generate_step">Generate</span>
+      <span class="wizard-step-label" data-i18n="ui.wizard.audience">Audience</span>
     </div>
     <div class="wizard-step-line"></div>
     <div class="wizard-step" data-wiz-step="4">
       <div class="wizard-step-num">5</div>
-      <span class="wizard-step-label" data-i18n="ui.wizard.preview">Preview</span>
+      <span class="wizard-step-label" data-i18n="ui.wizard.format">Format</span>
     </div>
     <div class="wizard-step-line"></div>
     <div class="wizard-step" data-wiz-step="5">
       <div class="wizard-step-num">6</div>
-      <span class="wizard-step-label" data-i18n="ui.wizard.export_step">Export</span>
+      <span class="wizard-step-label" data-i18n="ui.wizard.review_step">Review</span>
     </div>
   </div>
 
+  <!-- ═══ Step 1: Source Type ═══ -->
   <div class="wizard-panel active" id="wiz-panel-0">
-    <h2 id="wiz-source-heading" data-i18n="ui.wizard.source_title">Source Context</h2>
-    <p id="wiz-source-desc" class="text-secondary mb-2" data-i18n="ui.wizard.source_desc">Review the repository and release range for this generation.</p>
-    <div id="wiz-source-info"></div>
+    <h2 class="wiz-step-heading" id="wiz-source-heading" data-i18n="ui.wizard.source_title">Where are your repositories?</h2>
+    <p class="wiz-step-desc" id="wiz-source-desc" data-i18n="ui.wizard.source_type_desc">Choose where your source code lives. This determines how ReleasePilot connects to your repositories.</p>
+
+    <div class="wizard-options wiz-src-grid" id="wiz-source-type-grid">
+      <div class="wizard-option selected" id="src-type-local" tabindex="0" role="radio" aria-checked="true"
+           onclick="wizSelectSourceType('local')" onkeydown="if(event.key==='Enter')wizSelectSourceType('local')">
+        <div class="wizard-option-icon">&#128187;</div>
+        <div class="wizard-option-label" data-i18n="ui.wizard.local_repo_label">Local Repository</div>
+        <div class="wizard-option-desc" data-i18n="ui.wizard.local_repo_desc">Use a git repository on this machine. Best for local development workflows.</div>
+      </div>
+      <div class="wizard-option" id="src-type-remote" tabindex="0" role="radio" aria-checked="false"
+           onclick="wizSelectSourceType('remote')" onkeydown="if(event.key==='Enter')wizSelectSourceType('remote')">
+        <div class="wizard-option-icon">&#127760;</div>
+        <div class="wizard-option-label" data-i18n="ui.wizard.remote_repo_label">Remote Repository</div>
+        <div class="wizard-option-desc" data-i18n="ui.wizard.remote_repo_desc">Connect to GitHub or GitLab repositories via URL. Ideal for CI/CD and team workflows.</div>
+      </div>
+    </div>
+    <div id="wiz-step0-errors" class="wiz-step-error"></div>
   </div>
 
+  <!-- ═══ Step 2: Repositories ═══ -->
   <div class="wizard-panel" id="wiz-panel-1">
-    <h2 data-i18n="ui.wizard.audience_title">Choose Audience</h2>
-    <p class="text-secondary mb-2" data-i18n="ui.wizard.audience_desc">Select who these release notes are for. Each audience tailors the content differently.</p>
+    <h2 class="wiz-step-heading" data-i18n="ui.wizard.select_repos_title">Select Repositories</h2>
+    <p class="wiz-step-desc" id="wiz-repos-desc" data-i18n="ui.wizard.select_repos_desc">Choose which repositories to include in this release.</p>
+
+    <!-- Local mode content -->
+    <div id="wiz-repos-local">
+      <div id="wiz-local-repo-info"></div>
+
+      <!-- Local mode selector: current repo vs directory scan -->
+      <div id="wiz-local-mode-select" class="mt-2 hidden">
+        <div class="wiz-section-card">
+          <div class="section-title"><span class="section-icon">&#128194;</span> <span data-i18n="ui.wizard.repo_mode_title">Repository Mode</span></div>
+          <div class="wizard-options wiz-src-grid" id="wiz-local-mode-grid">
+            <div class="wizard-option selected" id="local-mode-current" tabindex="0" role="radio" aria-checked="true"
+                 onclick="wizSelectLocalMode('current')" onkeydown="if(event.key==='Enter')wizSelectLocalMode('current')">
+              <div class="wizard-option-icon">1&#65039;&#8419;</div>
+              <div class="wizard-option-label" data-i18n="ui.wizard.current_repo_label">Current Repository</div>
+              <div class="wizard-option-desc" data-i18n="ui.wizard.current_repo_desc">Use the repository detected in the working directory.</div>
+            </div>
+            <div class="wizard-option" id="local-mode-directory" tabindex="0" role="radio" aria-checked="false"
+                 onclick="wizSelectLocalMode('directory')" onkeydown="if(event.key==='Enter')wizSelectLocalMode('directory')">
+              <div class="wizard-option-icon">&#128193;</div>
+              <div class="wizard-option-label" data-i18n="ui.wizard.scan_dir_label">Scan Directory</div>
+              <div class="wizard-option-desc" data-i18n="ui.wizard.scan_dir_desc">Scan a folder for multiple repositories and select which to include.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Directory scan section -->
+      <div id="wiz-local-dir-section" class="mt-2 hidden">
+        <div class="wiz-section-card">
+          <div class="section-title"><span class="section-icon">&#128269;</span> <span data-i18n="ui.wizard.scan_dir_label">Scan Directory</span></div>
+          <div class="wiz-field-group">
+            <label for="src-local-dir-path"><span data-i18n="ui.wizard.dir_path_label">Directory Path</span> <span class="text-error">*</span></label>
+            <div class="flex gap-1">
+              <input type="text" id="src-local-dir-path" class="form-input" placeholder="/path/to/projects" style="flex:1">
+              <button class="btn btn-sm btn-primary" onclick="wizScanDirectory()">&#128269; <span data-i18n="ui.wizard.scan_btn">Scan</span></button>
+            </div>
+            <span class="wiz-helper-text" data-i18n="ui.wizard.dir_path_hint">Enter a directory that contains one or more git repositories.</span>
+            <div class="field-error" id="err-local-dir-path"></div>
+          </div>
+          <div id="wiz-dir-scan-result" class="mt-1"></div>
+          <div id="wiz-dir-repo-list" class="mt-1"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remote mode content -->
+    <div id="wiz-repos-remote" class="hidden">
+      <!-- Provider selection -->
+      <div class="wiz-section-card" id="wiz-provider-section">
+        <div class="section-title"><span class="section-icon">&#128268;</span> <span data-i18n="ui.wizard.provider_title">Provider</span></div>
+        <div class="wizard-options wiz-src-grid wiz-provider-grid">
+          <div class="wizard-option selected wiz-provider-opt" id="src-provider-github" tabindex="0"
+               onclick="wizSelectProvider('github')" onkeydown="if(event.key==='Enter')wizSelectProvider('github')">
+            <div class="wizard-option-icon">&#128025;</div>
+            <div class="wizard-option-label">GitHub</div>
+          </div>
+          <div class="wizard-option wiz-provider-opt" id="src-provider-gitlab" tabindex="0"
+               onclick="wizSelectProvider('gitlab')" onkeydown="if(event.key==='Enter')wizSelectProvider('gitlab')">
+            <div class="wizard-option-icon">&#129418;</div>
+            <div class="wizard-option-label">GitLab</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Authentication -->
+      <div class="wiz-section-card" id="wiz-auth-section">
+        <div class="section-title"><span class="section-icon">&#128274;</span> <span data-i18n="ui.wizard.auth_title">Authentication</span></div>
+        <div class="wiz-field-group" id="wiz-gitlab-url-row" style="display:none">
+          <label for="src-gitlab-url"><span data-i18n="ui.wizard.gitlab_url_label">GitLab URL</span> <span class="text-error">*</span></label>
+          <input type="url" id="src-gitlab-url" class="form-input" placeholder="https://gitlab.example.com" required>
+          <span class="wiz-helper-text" data-i18n="ui.wizard.gitlab_url_hint">Base URL of your GitLab instance (e.g. https://gitlab.company.com)</span>
+          <div class="field-error" id="err-gitlab-url"></div>
+        </div>
+        <div class="wiz-field-group">
+          <label for="src-remote-token"><span data-i18n="ui.wizard.token_label">Access Token</span> <span class="text-error token-required-star" id="src-token-required-star" style="display:none">*</span></label>
+          <input type="password" id="src-remote-token" class="form-input" placeholder="ghp_... or glpat-...">
+          <span class="wiz-helper-text" id="src-token-hint" data-i18n="ui.wizard.token_hint_github">Personal access token with repo read access.</span>
+          <div class="wiz-token-optional-hint" id="src-token-optional-hint" style="display:none">
+            <span class="text-success">&#9432;</span> <span data-i18n="ui.wizard.token_optional_hint">Optional for public repositories. Required for private or protected repositories.</span>
+          </div>
+          <div class="field-error" id="err-remote-token"></div>
+        </div>
+        <div class="wiz-toggle-row">
+          <input type="checkbox" id="src-verify-ssl" class="wiz-toggle" checked>
+          <label for="src-verify-ssl" data-i18n="ui.wizard.verify_ssl_label">Verify SSL certificates</label>
+          <span class="wiz-helper-text" style="margin-top:0;margin-left:4px" data-i18n="ui.wizard.verify_ssl_hint">(disable for self-signed certs / corporate proxies)</span>
+        </div>
+        <div class="flex gap-1 mt-1">
+          <button class="btn btn-sm btn-primary" onclick="wizValidateToken()" id="btn-validate-token">&#128274; <span data-i18n="ui.wizard.validate_token_btn">Validate Token</span></button>
+          <button class="btn btn-sm" onclick="wizSkipToken()" id="btn-skip-token" style="display:none"><span data-i18n="ui.wizard.skip_token_btn">Continue without token</span></button>
+          <span id="src-token-status" class="text-secondary"></span>
+        </div>
+      </div>
+
+      <!-- Progress hint — shown before token is validated -->
+      <div class="wiz-gated-hint hidden" id="wiz-token-gated-hint">
+        <span class="wiz-gated-hint-icon">&#128274;</span>
+        <span class="wiz-gated-hint-text" data-i18n="ui.wizard.token_gated_hint">Validate your access token to enable repository inspection.</span>
+      </div>
+
+      <!-- Repository input (always visible — not gated behind token) -->
+      <div class="wiz-section-card" id="wiz-repo-input-section">
+        <div class="section-title"><span class="section-icon">&#128194;</span> <span data-i18n="ui.wizard.repo_mode_title">Repository Mode</span></div>
+        <div class="wizard-options wiz-src-grid" id="wiz-repo-count-grid">
+          <div class="wizard-option selected" id="src-count-single" tabindex="0" role="radio" aria-checked="true"
+               onclick="wizSelectRepoCount('single')" onkeydown="if(event.key==='Enter')wizSelectRepoCount('single')">
+            <div class="wizard-option-icon">1&#65039;&#8419;</div>
+            <div class="wizard-option-label" data-i18n="ui.wizard.single_repo_label">Single Repository</div>
+            <div class="wizard-option-desc" data-i18n="ui.wizard.single_repo_desc">Generate from one repository.</div>
+          </div>
+          <div class="wizard-option" id="src-count-multi" tabindex="0" role="radio" aria-checked="false"
+               onclick="wizSelectRepoCount('multi')" onkeydown="if(event.key==='Enter')wizSelectRepoCount('multi')">
+            <div class="wizard-option-icon">&#128218;</div>
+            <div class="wizard-option-label" data-i18n="ui.wizard.multi_repo_label">Multiple Repositories</div>
+            <div class="wizard-option-desc" data-i18n="ui.wizard.multi_repo_desc">Aggregate commits from multiple repositories.</div>
+          </div>
+        </div>
+
+        <!-- Single repo URL -->
+        <div id="wiz-remote-repo-single" class="mt-2">
+          <div class="wiz-field-group">
+            <label for="src-repo-url"><span data-i18n="ui.wizard.repo_url_label">Repository URL</span> <span class="text-error">*</span></label>
+            <input type="url" id="src-repo-url" class="form-input" placeholder="https://github.com/owner/repo" required>
+            <span class="wiz-helper-text" data-i18n="ui.wizard.repo_url_hint">Full URL to the GitHub or GitLab repository.</span>
+            <div class="field-error" id="err-repo-url"></div>
+          </div>
+          <div class="wiz-field-group">
+            <label for="src-repo-label"><span data-i18n="ui.wizard.app_name_label">Application Name</span> <small class="text-tertiary" data-i18n="ui.wizard.optional_tag">(optional)</small></label>
+            <input type="text" id="src-repo-label" class="form-input" placeholder="Auto-detected from URL">
+            <span class="wiz-helper-text" data-i18n="ui.wizard.app_name_hint">A display name for this repository in the output. If omitted, will be detected from the URL.</span>
+          </div>
+          <button class="btn btn-sm" id="btn-inspect-repo" onclick="wizInspectRepo()" disabled>&#128269; <span data-i18n="ui.wizard.inspect_btn">Inspect Repository</span></button>
+          <span class="wiz-helper-text" id="inspect-token-hint" data-i18n="ui.wizard.inspect_token_hint">Validate your token to enable inspection.</span>
+          <div id="src-repo-inspect-result" class="mt-1"></div>
+        </div>
+
+        <!-- Multi repo list -->
+        <div id="wiz-remote-repo-multi" class="mt-2 hidden">
+          <div id="wiz-multi-repo-list"></div>
+          <div class="wiz-field-group mt-1">
+            <label><span data-i18n="ui.wizard.add_repo_label">Add Repository URL</span> <span class="text-error">*</span></label>
+            <div class="flex gap-1">
+              <input type="url" id="src-multi-repo-url" class="form-input" placeholder="https://github.com/owner/repo" style="flex:1">
+              <input type="text" id="src-multi-repo-label" class="form-input" placeholder="App name (optional)" style="width:180px">
+              <button class="btn btn-sm btn-primary" onclick="wizAddMultiRepo()">&#10133; Add</button>
+            </div>
+            <div class="field-error" id="err-multi-repo-url"></div>
+            <div id="wiz-org-repo-picker" class="hidden mt-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="wiz-step1-errors" class="wiz-step-error"></div>
+  </div>
+
+  <!-- ═══ Step 3: Scope ═══ -->
+  <div class="wizard-panel" id="wiz-panel-2">
+    <h2 class="wiz-step-heading" data-i18n="ui.wizard.scope_title">Release Scope</h2>
+    <p class="wiz-step-desc" data-i18n="ui.wizard.scope_desc">Define the time range or version range for this release. This scope applies to all selected repositories.</p>
+
+    <div id="wiz-scope-banner" class="alert alert-info wiz-scope-banner hidden">
+      &#128279; Shared scope — commits will be collected from <strong id="wiz-scope-repo-count">1</strong> repository using the range below.
+    </div>
+
+    <!-- Scope preview / stats — above form for immediate context -->
+    <div id="wiz-scope-preview"></div>
+    <div id="src-alerts" class="mt-1"></div>
+
+    <div id="wiz-scope-content"></div>
+
+    <div id="wiz-step2-errors" class="wiz-step-error"></div>
+  </div>
+
+  <!-- ═══ Step 4: Audience ═══ -->
+  <div class="wizard-panel" id="wiz-panel-3">
+    <h2 class="wiz-step-heading" data-i18n="ui.wizard.audience_title">Choose Audience</h2>
+    <p class="wiz-step-desc" data-i18n="ui.wizard.audience_desc">Select who these release notes are for. Each audience tailors the content differently.</p>
     <div class="wizard-options" id="wiz-audience-options"></div>
   </div>
 
-  <div class="wizard-panel" id="wiz-panel-2">
-    <h2 data-i18n="ui.wizard.format_title">Choose Format</h2>
-    <p class="text-secondary mb-2" data-i18n="ui.wizard.format_desc">Select the output format for your release notes.</p>
+  <!-- ═══ Step 5: Format ═══ -->
+  <div class="wizard-panel" id="wiz-panel-4">
+    <h2 class="wiz-step-heading" data-i18n="ui.wizard.format_title">Choose Format</h2>
+    <p class="wiz-step-desc" data-i18n="ui.wizard.format_desc">Select the output format for your release notes.</p>
+    <div id="wiz-format-context" class="wiz-format-context-banner"></div>
     <div class="wizard-options" id="wiz-format-options"></div>
   </div>
 
-  <div class="wizard-panel" id="wiz-panel-3">
-    <div class="wizard-progress" id="wiz-progress">
-      <div class="wizard-progress-spinner"></div>
-      <div class="wizard-progress-text" data-i18n="ui.wizard.generating">Processing pipeline&hellip;</div>
+  <!-- ═══ Step 6: Review ═══ -->
+  <div class="wizard-panel" id="wiz-panel-5">
+    <h2 class="wiz-step-heading" data-i18n="ui.wizard.review_title">Review &amp; Generate</h2>
+    <p class="wiz-step-desc" data-i18n="ui.wizard.review_desc">Review your configuration before generating release notes.</p>
+    <div id="wiz-review-summary"></div>
+    <div id="wiz-review-actions-area"></div>
+  </div>
+
+  <!-- ═══ Step 7: Pipeline (dedicated generation screen) ═══ -->
+  <div class="wizard-panel" id="wiz-panel-6">
+    <div id="wiz-pipeline-content">
+      <div class="wiz-pipeline-screen">
+        <div class="wiz-pipeline-icon">&#9881;&#65039;</div>
+        <h2 class="wiz-pipeline-title" data-i18n="ui.wizard.pipeline_title">Processing Pipeline</h2>
+        <p class="wiz-pipeline-desc text-secondary" data-i18n="ui.wizard.pipeline_desc">Collecting commits, classifying changes, and composing your release notes&hellip;</p>
+        <div class="wizard-progress" id="wiz-progress">
+          <div class="wizard-progress-spinner"></div>
+          <div class="wizard-progress-text" id="wiz-pipeline-status" data-i18n="ui.wizard.generating">Processing pipeline&hellip;</div>
+        </div>
+      </div>
     </div>
     <div id="wiz-generate-result" class="hidden"></div>
   </div>
 
-  <div class="wizard-panel" id="wiz-panel-4">
-    <h2 data-i18n="ui.wizard.preview_title">Preview</h2>
-    <p class="text-secondary mb-2" data-i18n="ui.wizard.preview_desc">Review the generated release notes below. You can switch audience or format and regenerate.</p>
+  <!-- ═══ Step 8: Preview & Export (post-generation) ═══ -->
+  <div class="wizard-panel" id="wiz-panel-7">
+    <h2 class="wiz-step-heading" data-i18n="ui.wizard.preview_title">Preview &amp; Export</h2>
+    <p class="wiz-step-desc" data-i18n="ui.wizard.preview_desc">Review the generated release notes below.</p>
     <div class="wizard-preview-controls">
       <span id="wiz-preview-meta" class="text-tertiary wiz-meta-text"></span>
       <button class="btn btn-sm" onclick="wizCopyPreview()">&#128203; <span data-i18n="ui.artifacts.copy">Copy</span></button>
-      <button class="btn btn-sm btn-primary" onclick="wizGoStep(5)">&#11015; <span data-i18n="ui.wizard.export_step">Export</span></button>
     </div>
     <div class="wizard-preview-area" id="wiz-preview-area"></div>
-    <div class="wiz-nav-btns">
-      <button class="src-preset" onclick="wizGoStep(1)">&#8617; <span data-i18n="ui.wizard.change_audience">Change Audience</span></button>
-      <button class="src-preset" onclick="wizGoStep(2)">&#8617; <span data-i18n="ui.wizard.change_format">Change Format</span></button>
-      <button class="src-preset" onclick="wizGoStep(0)">&#8617; <span data-i18n="ui.wizard.change_source">Change Source</span></button>
-    </div>
-  </div>
-
-  <div class="wizard-panel" id="wiz-panel-5">
-    <h2 data-i18n="ui.wizard.export_title">Export</h2>
-    <p class="text-secondary mb-2" data-i18n="ui.wizard.export_desc">Download your release notes. Adjust audience, format, or filename before exporting.</p>
-    <div class="export-row"><label data-i18n="ui.wizard.audience">Audience</label><select class="form-select" id="wiz-export-audience" onchange="wizUpdateExportFormats();wizUpdateExport()"></select></div>
-    <div class="export-row"><label data-i18n="ui.wizard.format">Format</label><select class="form-select" id="wiz-export-format" onchange="wizUpdateExport()"></select></div>
-    <div class="export-row"><label data-i18n="ui.wizard.filename">Filename</label><input class="form-input" id="wiz-export-filename" value="release-notes.md"></div>
-    <div class="export-preview-snippet" id="wiz-export-preview"></div>
-    <div class="flex gap-1 mt-2">
-      <button class="btn btn-primary" onclick="wizDoExport()">&#11015; <span data-i18n="ui.wizard.download">Download</span></button>
-      <button class="btn" onclick="wizGoStep(4)">&#8592; <span data-i18n="ui.wizard.back_to_preview">Back to Preview</span></button>
+    <div class="wiz-section-card mt-2">
+      <div class="section-title" data-i18n="ui.wizard.export_title">Export</div>
+      <div class="export-row"><label data-i18n="ui.wizard.audience">Audience</label><select class="form-select" id="wiz-export-audience" onchange="wizUpdateExportFormats();wizUpdateExport()"></select></div>
+      <div class="export-row"><label data-i18n="ui.wizard.format">Format</label><select class="form-select" id="wiz-export-format" onchange="wizUpdateExport()"></select></div>
+      <div class="export-row"><label data-i18n="ui.wizard.filename">Filename</label><input class="form-input" id="wiz-export-filename" value="release-notes.md"></div>
+      <div class="export-preview-snippet" id="wiz-export-preview"></div>
+      <div class="flex gap-1 mt-2">
+        <button class="btn btn-primary" onclick="wizDoExport()">&#11015; <span data-i18n="ui.wizard.download">Download</span></button>
+        <button class="btn" onclick="wizGoStep(5)">&#8592; Back to Review</button>
+        <button class="btn" onclick="wizStartNew()">&#128260; <span data-i18n="ui.wizard.start_new">Start New</span></button>
+      </div>
     </div>
   </div>
 

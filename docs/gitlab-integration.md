@@ -278,7 +278,7 @@ variables:
 
 ```yaml
 variables:
-  RP_INSTALL_SPEC: "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@v1.0.0"
+  RP_INSTALL_SPEC: "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@v1.1.0"
 ```
 
 ### Use structured input (no git)

@@ -1,9 +1,231 @@
 /* ===== WIZARD ===== */
+/* Source selection state */
+var _wizSourceState = {
+  sourceType: 'local',   /* 'local' or 'remote' */
+  localMode: 'current',  /* 'current' or 'directory' */
+  repoCount: 'single',   /* 'single' or 'multi' */
+  provider: 'github',    /* 'github' or 'gitlab' */
+  tokenValidated: false,
+  tokenSkipped: false,    /* true when user explicitly continues without token (public repo) */
+  tokenUser: '',
+  remoteRepos: [],        /* [{url, label, provider, owner, repo, inspected}] */
+  inspectedData: null,    /* inspection result for single-repo mode */
+  localDirRepos: [],      /* [{name, path}] — repos found in directory scan */
+  selectedLocalRepos: []  /* [path] — user-selected repos from directory scan */
+};
+
+/* Step indices:
+   0 = Source Type (local/remote)
+   1 = Repositories
+   2 = Scope (release range)
+   3 = Audience
+   4 = Format
+   5 = Review
+   6 = Pipeline (generation)
+   7 = Preview & Export (post-generation)
+*/
+var WIZ_STEP_SOURCE = 0;
+var WIZ_STEP_REPOS = 1;
+var WIZ_STEP_SCOPE = 2;
+var WIZ_STEP_AUDIENCE = 3;
+var WIZ_STEP_FORMAT = 4;
+var WIZ_STEP_REVIEW = 5;
+var WIZ_STEP_PIPELINE = 6;
+var WIZ_STEP_PREVIEW = 7;
+var WIZ_TOTAL_TRACKED = 6; /* steps shown in stepper (0-5) */
+
+/* ===== VALIDATION ENGINE ===== */
+
+var _GH_URL_RE=/^https?:\/\/(?:www\.)?github\.com\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+(?:\.git)?\/?$/;
+var _GL_URL_RE=/^https?:\/\/[^\/]+\/[A-Za-z0-9._\/-]+(?:\.git)?\/?$/;
+var _DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
+
+/* Detect GitHub org/user page URLs (not a specific repository) */
+var _GH_ORG_RE=/^https?:\/\/(?:www\.)?github\.com\/(?:orgs\/)?([A-Za-z0-9._-]+)(?:\/(?:repositories|members|teams|projects|packages|people)?\/?)?$/i;
+/* Detect GitLab group-level URLs (single segment after host = group, not project) */
+var _GL_GROUP_RE=/^(https?:\/\/[^\/]+)\/([A-Za-z0-9._-]+)\/?$/i;
+
+function _wizShowFieldError(inputId,errId,msg){
+  var inp=$(inputId);
+  var err=$(errId);
+  if(inp){inp.classList.add('invalid');inp.classList.remove('valid')}
+  if(err){err.textContent=msg;err.classList.add('visible')}
+}
+
+function _wizClearFieldError(inputId,errId){
+  var inp=$(inputId);
+  var err=$(errId);
+  if(inp)inp.classList.remove('invalid','valid');
+  if(err){err.textContent='';err.classList.remove('visible')}
+}
+
+function _wizClearStepErrors(stepNum){
+  var el=$('#wiz-step'+stepNum+'-errors');
+  if(el)el.innerHTML='';
+  /* Clear all field errors within the step panel */
+  var panel=$('#wiz-panel-'+stepNum);
+  if(panel){
+    panel.querySelectorAll('.field-error.visible').forEach(function(e){e.textContent='';e.classList.remove('visible')});
+    panel.querySelectorAll('.form-input.invalid,.form-select.invalid').forEach(function(e){e.classList.remove('invalid')});
+  }
+}
+
+function _wizShowStepError(stepNum,msg){
+  var el=$('#wiz-step'+stepNum+'-errors');
+  if(el)el.innerHTML='<div class="alert alert-error">'+msg+'</div>';
+}
+
+function _wizMarkFieldValid(inputId){
+  var inp=$(inputId);
+  if(inp){inp.classList.remove('invalid');inp.classList.add('valid')}
+}
+
+/** Validate a specific step. Returns {valid: bool, errors: string[]} */
+function _wizValidateStep(n){
+  var errors=[];
+
+  if(n===WIZ_STEP_SOURCE){
+    /* Source step is always valid — local mode details are validated in repos step */
+  }
+
+  else if(n===WIZ_STEP_REPOS){
+    _wizClearStepErrors(n);
+    if(_wizSourceState.sourceType==='remote'){
+      /* Token: required only if not skipped (public repo) and not validated */
+      var hasToken=!!($('#src-remote-token')?$('#src-remote-token').value.trim():'');
+      var tokenOk=_wizSourceState.tokenValidated||_wizSourceState.tokenSkipped;
+
+      /* GitHub: auto-skip token if none entered — public repos work without it */
+      if(_wizSourceState.provider==='github'&&!hasToken&&!tokenOk){
+        _wizSourceState.tokenSkipped=true;
+        tokenOk=true;
+      }
+
+      if(!tokenOk&&hasToken){
+        errors.push(_t('ui.wizard.err_validate_token'));
+      }
+      /* GitLab needs URL */
+      if(_wizSourceState.provider==='gitlab'){
+        var glUrl=$('#src-gitlab-url')?$('#src-gitlab-url').value.trim():'';
+        if(!glUrl){
+          _wizShowFieldError('#src-gitlab-url','#err-gitlab-url',_t('ui.wizard.err_gitlab_url_required'));
+          errors.push(_t('ui.wizard.err_gitlab_url_missing'));
+        }else if(!/^https?:\/\/.+/.test(glUrl)){
+          _wizShowFieldError('#src-gitlab-url','#err-gitlab-url',_t('ui.wizard.err_gitlab_url_format'));
+          errors.push(_t('ui.wizard.err_gitlab_url_invalid'));
+        }
+        /* GitLab always requires a token */
+        if(!hasToken&&!_wizSourceState.tokenValidated){
+          _wizShowFieldError('#src-remote-token','#err-remote-token',_t('ui.wizard.err_token_required_private'));
+          if(errors.indexOf(_t('ui.wizard.err_validate_token'))<0)
+            errors.push(_t('ui.wizard.err_token_enter'));
+        }
+      }
+
+      /* Repository selection */
+      if(tokenOk||_wizSourceState.provider==='github'){
+        if(_wizSourceState.repoCount==='single'){
+          var repoUrl=$('#src-repo-url')?$('#src-repo-url').value.trim():'';
+          if(!repoUrl){
+            _wizShowFieldError('#src-repo-url','#err-repo-url',_t('ui.wizard.err_repo_url_required'));
+            errors.push(_t('ui.wizard.err_repo_url_missing'));
+          }else{
+            var urlRe=_wizSourceState.provider==='github'?_GH_URL_RE:_GL_URL_RE;
+            if(!urlRe.test(repoUrl)){
+              _wizShowFieldError('#src-repo-url','#err-repo-url',
+                _wizSourceState.provider==='github'
+                  ?_t('ui.wizard.err_github_url_format')
+                  :_t('ui.wizard.err_gitlab_repo_url_format'));
+              errors.push(_t('ui.wizard.err_repo_url_invalid'));
+            }else{
+              _wizMarkFieldValid('#src-repo-url');
+            }
+          }
+        }else{
+          /* Multi-repo: at least one must be added */
+          if(!_wizSourceState.remoteRepos.length){
+            errors.push(_t('ui.wizard.err_add_repo'));
+          }
+        }
+      }
+    }else{
+      /* Local mode */
+      if(_wizSourceState.localMode==='directory'){
+        /* Directory scan mode — must have scanned and selected repos */
+        var dirPath=$('#src-local-dir-path')?$('#src-local-dir-path').value.trim():'';
+        if(!dirPath){
+          _wizShowFieldError('#src-local-dir-path','#err-local-dir-path',_t('ui.wizard.err_dir_path_required'));
+          errors.push(_t('ui.wizard.err_dir_path_missing'));
+        }else if(!_wizSourceState.localDirRepos||!_wizSourceState.localDirRepos.length){
+          errors.push(_t('ui.wizard.err_scan_required'));
+        }else if(!_wizSourceState.selectedLocalRepos||!_wizSourceState.selectedLocalRepos.length){
+          errors.push(_t('ui.wizard.err_select_repo'));
+        }
+      }else{
+        /* Current repo mode — check no fatal git errors */
+        if(_hasGitError()){
+          errors.push(_t('ui.wizard.err_not_git_repo'));
+        }
+      }
+    }
+  }
+
+  else if(n===WIZ_STEP_SCOPE){
+    _wizClearStepErrors(n);
+    var isDateMode=$('#src-opt-date')&&$('#src-opt-date').classList.contains('selected');
+    if(isDateMode!==false&&isDateMode){
+      var sinceVal=$('#src-since-date')?$('#src-since-date').value:'';
+      if(!sinceVal){
+        errors.push(_t('ui.wizard.err_date_required'));
+      }else if(!_DATE_RE.test(sinceVal)){
+        errors.push(_t('ui.wizard.err_date_format'));
+      }else{
+        var d=new Date(sinceVal);
+        if(isNaN(d.getTime())){
+          errors.push(_t('ui.wizard.err_date_invalid'));
+        }else if(d>new Date()){
+          errors.push(_t('ui.wizard.err_date_future'));
+        }
+      }
+    }else{
+      var fromRef=$('#src-from-ref')?$('#src-from-ref').value.trim():'';
+      if(!fromRef){
+        errors.push(_t('ui.wizard.err_ref_required'));
+      }
+    }
+  }
+
+  else if(n===WIZ_STEP_AUDIENCE){
+    if(!S.wizard.audience){
+      errors.push(_t('ui.wizard.err_select_audience'));
+    }
+  }
+
+  else if(n===WIZ_STEP_FORMAT){
+    if(!S.wizard.format){
+      errors.push(_t('ui.wizard.err_select_format'));
+    }
+  }
+
+  return {valid:errors.length===0,errors:errors};
+}
+
+/** Update the Next button disabled state based on current step validity */
+function _wizUpdateNextBtn(){
+  var nextBtn=$('#wiz-next-btn');
+  if(!nextBtn)return;
+  var s=S.wizard.step;
+  if(s>=WIZ_STEP_REVIEW){nextBtn.disabled=true;return}
+  var result=_wizValidateStep(s);
+  _wizClearStepErrors(s); /* Don't show errors on passive check */
+  nextBtn.disabled=!result.valid;
+}
+
 function launchWizard(){
-  /* Initialize wizard with dashboard data defaults */
   S.wizard.audience=D.audience||'changelog';
   S.wizard.format=D.output_format||'markdown';
   S.wizard.step=0;
+  S.wizard.generated=false;
   switchTab('generate');
 }
 
@@ -12,31 +234,40 @@ function renderWizard(){
 }
 
 function wizGoStep(n){
-  if(n>0&&_hasGitError())return;
+  if(n>0&&_hasGitError()&&_wizSourceState.sourceType==='local'&&_wizSourceState.localMode!=='directory')return;
   S.wizard.step=n;
+  /* Update stepper indicators (only steps 0-5 are in the stepper) */
   $$('[data-wiz-step]').forEach(function(s){
     var si=parseInt(s.dataset.wizStep,10);
-    s.classList.toggle('active',si===n);
-    s.classList.toggle('done',si<n);
+    s.classList.toggle('active',si===n||(n>=WIZ_STEP_PIPELINE&&si===WIZ_STEP_REVIEW));
+    s.classList.toggle('done',si<n&&si<WIZ_STEP_PIPELINE);
+    s.classList.remove('has-error');
   });
+  /* Show the correct panel */
   $$('.wizard-panel').forEach(function(p,i){p.classList.toggle('active',i===n)});
-  /* footer visibility */
+  /* Footer visibility — hide for review, pipeline, preview */
   var footer=$('#wizard-footer');
-  if(n>=4){hideEl(footer)}else{showEl(footer)}
-  var prevBtn=$('#wiz-prev-btn');if(prevBtn){prevBtn.disabled=(n===0);if(n===0)hideEl(prevBtn);else showEl(prevBtn)}
+  if(n>=WIZ_STEP_REVIEW){hideEl(footer)}else{showEl(footer)}
+  var prevBtn=$('#wiz-prev-btn');
+  if(prevBtn){prevBtn.disabled=(n===0);if(n===0)hideEl(prevBtn);else showEl(prevBtn)}
   var nextBtn=$('#wiz-next-btn');
   if(nextBtn){
-    if(n===2)nextBtn.innerHTML='&#9654; <span>'+_t('ui.wizard.generate_step')+'</span>';
+    if(n===WIZ_STEP_FORMAT)nextBtn.innerHTML='<span>'+_t('ui.wizard.review_step')+'</span> &#8594;';
     else nextBtn.innerHTML='<span>'+_t('ui.wizard.next')+'</span> &#8594;';
   }
-  /* render step content */
-  if(n===0)renderWizSource();
-  if(n===1)renderWizAudience();
-  if(n===2)renderWizFormat();
-  if(n===3)wizGenerate();
-  if(n===4)renderWizPreview();
-  if(n===5)renderWizExport();
+  /* Render step content */
+  if(n===WIZ_STEP_SOURCE)renderWizSourceStep();
+  if(n===WIZ_STEP_REPOS)renderWizReposStep();
+  if(n===WIZ_STEP_SCOPE)renderWizScopeStep();
+  if(n===WIZ_STEP_AUDIENCE)renderWizAudience();
+  if(n===WIZ_STEP_FORMAT)renderWizFormat();
+  if(n===WIZ_STEP_REVIEW)renderWizReview();
+  if(n===WIZ_STEP_PIPELINE)renderWizPipeline();
+  if(n===WIZ_STEP_PREVIEW)renderWizPreviewExport();
+  /* Update button state after render */
+  setTimeout(_wizUpdateNextBtn,50);
 }
+
 function _hasGitError(){
   if(!D.diagnostics||!D.diagnostics.length)return false;
   for(var i=0;i<D.diagnostics.length;i++){
@@ -45,17 +276,65 @@ function _hasGitError(){
   }
   return false;
 }
+
 function wizPrev(){if(S.wizard.step>0)wizGoStep(S.wizard.step-1)}
 function wizNext(){
   var s=S.wizard.step;
-  if(_hasGitError())return;
-  if(s<5)wizGoStep(s+1);
+  if(s>=WIZ_STEP_REVIEW)return;
+
+  /* Validate current step */
+  var result=_wizValidateStep(s);
+  if(!result.valid){
+    /* Show errors */
+    _wizShowStepError(s,'&#9888;&#65039; '+result.errors[0]);
+    /* Mark step indicator as having an error */
+    var stepEl=document.querySelector('[data-wiz-step="'+s+'"]');
+    if(stepEl)stepEl.classList.add('has-error');
+    return;
+  }
+  _wizClearStepErrors(s);
+  wizGoStep(s+1);
 }
 
-function renderWizSource(){
+/* ===== STEP 1: SOURCE TYPE ===== */
+
+function renderWizSourceStep(){
+  /* Just ensure correct selection state on the cards */
+  var localOpt=$('#src-type-local'),remoteOpt=$('#src-type-remote');
+  if(_wizSourceState.sourceType==='local'){
+    localOpt.classList.add('selected');localOpt.setAttribute('aria-checked','true');
+    remoteOpt.classList.remove('selected');remoteOpt.setAttribute('aria-checked','false');
+  }else{
+    remoteOpt.classList.add('selected');remoteOpt.setAttribute('aria-checked','true');
+    localOpt.classList.remove('selected');localOpt.setAttribute('aria-checked','false');
+  }
+}
+
+function wizSelectSourceType(type){
+  _wizSourceState.sourceType=type;
+  renderWizSourceStep();
+}
+
+/* ===== STEP 2: REPOSITORIES ===== */
+
+function renderWizReposStep(){
+  var isRemote=_wizSourceState.sourceType==='remote';
+  var localSection=$('#wiz-repos-local');
+  var remoteSection=$('#wiz-repos-remote');
+
+  if(isRemote){
+    hideEl(localSection);showEl(remoteSection);
+    wizSelectProvider(_wizSourceState.provider);
+    _wizUpdateRemoteRepoVisibility();
+  }else{
+    showEl(localSection);hideEl(remoteSection);
+    _renderLocalRepoInfo();
+  }
+}
+
+function _renderLocalRepoInfo(){
   var h='';
 
-  /* ── Fatal git error — block entire wizard ── */
   if(_hasGitError()){
     h+='<div class="wiz-fatal-error">';
     h+='<div class="wiz-fatal-icon">&#128721;</div>';
@@ -66,12 +345,9 @@ function renderWizSource(){
     h+='</div>';
     h+='<div class="wiz-fatal-hint">'+_t('ui.wizard.no_repo_hint')+'</div>';
     h+='</div>';
-    $('#wiz-source-info').innerHTML=h;
-    /* Disable wizard navigation — hide stepper, footer, heading */
-    var steps=$('#wizard-steps');if(steps)hideEl(steps);
-    var footer=$('#wizard-footer');if(footer)hideEl(footer);
-    var heading=$('#wiz-source-heading');if(heading)hideEl(heading);
-    var desc=$('#wiz-source-desc');if(desc)hideEl(desc);
+    $('#wiz-local-repo-info').innerHTML=h;
+    hideEl($('#wiz-local-mode-select'));
+    hideEl($('#wiz-local-dir-section'));
     return;
   }
 
@@ -79,32 +355,663 @@ function renderWizSource(){
   if(D.repo_path)repoName=D.repo_path.replace(/\\/g,'/').split('/').filter(function(s){return s}).pop()||D.repo_path;
   var displayName=D.app_name||repoName||_t('ui.wizard.unknown_repo');
 
-  /* ── Repo identity ── */
-  h+='<div class="alert alert-info wiz-repo-banner">&#128193; '+esc(displayName);
-  if(D.version)h+=' &middot; v'+esc(D.version);
-  if(D.branch)h+=' &middot; <span class="fw-600 wiz-branch-tag">'+esc(D.branch)+'</span>';
+  /* Rich repository metadata card */
+  h+='<div class="wiz-repo-card">';
+  h+='<div class="wiz-repo-card-header">';
+  h+='<div class="wiz-repo-card-icon">&#128193;</div>';
+  h+='<div class="wiz-repo-card-title">';
+  h+='<div class="wiz-repo-card-name">'+esc(displayName)+'</div>';
+  if(D.repo_path)h+='<div class="wiz-repo-card-path">'+esc(D.repo_path)+'</div>';
+  h+='</div>';
   h+='</div>';
 
-  /* ── Current range stats (only when data exists) ── */
-  h+='<div id="wiz-stats-area">';
-  if(!D.is_empty){
-    var dates=D.changes.map(function(c){return c.date}).filter(function(d){return d}).sort();
-    if(dates.length>0){
-      var oldest=dates[0],newest=dates[dates.length-1];
-      var d1=new Date(oldest),d2=new Date(newest);
-      var diffDays=Math.max(1,Math.ceil((d2-d1)/(1000*60*60*24)));
-      h+='<div class="stat-cards wiz-stats">';
-      h+='<div class="stat-card accent"><div class="stat-card-value">'+diffDays+'</div><div class="stat-card-label">'+_t('ui.wizard.days_covered')+'</div></div>';
-      h+='<div class="stat-card"><div class="stat-card-value">'+D.total_changes+'</div><div class="stat-card-label">'+_t('ui.overview.total_changes')+'</div></div>';
-      if(D.total_breaking>0)h+='<div class="stat-card error"><div class="stat-card-value">'+D.total_breaking+'</div><div class="stat-card-label">'+_t('ui.overview.breaking')+'</div></div>';
-      h+='</div>';
-    }
+  h+='<div class="wiz-repo-card-meta">';
+  if(D.branch){
+    h+='<div class="wiz-repo-meta-item">';
+    h+='<span class="wiz-repo-meta-label">'+_t('ui.wizard.branch')+'</span>';
+    h+='<span class="wiz-repo-meta-value wiz-branch-tag">'+esc(D.branch)+'</span>';
+    h+='</div>';
+  }
+  if(D.version){
+    h+='<div class="wiz-repo-meta-item">';
+    h+='<span class="wiz-repo-meta-label">'+_t('ui.wizard.meta_version')+'</span>';
+    h+='<span class="wiz-repo-meta-value">v'+esc(D.version)+'</span>';
+    h+='</div>';
+  }
+  if(D.total_changes!=null){
+    h+='<div class="wiz-repo-meta-item">';
+    h+='<span class="wiz-repo-meta-label">'+_t('ui.wizard.meta_total_commits')+'</span>';
+    h+='<span class="wiz-repo-meta-value">'+D.total_changes+'</span>';
+    h+='</div>';
+  }
+  if(D.last_activity){
+    h+='<div class="wiz-repo-meta-item">';
+    h+='<span class="wiz-repo-meta-label">'+_t('ui.wizard.meta_last_activity')+'</span>';
+    h+='<span class="wiz-repo-meta-value">'+esc(D.last_activity)+'</span>';
+    h+='</div>';
+  }
+  if(D.source_type){
+    h+='<div class="wiz-repo-meta-item">';
+    h+='<span class="wiz-repo-meta-label">'+_t('ui.wizard.review_source')+'</span>';
+    h+='<span class="wiz-repo-meta-value">'+esc(D.source_type)+'</span>';
+    h+='</div>';
   }
   h+='</div>';
+  h+='<div class="wiz-repo-card-status">&#9989; '+_t('ui.wizard.repo_accessible')+'</div>';
+  h+='</div>';
 
-  /* ── Source mode selection — wizard-option cards ── */
+  h+='<p class="text-secondary mt-1">'+_t('ui.wizard.local_repo_ready_text')+'</p>';
+
+  $('#wiz-local-repo-info').innerHTML=h;
+  showEl($('#wiz-local-mode-select'));
+
+  /* Restore local mode selection state */
+  wizSelectLocalMode(_wizSourceState.localMode||'current');
+}
+
+/* ===== LOCAL MODE: current repo vs directory scan ===== */
+
+function wizSelectLocalMode(mode){
+  _wizSourceState.localMode=mode;
+  var curOpt=$('#local-mode-current');
+  var dirOpt=$('#local-mode-directory');
+  var dirSection=$('#wiz-local-dir-section');
+
+  if(curOpt){curOpt.classList.toggle('selected',mode==='current');curOpt.setAttribute('aria-checked',mode==='current'?'true':'false')}
+  if(dirOpt){dirOpt.classList.toggle('selected',mode==='directory');dirOpt.setAttribute('aria-checked',mode==='directory'?'true':'false')}
+
+  if(mode==='directory'){
+    showEl(dirSection);
+  }else{
+    hideEl(dirSection);
+    /* Clear directory scan state when switching back */
+    _wizSourceState.localDirRepos=[];
+    _wizSourceState.selectedLocalRepos=[];
+  }
+  _wizUpdateNextBtn();
+}
+
+function wizScanDirectory(){
+  var pathInput=$('#src-local-dir-path');
+  var errEl=$('#err-local-dir-path');
+  var resultEl=$('#wiz-dir-scan-result');
+  var listEl=$('#wiz-dir-repo-list');
+  var path=pathInput?pathInput.value.trim():'';
+
+  /* Clear previous */
+  if(errEl)errEl.textContent='';
+  if(resultEl)resultEl.innerHTML='';
+  if(listEl)listEl.innerHTML='';
+  if(pathInput)pathInput.classList.remove('invalid','valid');
+
+  if(!path){
+    if(errEl)errEl.textContent='Please enter a directory path.';
+    if(pathInput)pathInput.classList.add('invalid');
+    return;
+  }
+
+  /* Show loading */
+  if(resultEl)resultEl.innerHTML='<div class="text-secondary">&#128269; '+_t('ui.wizard.scanning_dir')+'</div>';
+
+  fetch('/api/scan-directory',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:path})})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(!d||!d.ok){
+        if(pathInput)pathInput.classList.add('invalid');
+        if(errEl)errEl.textContent=d&&d.error||_t('ui.wizard.err_scan_failed');
+        if(resultEl)resultEl.innerHTML='';
+        return;
+      }
+      if(pathInput)pathInput.classList.add('valid');
+      _wizSourceState.localDirRepos=d.repos||[];
+      _wizSourceState.selectedLocalRepos=d.repos.map(function(r){return r.path});
+      if(resultEl)resultEl.innerHTML='<div class="alert alert-info">&#9989; '+_t('ui.wizard.scan_found').replace('{count}',d.count)+'</div>';
+      _renderLocalDirRepoList();
+    })
+    .catch(function(e){
+      if(pathInput)pathInput.classList.add('invalid');
+      if(errEl)errEl.textContent=typeof e==='string'?e:(e.message||_t('ui.wizard.err_scan_failed'));
+      if(resultEl)resultEl.innerHTML='';
+    });
+}
+
+function _renderLocalDirRepoList(){
+  var listEl=$('#wiz-dir-repo-list');
+  if(!listEl)return;
+  var repos=_wizSourceState.localDirRepos||[];
+  if(repos.length===0){listEl.innerHTML='';return}
+
+  var h='<div class="wiz-dir-repo-header flex gap-1 mb-1">';
+  h+='<button class="btn btn-sm" onclick="_wizToggleAllLocalRepos(true)">Select All</button>';
+  h+='<button class="btn btn-sm" onclick="_wizToggleAllLocalRepos(false)">Deselect All</button>';
+  h+='<span class="text-secondary" id="wiz-dir-selected-count">'+repos.length+' of '+repos.length+' selected</span>';
+  h+='</div>';
+
+  repos.forEach(function(r,i){
+    var checked=(_wizSourceState.selectedLocalRepos||[]).indexOf(r.path)>=0;
+    h+='<label class="wiz-dir-repo-item">';
+    h+='<input type="checkbox" '+(checked?'checked':'')+' onchange="_wizToggleLocalRepo('+i+')">';
+    h+='<span class="wiz-dir-repo-name">'+esc(r.name)+'</span>';
+    h+='<span class="wiz-dir-repo-path">'+esc(r.path)+'</span>';
+    h+='</label>';
+  });
+  listEl.innerHTML=h;
+}
+
+function _wizToggleLocalRepo(idx){
+  var repos=_wizSourceState.localDirRepos||[];
+  if(idx<0||idx>=repos.length)return;
+  var path=repos[idx].path;
+  var sel=_wizSourceState.selectedLocalRepos||[];
+  var pos=sel.indexOf(path);
+  if(pos>=0)sel.splice(pos,1);
+  else sel.push(path);
+  _wizSourceState.selectedLocalRepos=sel;
+  _updateLocalDirSelectedCount();
+  _wizUpdateNextBtn();
+}
+
+function _wizToggleAllLocalRepos(selectAll){
+  var repos=_wizSourceState.localDirRepos||[];
+  if(selectAll){
+    _wizSourceState.selectedLocalRepos=repos.map(function(r){return r.path});
+  }else{
+    _wizSourceState.selectedLocalRepos=[];
+  }
+  _renderLocalDirRepoList();
+  _wizUpdateNextBtn();
+}
+
+function _updateLocalDirSelectedCount(){
+  var el=$('#wiz-dir-selected-count');
+  if(!el)return;
+  var total=(_wizSourceState.localDirRepos||[]).length;
+  var sel=(_wizSourceState.selectedLocalRepos||[]).length;
+  el.textContent=sel+' of '+total+' selected';
+}
+
+function wizSelectProvider(provider){
+  _wizSourceState.provider=provider;
+  $$('.wiz-provider-opt').forEach(function(el){
+    var p=el.id.replace('src-provider-','');
+    el.classList.toggle('selected',p===provider);
+  });
+  var glRow=$('#wiz-gitlab-url-row');
+  var tokenHint=$('#src-token-hint');
+  var repoUrl=$('#src-repo-url');
+  var multiRepoUrl=$('#src-multi-repo-url');
+  var optionalHint=$('#src-token-optional-hint');
+  var requiredStar=$('#src-token-required-star');
+  var skipBtn=$('#btn-skip-token');
+  if(provider==='gitlab'){
+    glRow.style.display='';
+    if(tokenHint)tokenHint.textContent=_t('ui.wizard.token_hint_gitlab');
+    if(repoUrl)repoUrl.placeholder='https://gitlab.example.com/owner/repo';
+    if(multiRepoUrl)multiRepoUrl.placeholder='https://gitlab.example.com/owner/repo';
+    /* GitLab always requires token */
+    if(optionalHint)optionalHint.style.display='none';
+    if(requiredStar)requiredStar.style.display='';
+    if(skipBtn)skipBtn.style.display='none';
+  }else{
+    glRow.style.display='none';
+    if(tokenHint)tokenHint.textContent=_t('ui.wizard.token_hint_github');
+    if(repoUrl)repoUrl.placeholder='https://github.com/owner/repo';
+    if(multiRepoUrl)multiRepoUrl.placeholder='https://github.com/owner/repo';
+    /* GitHub: token optional for public repos — auto-skipped on next step */
+    if(optionalHint)optionalHint.style.display='';
+    if(requiredStar)requiredStar.style.display='none';
+    if(skipBtn)skipBtn.style.display='none';
+  }
+  _wizSourceState.tokenValidated=false;
+  _wizSourceState.tokenSkipped=false;
+  _wizSourceState.tokenUser='';
+  var statusEl=$('#src-token-status');if(statusEl)statusEl.textContent='';
+  _wizHideRepoInput();
+  _wizUpdateRemoteRepoVisibility();
+}
+
+function _wizHideRepoInput(){
+  /* No longer hides #wiz-repo-input-section — it's always visible */
+  /* Only clear inspection results when switching providers */
+  var inspResult=$('#src-repo-inspect-result');if(inspResult)inspResult.innerHTML='';
+}
+
+function _wizUpdateRemoteRepoVisibility(){
+  var isSingle=_wizSourceState.repoCount==='single';
+  var singleEl=$('#wiz-remote-repo-single');
+  var multiEl=$('#wiz-remote-repo-multi');
+  var gatedHint=$('#wiz-token-gated-hint');
+  var inspectBtn=$('#btn-inspect-repo');
+  var inspectHint=$('#inspect-token-hint');
+  /* Repo input section is always visible — only toggle single/multi */
+  if(isSingle){showEl(singleEl);hideEl(multiEl)}
+  else{hideEl(singleEl);showEl(multiEl);wizRenderMultiRepoList()}
+  /* Show/hide the gated hint and enable/disable inspect based on token */
+  var validated=_wizSourceState.tokenValidated;
+  var skipped=_wizSourceState.tokenSkipped;
+  var isGitHub=_wizSourceState.provider==='github';
+  if(gatedHint){
+    /* For GitHub, hide the gate — token is optional and auto-skipped */
+    if(validated||skipped||isGitHub)hideEl(gatedHint);
+    else showEl(gatedHint);
+  }
+  if(inspectBtn){inspectBtn.disabled=!validated}
+  if(inspectHint){inspectHint.style.display=validated?'none':''}
+}
+
+function wizSelectRepoCount(count){
+  _wizSourceState.repoCount=count;
+  var singleOpt=$('#src-count-single'),multiOpt=$('#src-count-multi');
+  if(count==='single'){
+    singleOpt.classList.add('selected');singleOpt.setAttribute('aria-checked','true');
+    multiOpt.classList.remove('selected');multiOpt.setAttribute('aria-checked','false');
+  }else{
+    multiOpt.classList.add('selected');multiOpt.setAttribute('aria-checked','true');
+    singleOpt.classList.remove('selected');singleOpt.setAttribute('aria-checked','false');
+  }
+  _wizUpdateRemoteRepoVisibility();
+}
+
+function wizValidateToken(){
+  _wizClearFieldError('#src-remote-token','#err-remote-token');
+  _wizClearFieldError('#src-gitlab-url','#err-gitlab-url');
+  var token=$('#src-remote-token').value.trim();
+  if(!token){_wizShowFieldError('#src-remote-token','#err-remote-token',_t('ui.wizard.err_token_empty'));return}
+
+  _wizSourceState.tokenSkipped=false;
+  var provider=_wizSourceState.provider;
+  var statusEl=$('#src-token-status');
+  statusEl.innerHTML='<span class="text-secondary">'+_t('ui.wizard.validating')+'</span>';
+  var verifySsl=$('#src-verify-ssl')?$('#src-verify-ssl').checked:true;
+
+  var endpoint,body;
+  if(provider==='github'){
+    endpoint='/api/github/validate';
+    body={github_token:token,github_ssl_verify:verifySsl};
+  }else{
+    var gitlabUrl=$('#src-gitlab-url').value.trim();
+    if(!gitlabUrl){_wizShowFieldError('#src-gitlab-url','#err-gitlab-url',_t('ui.wizard.err_gitlab_url_required'));statusEl.textContent='';return}
+    endpoint='/api/gitlab/validate';
+    body={gitlab_url:gitlabUrl,gitlab_token:token,gitlab_ssl_verify:verifySsl};
+  }
+
+  fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.ok){
+        _wizSourceState.tokenValidated=true;
+        _wizSourceState.tokenSkipped=false;
+        _wizSourceState.tokenUser=d.user||d.name||'';
+        _wizMarkFieldValid('#src-remote-token');
+        statusEl.innerHTML='<span class="text-success">&#9989; '+_t('ui.wizard.token_authenticated')+' <strong>'+esc(d.user||d.name||'user')+'</strong></span>';
+        _wizUpdateRemoteRepoVisibility();
+        var cfgBody={};
+        if(provider==='github'){cfgBody.github_token=token;cfgBody.source_type='github';cfgBody.github_ssl_verify=verifySsl}
+        else{
+          cfgBody.gitlab_token=token;cfgBody.gitlab_url=$('#src-gitlab-url').value.trim();cfgBody.source_type='gitlab';cfgBody.gitlab_ssl_verify=verifySsl;
+        }
+        fetch('/api/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfgBody)});
+      }else{
+        _wizSourceState.tokenValidated=false;
+        _wizShowFieldError('#src-remote-token','#err-remote-token',d.error||_t('ui.wizard.err_token_validation_failed'));
+        statusEl.innerHTML='<span class="text-error">&#10060; '+esc(d.error||_t('ui.wizard.err_token_validation_failed'))+'</span>';
+      }
+      _wizUpdateNextBtn();
+    })
+    .catch(function(e){
+      statusEl.innerHTML='<span class="text-error">&#10060; '+esc(e.message||'Connection error')+'</span>';
+      _wizUpdateNextBtn();
+    });
+}
+
+function wizSkipToken(){
+  /* Allow proceeding without token (GitHub public repos only) */
+  _wizSourceState.tokenSkipped=true;
+  _wizSourceState.tokenValidated=false;
+  _wizSourceState.tokenUser='';
+  _wizClearFieldError('#src-remote-token','#err-remote-token');
+  var statusEl=$('#src-token-status');
+  if(statusEl)statusEl.innerHTML='<span class="text-secondary">&#9432; '+_t('ui.wizard.token_skipped_status')+'</span>';
+  _wizUpdateRemoteRepoVisibility();
+  _wizUpdateNextBtn();
+}
+
+function wizInspectRepo(){
+  _wizClearFieldError('#src-repo-url','#err-repo-url');
+  var url=$('#src-repo-url').value.trim();
+  if(!url){_wizShowFieldError('#src-repo-url','#err-repo-url',_t('ui.wizard.err_repo_url_inspect'));return}
+
+  /* Detect org/user pages → suggest switching to multi-repo mode */
+  var orgCheck=_wizDetectOrgUrl(url);
+  if(orgCheck.isOrg){
+    _wizShowFieldError('#src-repo-url','#err-repo-url',_t('ui.wizard.err_org_use_multi'));
+    return;
+  }
+
+  var urlRe=_wizSourceState.provider==='github'?_GH_URL_RE:_GL_URL_RE;
+  if(!urlRe.test(url)){
+    _wizShowFieldError('#src-repo-url','#err-repo-url',
+      _wizSourceState.provider==='github'
+        ?_t('ui.wizard.err_github_url_format')
+        :_t('ui.wizard.err_gitlab_repo_url_format'));
+    return;
+  }
+
+  var resultEl=$('#src-repo-inspect-result');
+  resultEl.innerHTML='<div class="text-secondary">'+_t('ui.wizard.inspecting')+'</div>';
+
+  var provider=_wizSourceState.provider;
+  var endpoint,body;
+  if(provider==='github'){
+    endpoint='/api/github/inspect';
+    body={url:url};
+  }else{
+    var projectPath=url;
+    if(url.indexOf('://')>=0){
+      var parts=url.split('://')[1].split('/');
+      projectPath=parts.slice(1).join('/').replace(/\.git$/,'');
+    }
+    endpoint='/api/gitlab/inspect';
+    body={project:projectPath};
+  }
+
+  fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.ok){
+        _wizSourceState.inspectedData=d;
+        var h='<div class="alert alert-success">&#9989; <strong>'+_t('ui.wizard.repo_accessible')+'</strong></div>';
+        var name=(d.repo?d.repo.full_name:d.project?d.project.path:'');
+        if(name)h+='<div class="text-secondary">'+esc(name)+'</div>';
+        if(d.default_branch)h+='<div class="text-secondary">'+_t('ui.wizard.inspect_default_branch')+': <code>'+esc(d.default_branch)+'</code></div>';
+        if(d.branches)h+='<div class="text-secondary">'+_t('ui.wizard.inspect_branches')+': '+d.branches.length+' &middot; '+_t('ui.wizard.inspect_tags')+': '+(d.tags?d.tags.length:0)+'</div>';
+        var labelInput=$('#src-repo-label');
+        if(labelInput&&!labelInput.value)labelInput.value=name||'';
+        var cfgBody={source_type:provider};
+        if(provider==='github'){
+          cfgBody.github_owner=d.repo?d.repo.full_name.split('/')[0]:'';
+          cfgBody.github_repo=d.repo?d.repo.name:'';
+        }else{
+          cfgBody.gitlab_project=d.project?d.project.path:'';
+        }
+        if(d.default_branch)cfgBody.branch=d.default_branch;
+        fetch('/api/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfgBody)});
+        resultEl.innerHTML=h;
+        _wizMarkFieldValid('#src-repo-url');
+        _wizUpdateNextBtn();
+      }else{
+        resultEl.innerHTML='<div class="alert alert-error">&#10060; '+esc(d.error||_t('ui.wizard.err_inspection_failed'))+'</div>';
+        _wizShowFieldError('#src-repo-url','#err-repo-url',d.error||_t('ui.wizard.err_inspection_failed'));
+      }
+    })
+    .catch(function(e){
+      resultEl.innerHTML='<div class="alert alert-error">&#10060; '+esc(e.message||'Connection error')+'</div>';
+    });
+}
+
+/* ===== MULTI-REPO MANAGEMENT ===== */
+
+/* ── Org/Group Discovery ── */
+var _orgDiscoveryState={loading:false,repos:[],org:'',provider:'',error:''};
+
+function _wizDetectOrgUrl(url){
+  /* Returns {isOrg:true,org:'NAME',provider:'github'|'gitlab'} or {isOrg:false} */
+  if(_wizSourceState.provider==='github'){
+    var m=url.match(_GH_ORG_RE);
+    if(m)return{isOrg:true,org:m[1],provider:'github'};
+  }else{
+    var m2=url.match(_GL_GROUP_RE);
+    if(m2)return{isOrg:true,org:m2[2],provider:'gitlab',baseUrl:m2[1]};
+  }
+  return{isOrg:false};
+}
+
+function wizDiscoverOrgRepos(orgName,provider,opts){
+  opts=opts||{};
+  var pickerEl=$('#wiz-org-repo-picker');
+  if(!pickerEl)return;
+  _orgDiscoveryState={loading:true,repos:[],org:orgName,provider:provider,error:''};
+  _renderOrgRepoPicker();
+
+  var token=$('#src-remote-token')?$('#src-remote-token').value.trim():'';
+  var endpoint,body;
+  if(provider==='github'){
+    endpoint='/api/github/org-repos';
+    body={org:orgName,token:token};
+  }else{
+    endpoint='/api/gitlab/group-repos';
+    body={group:orgName,token:token};
+    if(opts.baseUrl)body.gitlab_url=opts.baseUrl;
+  }
+
+  fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      _orgDiscoveryState.loading=false;
+      if(d.ok){
+        _orgDiscoveryState.repos=d.repos||[];
+        if(!_orgDiscoveryState.repos.length){
+          _orgDiscoveryState.error=_t('ui.wizard.org_no_repos');
+        }
+      }else{
+        _orgDiscoveryState.error=d.error||_t('ui.error.generic');
+      }
+      _renderOrgRepoPicker();
+    })
+    .catch(function(e){
+      _orgDiscoveryState.loading=false;
+      _orgDiscoveryState.error=e.message||_t('ui.error.generic');
+      _renderOrgRepoPicker();
+    });
+}
+
+function _renderOrgRepoPicker(){
+  var el=$('#wiz-org-repo-picker');
+  if(!el)return;
+  var st=_orgDiscoveryState;
+  if(!st.org){hideEl(el);return}
+  showEl(el);
+
+  if(st.loading){
+    el.innerHTML='<div class="text-secondary" style="padding:12px 0">'+_t('ui.wizard.org_loading')+' <strong>'+esc(st.org)+'</strong>…</div>';
+    return;
+  }
+  if(st.error){
+    el.innerHTML='<div class="alert alert-error" style="margin:8px 0">'+esc(st.error)+'</div>'
+      +'<button class="btn btn-sm mt-1" onclick="wizCloseOrgPicker()">'+_t('ui.modal.close')+'</button>';
+    return;
+  }
+  var repos=st.repos;
+  var h='<div class="wiz-org-picker-header">';
+  h+='<strong>'+esc(st.org)+'</strong> &mdash; '+repos.length+' '+_t('ui.wizard.org_repos_found');
+  h+='<div class="flex gap-1 mt-1 mb-1"><button class="btn btn-sm" onclick="wizOrgSelectAll(true)">'+_t('ui.wizard.org_select_all')+'</button>';
+  h+='<button class="btn btn-sm" onclick="wizOrgSelectAll(false)">'+_t('ui.wizard.org_deselect_all')+'</button></div>';
+  h+='</div>';
+  h+='<div class="wiz-org-picker-list" style="max-height:280px;overflow-y:auto">';
+  repos.forEach(function(r,i){
+    var already=_wizSourceState.remoteRepos.some(function(rr){return rr.url===r.url});
+    var vis=r.visibility==='private'?'&#128274;':'&#127760;';
+    h+='<label class="wiz-org-picker-item'+(already?' disabled':'')+'">';
+    h+='<input type="checkbox" data-org-idx="'+i+'"'+(already?' disabled checked':'')+' />';
+    h+='<span>'+vis+' <strong>'+esc(r.name)+'</strong>';
+    if(r.description)h+=' <span class="text-tertiary">&mdash; '+esc(r.description.substring(0,80))+'</span>';
+    h+='</span></label>';
+  });
+  h+='</div>';
+  h+='<div class="flex gap-1 mt-1">';
+  h+='<button class="btn btn-primary btn-sm" onclick="wizOrgAddSelected()">'+_t('ui.wizard.org_add_selected')+'</button>';
+  h+='<button class="btn btn-sm" onclick="wizCloseOrgPicker()">'+_t('ui.modal.cancel')+'</button>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+function wizOrgSelectAll(val){
+  var cbs=$$('#wiz-org-repo-picker input[type=checkbox]:not(:disabled)');
+  cbs.forEach(function(cb){cb.checked=val});
+}
+
+function wizOrgAddSelected(){
+  var cbs=$$('#wiz-org-repo-picker input[type=checkbox]:not(:disabled):checked');
+  var repos=_orgDiscoveryState.repos;
+  var provider=_orgDiscoveryState.provider;
+  var added=0;
+  cbs.forEach(function(cb){
+    var idx=parseInt(cb.getAttribute('data-org-idx'),10);
+    var r=repos[idx];
+    if(!r)return;
+    var already=_wizSourceState.remoteRepos.some(function(rr){return rr.url===r.url});
+    if(already)return;
+    _wizSourceState.remoteRepos.push({
+      url:r.url,
+      label:r.full_name||r.name,
+      provider:provider,
+      owner:r.full_name?r.full_name.split('/')[0]:'',
+      repo:r.name,
+      projectPath:r.full_name||'',
+      inspected:false
+    });
+    added++;
+  });
+  wizCloseOrgPicker();
+  if(added>0){
+    $('#src-multi-repo-url').value='';
+    $('#src-multi-repo-label').value='';
+    wizRenderMultiRepoList();
+    _wizUpdateNextBtn();
+  }
+}
+
+function wizCloseOrgPicker(){
+  _orgDiscoveryState={loading:false,repos:[],org:'',provider:'',error:''};
+  var el=$('#wiz-org-repo-picker');
+  if(el){el.innerHTML='';hideEl(el)}
+}
+
+function wizAddMultiRepo(){
+  _wizClearFieldError('#src-multi-repo-url','#err-multi-repo-url');
+  var url=$('#src-multi-repo-url').value.trim();
+  var label=$('#src-multi-repo-label').value.trim();
+  if(!url){_wizShowFieldError('#src-multi-repo-url','#err-multi-repo-url',_t('ui.wizard.err_repo_url_add'));return}
+
+  /* Protocol check */
+  if(!/^https?:\/\//i.test(url)){
+    _wizShowFieldError('#src-multi-repo-url','#err-multi-repo-url',_t('ui.wizard.err_url_protocol'));
+    return;
+  }
+
+  /* Provider-specific URL format validation */
+  if(_wizSourceState.provider==='github'){
+    /* Detect org/user pages → trigger discovery instead of rejecting */
+    var orgCheck=_wizDetectOrgUrl(url);
+    if(orgCheck.isOrg){
+      wizDiscoverOrgRepos(orgCheck.org,'github');
+      return;
+    }
+    if(!_GH_URL_RE.test(url)){
+      _wizShowFieldError('#src-multi-repo-url','#err-multi-repo-url',_t('ui.wizard.err_github_url_format'));
+      return;
+    }
+  }else{
+    var glOrgCheck=_wizDetectOrgUrl(url);
+    if(glOrgCheck.isOrg){
+      wizDiscoverOrgRepos(glOrgCheck.org,'gitlab',{baseUrl:glOrgCheck.baseUrl});
+      return;
+    }
+    if(!_GL_URL_RE.test(url)){
+      _wizShowFieldError('#src-multi-repo-url','#err-multi-repo-url',_t('ui.wizard.err_gitlab_repo_url_format'));
+      return;
+    }
+  }
+
+  /* Check for duplicates */
+  for(var i=0;i<_wizSourceState.remoteRepos.length;i++){
+    if(_wizSourceState.remoteRepos[i].url===url){
+      _wizShowFieldError('#src-multi-repo-url','#err-multi-repo-url',_t('ui.wizard.err_repo_duplicate'));
+      return;
+    }
+  }
+
+  fetch('/api/sources/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:url,token:$('#src-remote-token').value.trim(),app_label:label})})
+    .then(function(r){return r.json()})
+    .then(function(d){
+      if(d.ok){
+        _wizSourceState.remoteRepos.push({
+          url:url,
+          label:label||d.display_name||url,
+          provider:d.source_type,
+          owner:d.owner||'',
+          repo:d.repo||'',
+          projectPath:d.project_path||'',
+          inspected:false
+        });
+        $('#src-multi-repo-url').value='';
+        $('#src-multi-repo-label').value='';
+        wizRenderMultiRepoList();
+        _wizUpdateNextBtn();
+      }else{
+        openModal(_t('ui.wizard.err_validation_title'),'<p>'+esc(d.error||_t('ui.wizard.err_url_validate_failed'))+'</p>','<button class="btn btn-secondary" onclick="closeModal()">'+_t('ui.modal.ok')+'</button>');
+      }
+    })
+    .catch(function(e){
+      openModal(_t('ui.error.generic'),'<p>'+esc(e.message||_t('ui.wizard.err_url_validate_failed'))+'</p>','<button class="btn btn-secondary" onclick="closeModal()">'+_t('ui.modal.ok')+'</button>');
+    });
+}
+
+function wizRemoveMultiRepo(idx){
+  _wizSourceState.remoteRepos.splice(idx,1);
+  wizRenderMultiRepoList();
+  _wizUpdateNextBtn();
+}
+
+function wizRenderMultiRepoList(){
+  var el=$('#wiz-multi-repo-list');
+  if(!el)return;
+  var repos=_wizSourceState.remoteRepos;
+  if(!repos.length){
+    el.innerHTML='<div class="text-tertiary" style="padding:12px 0">'+_t('ui.wizard.no_repos_added')+'</div>';
+    return;
+  }
+  var h='<div class="wiz-multi-repos">';
+  repos.forEach(function(r,i){
+    var icon=r.provider==='github'?'&#128025;':r.provider==='gitlab'?'&#129418;':'&#128193;';
+    h+='<div class="wiz-multi-repo-item">';
+    h+='<span class="wiz-multi-repo-icon">'+icon+'</span>';
+    h+='<span class="wiz-multi-repo-label"><strong>'+esc(r.label)+'</strong></span>';
+    h+='<span class="wiz-multi-repo-url text-tertiary">'+esc(r.url)+'</span>';
+    h+='<button class="btn btn-sm wiz-multi-repo-remove" onclick="wizRemoveMultiRepo('+i+')" title="Remove">&#10060;</button>';
+    h+='</div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+/* ===== STEP 3: SCOPE ===== */
+
+function renderWizScopeStep(){
+  /* Clear stale preview stats immediately */
+  var preview=$('#wiz-scope-preview');if(preview)preview.innerHTML='';
+  var alerts=$('#src-alerts');if(alerts)alerts.innerHTML='';
+
+  /* Show scope banner with repo count */
+  var banner=$('#wiz-scope-banner');
+  var countEl=$('#wiz-scope-repo-count');
+  var repoCount=_getRepoCount();
+  if(repoCount>1){
+    showEl(banner);
+    countEl.textContent=repoCount;
+    banner.innerHTML='&#128279; '+_t('ui.wizard.scope_banner_multi').replace('{count}',repoCount);
+  }else if(_wizSourceState.sourceType==='remote'){
+    showEl(banner);
+    banner.innerHTML='&#128279; '+_t('ui.wizard.scope_banner_remote');
+  }else{
+    hideEl(banner);
+  }
+
+  var h='';
   var hasFromRef=!!D.from_ref;
   var defaultRef=hasFromRef;
+
+  /* Range mode selector */
   h+='<div class="section"><div class="section-title">'+_t('ui.wizard.source_range')+'</div>';
   h+='<div class="wizard-options wiz-src-grid">';
   h+='<div class="wizard-option'+(defaultRef?'':' selected')+'" id="src-opt-date" tabindex="0" role="radio" aria-checked="'+(defaultRef?'false':'true')+'" onclick="srcSelectMode(\'date\')" onkeydown="if(event.key===\'Enter\')srcSelectMode(\'date\')">';
@@ -119,11 +1026,9 @@ function renderWizSource(){
   h+='</div>';
   h+='</div>';
 
-  /* ── Inline fields: Date mode ── */
+  /* Date mode fields */
   var now=new Date();
   var presets=[{key:'1m',months:1},{key:'2m',months:2},{key:'3m',months:3},{key:'1y',months:12}];
-
-  /* Restore date from D.since_date (persisted after reload) or default to 1 month */
   var restoredDate=D.since_date||'';
   var matchedPreset='custom';
   if(restoredDate){
@@ -145,17 +1050,29 @@ function renderWizSource(){
   });
   h+='<button class="btn btn-sm src-preset'+(matchedPreset==='custom'?' selected':'')+'" data-preset="custom" onclick="srcPresetCustom()">'+_t('ui.wizard.src_preset_custom')+'</button>';
   h+='</div></div>';
-  h+='<div class="export-row"><label>'+_t('ui.first_run.since_label')+'</label><input type="date" id="src-since-date" class="form-input" value="'+esc(restoredDate)+'" onchange="_syncPresetChips();srcAutoReload()"></div>';
-  h+='<div class="export-row"><label>'+_t('ui.first_run.branch_label')+'</label><input type="text" id="src-branch-date" class="form-input" placeholder="main"'+(D.branch?' value="'+esc(D.branch)+'"':'')+' onchange="srcAutoReload()"></div>';
+  h+='<div class="wiz-field-group"><label for="src-since-date">'+_t('ui.first_run.since_label')+' <span class="text-error">*</span></label>';
+  h+='<input type="date" id="src-since-date" class="form-input" value="'+esc(restoredDate)+'" onchange="_syncPresetChips();_wizUpdateNextBtn();srcAutoReload()">';
+  h+='<span class="wiz-helper-text">'+_t('ui.wizard.scope_date_hint')+'</span>';
+  h+='<div class="field-error" id="err-since-date"></div></div>';
+  h+='<div class="wiz-field-group"><label for="src-branch-date">'+_t('ui.first_run.branch_label')+'</label>';
+  h+='<input type="text" id="src-branch-date" class="form-input" placeholder="main"'+(D.branch?' value="'+esc(D.branch)+'"':'')+' onchange="srcAutoReload()">';
+  h+='<span class="wiz-helper-text">'+_t('ui.wizard.scope_branch_hint')+'</span>';
+  h+='</div>';
   h+='</div>';
 
-  /* ── Inline fields: Ref mode ── */
+  /* Ref mode fields */
   h+='<div id="src-panel-ref" class="src-fields'+(defaultRef?'':' hidden')+'">';
-  h+='<div class="export-row"><label>'+_t('ui.wizard.from_ref')+'</label><input type="text" id="src-from-ref" class="form-input" placeholder="v1.0.0"'+(D.from_ref?' value="'+esc(D.from_ref)+'"':'')+' onchange="srcAutoReload()"></div>';
-  h+='<div class="export-row"><label>'+_t('ui.wizard.to_ref')+'</label><input type="text" id="src-to-ref" class="form-input" placeholder="HEAD" value="'+esc(D.to_ref||'HEAD')+'" onchange="srcAutoReload()"></div>';
+  h+='<div class="wiz-field-group"><label for="src-from-ref">'+_t('ui.wizard.from_ref')+' <span class="text-error">*</span></label>';
+  h+='<input type="text" id="src-from-ref" class="form-input" placeholder="v1.0.0"'+(D.from_ref?' value="'+esc(D.from_ref)+'"':'')+' oninput="_wizUpdateNextBtn()" onchange="srcAutoReload()">';
+  h+='<span class="wiz-helper-text">'+_t('ui.wizard.scope_from_ref_hint')+'</span>';
+  h+='<div class="field-error" id="err-from-ref"></div></div>';
+  h+='<div class="wiz-field-group"><label for="src-to-ref">'+_t('ui.wizard.to_ref')+'</label>';
+  h+='<input type="text" id="src-to-ref" class="form-input" placeholder="HEAD" value="'+esc(D.to_ref||'HEAD')+'" onchange="srcAutoReload()">';
+  h+='<span class="wiz-helper-text">'+_t('ui.wizard.scope_to_ref_hint')+'</span>';
+  h+='</div>';
   h+='</div>';
 
-  /* ── Language selector ── */
+  /* Language selector */
   h+='<div class="export-row wiz-src-lang-row"><label>'+_t('ui.wizard.language')+'</label>';
   h+='<select class="form-select" id="src-language" onchange="srcLangChange(this.value)">';
   var langs=[{c:'en',n:'English'},{c:'pl',n:'Polski'},{c:'de',n:'Deutsch'},{c:'fr',n:'Français'},{c:'es',n:'Español'},{c:'it',n:'Italiano'},{c:'pt',n:'Português'},{c:'nl',n:'Nederlands'},{c:'uk',n:'Українська'},{c:'cs',n:'Čeština'}];
@@ -163,23 +1080,29 @@ function renderWizSource(){
   langs.forEach(function(l){h+='<option value="'+l.c+'"'+(l.c===curLang?' selected':'')+'>'+esc(l.n)+'</option>'});
   h+='</select></div>';
 
-  /* ── Alerts ── */
-  h+='<div id="src-alerts">';
-  if(D.is_empty){
-    h+='<div class="alert alert-warning">&#9888;&#65039; '+_t('ui.wizard.no_changes_warning')+'</div>';
-    if(D.diagnostics&&D.diagnostics.length>0){
-      h+='<div class="alert alert-error wiz-diag-text">';
-      D.diagnostics.forEach(function(d){h+=esc(d)+'<br>'});
-      h+='</div>';
-    }
-  }else if(D.total_breaking>0){
-    h+='<div class="alert alert-error">&#9888;&#65039; <strong>'+_tp('ui.plural.breaking',D.total_breaking)+'</strong></div>';
-  }
-  h+='</div>';
   h+='</div>';
 
-  $('#wiz-source-info').innerHTML=h;
+  $('#wiz-scope-content').innerHTML=h;
+
+  /* Auto-load preview — fires for both local and remote sources */
+  if(_wizSourceState.sourceType==='local'&&!_hasGitError()){
+    srcAutoReload();
+  }else if(_wizSourceState.sourceType==='remote'){
+    srcAutoReload();
+  }
 }
+
+function _getRepoCount(){
+  if(_wizSourceState.sourceType==='remote'&&_wizSourceState.repoCount==='multi'){
+    return _wizSourceState.remoteRepos.length||0;
+  }
+  if(_wizSourceState.sourceType==='local'&&_wizSourceState.localMode==='directory'){
+    return (_wizSourceState.selectedLocalRepos||[]).length||0;
+  }
+  return 1;
+}
+
+/* ===== STEP 4: AUDIENCE ===== */
 
 function renderWizAudience(){
   var h='';
@@ -200,9 +1123,10 @@ function wizSelectAudience(a){
   renderWizAudience();
 }
 
+/* ===== STEP 5: FORMAT ===== */
+
 function renderWizFormat(){
   var h='';
-  /* Audience-dependent format availability — matching CLI guide exactly */
   var aud=S.wizard.audience;
   var isExec=(aud==='executive');
   var isNarr=(aud==='narrative'||aud==='customer-narrative');
@@ -214,14 +1138,18 @@ function renderWizFormat(){
   } else {
     allowed=['markdown','plaintext','json'];
   }
-  /* If current format isn't in allowed list, reset to first */
   if(allowed.indexOf(S.wizard.format)<0){
     S.wizard.format=allowed[0];
   }
-  /* Show audience context above options */
-  var audInfo=AUDIENCE_INFO[aud];
-  if(audInfo){
-    h+='<div class="text-secondary wiz-aud-context">'+audInfo.icon+' <strong>'+esc(audInfo.label)+'</strong> &middot; '+allowed.length+' '+_t('ui.wizard.formats_available')+'</div>';
+  /* Render context banner above the format cards */
+  var ctx=$('#wiz-format-context');
+  if(ctx){
+    var audInfo=AUDIENCE_INFO[aud];
+    if(audInfo){
+      ctx.innerHTML='<div class="wiz-context-badge">'+audInfo.icon+' <strong>'+esc(audInfo.label)+'</strong> &middot; '+allowed.length+' '+_t('ui.wizard.formats_available')+'</div>';
+    }else{
+      ctx.innerHTML='';
+    }
   }
   var textFormats=['markdown','plaintext','json'];
   allowed.forEach(function(f){
@@ -245,47 +1173,322 @@ function wizSelectFormat(f){
   renderWizFormat();
 }
 
-function wizGenerate(){
-  /* Show spinner briefly, then reveal results */
-  showEl($('#wiz-progress'));
-  hideEl($('#wiz-generate-result'));
-  setTimeout(function(){
-    hideEl($('#wiz-progress'));
-    var isBinary=(S.wizard.format==='pdf'||S.wizard.format==='docx');
-    var art=findArtifact(S.wizard.audience,S.wizard.format);
-    if(!art&&isBinary)art=findArtifact(S.wizard.audience,'markdown');
-    var h='';
-    if(art){
-      h+='<div class="wizard-success">';
-      h+='<div class="wizard-success-icon">&#9989;</div>';
-      h+='<div class="wizard-success-title">'+_t('ui.wizard.generate_done')+'</div>';
-      h+='<div class="wizard-success-text">'+_t('ui.wizard.generate_done_text')+'</div>';
-      if(isBinary)h+='<div class="alert alert-info mt-2 wiz-gen-narrow">'+_t('ui.wizard.binary_preview_note')+'</div>';
-      h+='<div class="stat-cards mt-2 wiz-gen-cards">';
-      h+='<div class="stat-card accent"><div class="stat-card-value">'+D.total_changes+'</div><div class="stat-card-label">'+_t('ui.wizard.changes_count')+'</div></div>';
-      h+='<div class="stat-card"><div class="stat-card-value">'+(art.size_bytes/1024).toFixed(1)+'</div><div class="stat-card-label">'+_t('ui.wizard.kb_output')+'</div></div>';
-      h+='</div></div>';
+/* ===== STEP 6: REVIEW & GENERATE ===== */
+
+function renderWizReview(){
+  var h='';
+  var isRemote=_wizSourceState.sourceType==='remote';
+  var isMulti=_wizSourceState.repoCount==='multi'&&isRemote;
+  var repoCount=_getRepoCount();
+  var audInfo=AUDIENCE_INFO[S.wizard.audience]||{icon:'',label:S.wizard.audience};
+  var fmtInfo=FORMAT_INFO[S.wizard.format]||{icon:'',label:S.wizard.format};
+
+  h+='<div class="wiz-review-card">';
+
+  /* Source */
+  h+='<div class="wiz-review-section">';
+  h+='<div class="wiz-review-label">'+_t('ui.wizard.review_source')+'</div>';
+  h+='<div class="wiz-review-value">';
+  if(isRemote){
+    var provIcon=_wizSourceState.provider==='github'?'&#128025;':'&#129418;';
+    h+=provIcon+' '+_t('ui.wizard.remote_repo_label')+' &middot; '+_wizSourceState.provider.charAt(0).toUpperCase()+_wizSourceState.provider.slice(1);
+    var verifySsl=$('#src-verify-ssl')?$('#src-verify-ssl').checked:true;
+    if(!verifySsl)h+=' <span class="text-warning">('+_t('ui.wizard.ssl_disabled')+')</span>';
+  }else{
+    h+='&#128187; '+_t('ui.wizard.local_repo_label');
+  }
+  h+='</div>';
+  h+='</div>';
+
+  /* Repositories */
+  h+='<div class="wiz-review-section">';
+  h+='<div class="wiz-review-label">'+_t('ui.wizard.review_repositories')+'</div>';
+  if(isRemote&&isMulti&&_wizSourceState.remoteRepos.length>0){
+    h+='<div class="wiz-review-value">';
+    _wizSourceState.remoteRepos.forEach(function(r){
+      var icon=r.provider==='github'?'&#128025;':'&#129418;';
+      h+='<div class="wiz-review-repo-item">'+icon+' <strong>'+esc(r.label)+'</strong> <span class="text-tertiary">'+esc(r.url)+'</span></div>';
+    });
+    h+='</div>';
+  }else if(isRemote){
+    var url=$('#src-repo-url')?$('#src-repo-url').value:'';
+    var label=$('#src-repo-label')?$('#src-repo-label').value:'';
+    var icon=_wizSourceState.provider==='github'?'&#128025;':'&#129418;';
+    h+='<div class="wiz-review-value">'+icon+' '+(label?'<strong>'+esc(label)+'</strong> ':'')+'<span class="text-tertiary">'+esc(url)+'</span></div>';
+  }else{
+    /* Local mode */
+    if(_wizSourceState.localMode==='directory'&&_wizSourceState.selectedLocalRepos&&_wizSourceState.selectedLocalRepos.length>0){
+      h+='<div class="wiz-review-value">';
+      var allDirRepos=_wizSourceState.localDirRepos||[];
+      _wizSourceState.selectedLocalRepos.forEach(function(p){
+        var match=allDirRepos.filter(function(r){return r.path===p})[0];
+        var name=match?match.name:p.split('/').pop();
+        h+='<div class="wiz-review-repo-item">&#128193; <strong>'+esc(name)+'</strong> <span class="text-tertiary">'+esc(p)+'</span></div>';
+      });
+      h+='</div>';
     }else{
-      h+='<div class="wizard-success">';
-      h+='<div class="wizard-success-icon">&#9888;&#65039;</div>';
-      h+='<div class="wizard-success-title">'+_t('ui.wizard.no_artifact')+'</div>';
-      h+='<div class="flex flex-center gap-1 mt-2">';
-      h+='<button class="btn btn-sm" onclick="wizGoStep(1)">'+_t('ui.wizard.change_audience')+'</button>';
-      h+='<button class="btn btn-sm" onclick="wizGoStep(2)">'+_t('ui.wizard.change_format')+'</button>';
-      h+='</div></div>';
+      var repoName='';
+      if(D.repo_path)repoName=D.repo_path.replace(/\\/g,'/').split('/').filter(function(s){return s}).pop()||D.repo_path;
+      h+='<div class="wiz-review-value">&#128193; <strong>'+esc(D.app_name||repoName||_t('ui.wizard.local_repo_label'))+'</strong></div>';
     }
-    showEl($('#wiz-generate-result'));
-    $('#wiz-generate-result').innerHTML=h;
-  },600);
+  }
+  h+='</div>';
+
+  /* Scope */
+  h+='<div class="wiz-review-section">';
+  h+='<div class="wiz-review-label">'+_t('ui.wizard.review_scope')+'</div>';
+  var scopeDesc='';
+  var isDateMode=$('#src-opt-date')&&$('#src-opt-date').classList.contains('selected');
+  if(isDateMode!==false&&$('#src-since-date')){
+    var sinceVal=$('#src-since-date')?$('#src-since-date').value:'';
+    var branchVal=$('#src-branch-date')?$('#src-branch-date').value:'';
+    scopeDesc='&#128197; '+_t('ui.wizard.review_since')+' <strong>'+esc(sinceVal||_t('ui.wizard.review_not_set'))+'</strong>';
+    if(branchVal)scopeDesc+=' '+_t('ui.wizard.review_on_branch')+' <code>'+esc(branchVal)+'</code>';
+  }else{
+    var fromRef=$('#src-from-ref')?$('#src-from-ref').value:'';
+    var toRef=$('#src-to-ref')?$('#src-to-ref').value:'HEAD';
+    scopeDesc='&#127991;&#65039; '+_t('ui.wizard.review_from')+' <strong>'+esc(fromRef||_t('ui.wizard.review_not_set'))+'</strong> '+_t('ui.wizard.review_to')+' <strong>'+esc(toRef)+'</strong>';
+  }
+  h+='<div class="wiz-review-value">'+scopeDesc+'</div>';
+  h+='</div>';
+
+  /* Audience + Format */
+  h+='<div class="wiz-review-section">';
+  h+='<div class="wiz-review-label">'+_t('ui.wizard.review_output')+'</div>';
+  h+='<div class="wiz-review-value">'+audInfo.icon+' '+esc(audInfo.label)+' &middot; '+fmtInfo.icon+' '+esc(fmtInfo.label)+'</div>';
+  h+='</div>';
+
+  h+='</div>'; /* end wiz-review-card */
+
+  /* Edit links */
+  h+='<div class="wiz-review-actions">';
+  h+='<button class="btn btn-sm" onclick="wizGoStep('+WIZ_STEP_SOURCE+')">&#9998; '+_t('ui.wizard.change_source')+'</button>';
+  h+='<button class="btn btn-sm" onclick="wizGoStep('+WIZ_STEP_REPOS+')">&#9998; '+_t('ui.wizard.review_change_repos')+'</button>';
+  h+='<button class="btn btn-sm" onclick="wizGoStep('+WIZ_STEP_SCOPE+')">&#9998; '+_t('ui.wizard.review_change_scope')+'</button>';
+  h+='<button class="btn btn-sm" onclick="wizGoStep('+WIZ_STEP_AUDIENCE+')">&#9998; '+_t('ui.wizard.change_audience')+'</button>';
+  h+='<button class="btn btn-sm" onclick="wizGoStep('+WIZ_STEP_FORMAT+')">&#9998; '+_t('ui.wizard.change_format')+'</button>';
+  h+='</div>';
+
+  $('#wiz-review-summary').innerHTML=h;
+
+  /* Generate button in its own area */
+  var actionsArea=$('#wiz-review-actions-area');
+  if(actionsArea){
+    actionsArea.innerHTML='<button class="btn btn-primary btn-lg" id="wiz-generate-btn" onclick="wizRunGenerate()">&#9654; '+_t('ui.wizard.generate_btn')+'</button>';
+  }
 }
 
-function renderWizPreview(){
+/* ===== STEP 7: PIPELINE (dedicated generation screen) ===== */
+
+function renderWizPipeline(){
+  var content=$('#wiz-pipeline-content');
+  var result=$('#wiz-generate-result');
+  /* If generation already completed, show the result — not the spinner */
+  if(S.wizard.generated && result && result.innerHTML.trim()){
+    if(content)hideEl(content);
+    showEl(result);
+  } else {
+    if(content)showEl(content);
+    if(result)hideEl(result);
+  }
+}
+
+function wizRunGenerate(){
+  /* Navigate to pipeline step first */
+  S.wizard.generated=false;
+  wizGoStep(WIZ_STEP_PIPELINE);
+
+  var cfg=_wizBuildFullConfig();
+  if(!cfg){
+    var result=$('#wiz-generate-result');
+    var content=$('#wiz-pipeline-content');
+    if(content)hideEl(content);
+    if(result){result.innerHTML='<div class="alert alert-error">'+_t('ui.wizard.err_complete_scope')+'</div>';showEl(result)}
+    return;
+  }
+
+  /* Send full config directly to dashboard — the body overrides state.config,
+     ensuring the selected remote repository (not the local CWD) is used. */
+  fetch('/api/dashboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)})
+    .then(function(r){return r.json()})
+    .then(function(resp){
+      var content=$('#wiz-pipeline-content');
+      var result=$('#wiz-generate-result');
+      if(content)hideEl(content);
+      S.wizard.generated=true;
+      if(resp&&resp.ok&&resp.data){
+        for(var k in resp.data)if(resp.data.hasOwnProperty(k))D[k]=resp.data[k];
+        var isBinary=(S.wizard.format==='pdf'||S.wizard.format==='docx');
+        var art=findArtifact(S.wizard.audience,S.wizard.format);
+        if(!art&&isBinary)art=findArtifact(S.wizard.audience,'markdown');
+        if(art){
+          var h='<div class="wizard-success">';
+          h+='<div class="wizard-success-icon">&#9989;</div>';
+          h+='<div class="wizard-success-title">'+_t('ui.wizard.generate_done')+'</div>';
+          h+='<div class="wizard-success-text">'+_t('ui.wizard.generate_done_text')+'</div>';
+          h+=_sourceBannerHtml();
+          h+='<div class="stat-cards mt-2 wiz-gen-cards">';
+          h+='<div class="stat-card accent"><div class="stat-card-value">'+D.total_changes+'</div><div class="stat-card-label">'+_t('ui.wizard.changes_count')+'</div></div>';
+          h+='<div class="stat-card"><div class="stat-card-value">'+(art.size_bytes/1024).toFixed(1)+'</div><div class="stat-card-label">'+_t('ui.wizard.kb_output')+'</div></div>';
+          h+='</div>';
+          h+='<div class="flex gap-1 mt-2">';
+          h+='<button class="btn btn-primary" onclick="wizGoStep('+WIZ_STEP_PREVIEW+')">&#128065; '+_t('ui.wizard.preview_export_btn')+'</button>';
+          h+='<button class="btn" onclick="wizStartNew()">&#128260; '+_t('ui.wizard.start_new')+'</button>';
+          h+='</div>';
+          h+='</div>';
+          if(result){result.innerHTML=h;showEl(result)}
+        }else{
+          var h2='<div class="wizard-success">';
+          h2+='<div class="wizard-success-icon">&#9888;&#65039;</div>';
+          h2+='<div class="wizard-success-title">'+_t('ui.wizard.no_artifact')+'</div>';
+          h2+='<div class="flex gap-1 mt-2">';
+          h2+='<button class="btn btn-sm" onclick="wizGoStep('+WIZ_STEP_SCOPE+')">&#9998; '+_t('ui.wizard.review_change_scope')+'</button>';
+          h2+='<button class="btn btn-sm" onclick="wizStartNew()">&#128260; '+_t('ui.wizard.start_new')+'</button>';
+          h2+='</div>';
+          h2+='</div>';
+          if(result){result.innerHTML=h2;showEl(result)}
+        }
+      }else{
+        if(result){result.innerHTML='<div class="alert alert-error">'+esc(resp&&resp.error||_t('ui.error.generic'))+'</div><button class="btn btn-sm mt-2" onclick="wizStartNew()">&#128260; '+_t('ui.wizard.start_new')+'</button>';showEl(result)}
+      }
+    })
+    .catch(function(e){
+      var content=$('#wiz-pipeline-content');
+      var result=$('#wiz-generate-result');
+      if(content)hideEl(content);
+      S.wizard.generated=true;
+      if(result){result.innerHTML='<div class="alert alert-error">'+esc(typeof e==='string'?e:(e.message||_t('ui.error.generic')))+'</div><button class="btn btn-sm mt-2" onclick="wizStartNew()">&#128260; '+_t('ui.wizard.start_new')+'</button>';showEl(result)}
+    });
+}
+
+function wizStartNew(){
+  S.wizard.step=0;
+  S.wizard.generated=false;
+  var result=$('#wiz-generate-result');
+  if(result){result.innerHTML='';hideEl(result)}
+  renderWizard();
+}
+
+/* Build a complete pipeline config from the wizard's client-side state.
+   Ensures remote repos include github_owner/repo/token (or gitlab equiv)
+   so the pipeline uses the correct remote source — not the local CWD. */
+var _GH_OWNER_RE=/github\.com[:/]([^/]+)\/([^/.#?]+)/;
+function _wizBuildFullConfig(){
+  var isRemote=_wizSourceState&&_wizSourceState.sourceType==='remote';
+  var isDateMode=$('#src-opt-date')&&$('#src-opt-date').classList.contains('selected');
+  var cfg={};
+  var token=$('#src-remote-token')?$('#src-remote-token').value.trim():'';
+  var verifySsl=$('#src-verify-ssl')?$('#src-verify-ssl').checked:true;
+
+  if(isRemote){
+    var provider=_wizSourceState.provider;
+    var isMulti=_wizSourceState.repoCount==='multi';
+
+    if(isMulti&&_wizSourceState.remoteRepos.length>0){
+      /* Multi-repo remote: build multi_repo_sources */
+      var sources=[];
+      var labels=[];
+      _wizSourceState.remoteRepos.forEach(function(r){
+        var src={url:r.url,provider:r.provider||provider,app_label:r.label||r.url,verify_ssl:verifySsl};
+        if(token)src.token=token;
+        sources.push(src);
+        labels.push(r.label||r.url);
+      });
+      cfg.multi_repo_sources=sources;
+      cfg.app_name=labels.join(' + ');
+      if(token){
+        if(provider==='github')cfg.github_token=token;
+        else cfg.gitlab_token=token;
+      }
+    }else{
+      /* Single-repo remote */
+      if(provider==='github'){
+        var inspData=_wizSourceState.inspectedData;
+        if(inspData&&inspData.repo){
+          cfg.github_owner=inspData.repo.full_name.split('/')[0];
+          cfg.github_repo=inspData.repo.name;
+          cfg.app_name=inspData.repo.full_name;
+        }else{
+          /* Inspection may have been skipped (public repo / no token).
+             Parse owner/repo directly from the URL. */
+          var urlVal=$('#src-repo-url')?$('#src-repo-url').value.trim():'';
+          var ghMatch=urlVal.match(_GH_OWNER_RE);
+          if(ghMatch){cfg.github_owner=ghMatch[1];cfg.github_repo=ghMatch[2];cfg.app_name=ghMatch[1]+'/'+ghMatch[2]}
+        }
+        cfg.github_url='https://api.github.com';
+        cfg.github_ssl_verify=verifySsl;
+        if(token)cfg.github_token=token;
+      }else{
+        /* GitLab */
+        var inspData2=_wizSourceState.inspectedData;
+        if(inspData2&&inspData2.project){
+          cfg.gitlab_project=inspData2.project.path;
+          cfg.app_name=inspData2.project.path;
+        }else{
+          var glUrl=$('#src-repo-url')?$('#src-repo-url').value.trim():'';
+          if(glUrl.indexOf('://')>=0){
+            var pts=glUrl.split('://')[1].split('/');
+            cfg.gitlab_project=pts.slice(1).join('/').replace(/\.git$/,'');
+            cfg.app_name=cfg.gitlab_project;
+          }
+        }
+        var glBase=$('#src-gitlab-url')?$('#src-gitlab-url').value.trim():'';
+        if(glBase)cfg.gitlab_url=glBase;
+        cfg.gitlab_ssl_verify=verifySsl;
+        if(token)cfg.gitlab_token=token;
+      }
+    }
+    /* Override app_name with explicit label if the user entered one */
+    var labelVal=$('#src-repo-label')?$('#src-repo-label').value.trim():'';
+    if(labelVal)cfg.app_name=labelVal;
+  }else{
+    /* Local source */
+    cfg.source_type='local';
+    if(_wizSourceState&&_wizSourceState.localMode==='directory'
+       &&_wizSourceState.selectedLocalRepos&&_wizSourceState.selectedLocalRepos.length>0){
+      var allDirRepos=_wizSourceState.localDirRepos||[];
+      var sources=[];
+      _wizSourceState.selectedLocalRepos.forEach(function(p){
+        var match=allDirRepos.filter(function(r){return r.path===p})[0];
+        sources.push({path:p,provider:'local',app_label:match?match.name:p.split('/').pop()});
+      });
+      cfg.multi_repo_sources=sources;
+      cfg.repo_path=_wizSourceState.selectedLocalRepos[0];
+    }
+  }
+
+  /* Scope / range */
+  if(isDateMode){
+    var sinceVal=$('#src-since-date')?$('#src-since-date').value:'';
+    if(!sinceVal)return null;
+    cfg.since_date=sinceVal;cfg.from_ref='';
+    var branchVal=$('#src-branch-date')?$('#src-branch-date').value.trim():'';
+    if(branchVal)cfg.branch=branchVal;
+  }else{
+    var fromVal=$('#src-from-ref')?$('#src-from-ref').value.trim():'';
+    if(!fromVal)return null;
+    cfg.from_ref=fromVal;cfg.since_date='';
+    var toVal=$('#src-to-ref')?$('#src-to-ref').value.trim():'';
+    if(toVal)cfg.to_ref=toVal;
+  }
+
+  /* Options from wizard state */
+  if(S.wizard.audience)cfg.audience=S.wizard.audience;
+  if(S.wizard.format)cfg.output_format=S.wizard.format;
+  var langSel=$('#src-language');
+  if(langSel)cfg.language=langSel.value;
+
+  return cfg;
+}
+
+/* ===== STEP 7: PREVIEW & EXPORT ===== */
+
+function renderWizPreviewExport(){
   var art=findArtifact(S.wizard.audience,S.wizard.format);
   var area=$('#wiz-preview-area');
   var meta=$('#wiz-preview-meta');
   var isBinary=(S.wizard.format==='pdf'||S.wizard.format==='docx');
   if(isBinary){
-    /* Binary formats: show markdown fallback with explanation */
     var fallback=findArtifact(S.wizard.audience,'markdown');
     if(fallback){
       area.textContent=fallback.content;
@@ -305,6 +1508,21 @@ function renderWizPreview(){
     area.textContent=_t('ui.wizard.no_artifact');
     meta.textContent='';
   }
+
+  /* Populate export controls */
+  var audSel=$('#wiz-export-audience');
+  var fmtSel=$('#wiz-export-format');
+  if(audSel){
+    var h='';
+    var auds=D.supported_audiences||Object.keys(AUDIENCE_INFO);
+    auds.forEach(function(a){
+      var info=AUDIENCE_INFO[a]||{label:a};
+      h+='<option value="'+esc(a)+'"'+(S.wizard.audience===a?' selected':'')+'>'+esc(info.label)+'</option>';
+    });
+    audSel.innerHTML=h;
+  }
+  if(fmtSel)wizUpdateExportFormats();
+  wizUpdateExport();
 }
 
 function wizCopyPreview(){
@@ -318,24 +1536,6 @@ function wizCopyPreview(){
   }
 }
 
-function renderWizExport(){
-  /* populate audience select */
-  var audSel=$('#wiz-export-audience');
-  var fmtSel=$('#wiz-export-format');
-  if(audSel){
-    var h='';
-    var auds=D.supported_audiences||Object.keys(AUDIENCE_INFO);
-    auds.forEach(function(a){
-      var info=AUDIENCE_INFO[a]||{label:a};
-      h+='<option value="'+esc(a)+'"'+(S.wizard.audience===a?' selected':'')+'>'+esc(info.label)+'</option>';
-    });
-    audSel.innerHTML=h;
-  }
-  if(fmtSel){
-    wizUpdateExportFormats();
-  }
-  wizUpdateExport();
-}
 function wizUpdateExportFormats(){
   var fmtSel=$('#wiz-export-format');
   if(!fmtSel)return;
@@ -356,20 +1556,24 @@ function wizUpdateExportFormats(){
   fmtSel.innerHTML=h;
 }
 function wizUpdateExport(){
-  var aud=$('#wiz-export-audience').value;
-  var fmt=$('#wiz-export-format').value;
+  var audEl=$('#wiz-export-audience');var fmtEl=$('#wiz-export-format');
+  if(!audEl||!fmtEl)return;
+  var aud=audEl.value;
+  var fmt=fmtEl.value;
   var info=FORMAT_INFO[fmt]||{ext:'.txt',label:fmt};
   var fname=$('#wiz-export-filename');
-  fname.value='release-notes-'+aud+info.ext;
+  if(fname)fname.value='release-notes-'+aud+info.ext;
   var isBinary=(fmt==='pdf'||fmt==='docx');
   var art=findArtifact(aud,fmt);
   if(!art&&isBinary)art=findArtifact(aud,'markdown');
   var pre=$('#wiz-export-preview');
-  if(art){
-    pre.textContent=art.content.substring(0,500)+(art.content.length>500?'\n\u2026':'');
-    if(isBinary)pre.textContent='['+_t('ui.wizard.binary_export_note')+']\n\n'+pre.textContent;
-  }else{
-    pre.textContent=_t('ui.wizard.no_artifact');
+  if(pre){
+    if(art){
+      pre.textContent=art.content.substring(0,500)+(art.content.length>500?'\n\u2026':'');
+      if(isBinary)pre.textContent='['+_t('ui.wizard.binary_export_note')+']\n\n'+pre.textContent;
+    }else{
+      pre.textContent=_t('ui.wizard.no_artifact');
+    }
   }
 }
 function wizDoExport(){

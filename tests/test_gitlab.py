@@ -337,7 +337,7 @@ class TestListBranches:
 
 class TestGetBranch:
     def test_branch_with_slash(self):
-        """Core regression: release/2026.04 must be found, not 404'd."""
+        """release/2026.04 must be found, not 404'd."""
         client = _mock_client()
         client._request.return_value = {
             "name": "release/2026.04",

@@ -38,7 +38,7 @@ This guide explains how to use ReleasePilot in GitHub Actions to automatically g
 
 ### Option A: Copy a minimal workflow
 
-Copy [`examples/github-workflow.yml`](../examples/github-workflow.yml) to `.github/workflows/release-notes.yml` in your repository:
+Copy [`examples/github-release-notes.yml`](../examples/github-release-notes.yml) to `.github/workflows/release-notes.yml` in your repository:
 
 ```yaml
 name: Release Notes
@@ -261,7 +261,7 @@ No additional secrets are needed. ReleasePilot reads git history directly from t
 ### Install a specific ReleasePilot version
 
 ```yaml
-- run: pip install "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@v1.0.0"
+- run: pip install "releasepilot[export] @ git+https://github.com/polprog-tech/ReleasePilot.git@v1.1.0"
 ```
 
 ### Add translation support

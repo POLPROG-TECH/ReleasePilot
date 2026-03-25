@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/polprog-tech/ReleasePilot/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/polprog-tech/ReleasePilot/ci.yml?branch=main&style=flat-square&label=CI&logo=github" alt="CI"></a>
-  <a href="https://github.com/polprog-tech/ReleasePilot/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="License: MIT"></a>
+  <a href="https://github.com/polprog-tech/ReleasePilot/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square" alt="License: AGPL-3.0"></a>
   <img src="https://img.shields.io/badge/python-3.12%2B-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python 3.12+">
   <img src="https://img.shields.io/badge/languages-10-6366f1?style=flat-square" alt="10 Languages">
   <img src="https://img.shields.io/badge/formats-PDF%20·%20DOCX%20·%20MD%20·%20JSON-334155?style=flat-square" alt="Formats">
@@ -48,7 +48,7 @@ The Guide tab explains how ReleasePilot works — the pipeline stages, all 8 aud
 
 ### Source Configuration Wizard
 
-The wizard guides you through selecting the source range, audience, and output format step by step. Choose between date-based or git-reference-based ranges with quick presets.
+The wizard guides you through a multi-step flow: source selection (local or remote), repository configuration (single or multi-repo), release scope, audience, and format — with built-in validation at every step. Supports GitHub and GitLab repositories via URL. Access tokens are context-aware: optional for public GitHub repositories, required for private repos and GitLab. See [Web Wizard Documentation](docs/web-wizard.md) for full details.
 
 <p align="center">
   <img src="docs/assets/screenshots/wizard-source-config.png" alt="ReleasePilot — source configuration wizard with date range presets" width="800">
@@ -70,6 +70,7 @@ After the pipeline processes your commits, you see a summary of changes and outp
 - [Screenshots](#screenshots)
 - [Quick Start](#quick-start)
 - [Web Server Mode](#web-server-mode)
+- [Web Wizard](docs/web-wizard.md)
 - [CLI Mode](#cli-mode)
 - [Features](#features)
 - [Configuration](#configuration)
@@ -479,4 +480,4 @@ For detailed solutions to common issues, see [docs/troubleshooting.md](docs/trou
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+AGPL-3.0 — see [LICENSE](LICENSE).

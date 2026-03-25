@@ -377,6 +377,50 @@ class TestJsonConfig:
         """THEN the repos list is loaded correctly."""
         assert cfg.repos == ["./repo1", "./repo2", "./repo3"]
 
+    def test_ssl_verify_defaults_true(self, tmp_path: Path) -> None:
+        """GIVEN a config with no SSL verify fields."""
+        from releasepilot.config.file_config import load_config
+
+        cfg_data = {"app_name": "TestApp"}
+        (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
+        cfg = load_config(str(tmp_path))
+
+        assert cfg.gitlab_ssl_verify is True
+        assert cfg.github_ssl_verify is True
+
+    def test_ssl_verify_false(self, tmp_path: Path) -> None:
+        """GIVEN a config with SSL verify set to false."""
+        from releasepilot.config.file_config import load_config
+
+        cfg_data = {"gitlab_ssl_verify": False, "github_ssl_verify": False}
+        (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
+        cfg = load_config(str(tmp_path))
+
+        assert cfg.gitlab_ssl_verify is False
+        assert cfg.github_ssl_verify is False
+
+    def test_ssl_verify_string_false(self, tmp_path: Path) -> None:
+        """GIVEN a config with SSL verify as string 'false'."""
+        from releasepilot.config.file_config import load_config
+
+        cfg_data = {"gitlab_ssl_verify": "false", "github_ssl_verify": "0"}
+        (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
+        cfg = load_config(str(tmp_path))
+
+        assert cfg.gitlab_ssl_verify is False
+        assert cfg.github_ssl_verify is False
+
+    def test_ssl_verify_kebab_case(self, tmp_path: Path) -> None:
+        """GIVEN a config with kebab-case SSL verify keys."""
+        from releasepilot.config.file_config import load_config
+
+        cfg_data = {"gitlab-ssl-verify": False, "github-ssl-verify": False}
+        (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
+        cfg = load_config(str(tmp_path))
+
+        assert cfg.gitlab_ssl_verify is False
+        assert cfg.github_ssl_verify is False
+
 
 # ── JSON Schema file exists ─────────────────────────────────────────────────
 

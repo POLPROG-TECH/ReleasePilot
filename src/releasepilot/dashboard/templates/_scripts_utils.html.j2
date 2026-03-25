@@ -24,6 +24,19 @@ function impBadge(imp){
   return '<span class="pill '+cls+'">'+esc(_t('ui.importance.'+imp))+'</span>';
 }
 
+/* ===== SOURCE BANNER ===== */
+function _sourceBannerHtml(){
+  var name=D.app_name||D.repo_path||'';
+  if(!name)return '';
+  var st=D.source_type||'local';
+  var icon='\ud83d\udcbb',label='Local';
+  if(st==='github'){icon='\ud83d\udc19';label='GitHub'}
+  else if(st==='gitlab'){icon='\ud83e\udd8a';label='GitLab'}
+  else if(st==='multi'){icon='\ud83d\udcda';label='Multi ('+D.total_changes+')'}
+  else if(st==='file'){icon='\ud83d\udcc1';label='File'}
+  return '<div class="source-banner"><span class="source-banner-icon">'+icon+'</span><span class="source-banner-name">'+esc(name)+'</span><span class="source-banner-type">'+label+'</span></div>';
+}
+
 /* ===== EXPORT MODAL (from Artifacts tab) ===== */
 function openExportModal(){
   var ov=$('#exportModalOverlay');

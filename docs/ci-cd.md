@@ -106,9 +106,12 @@ Release notes are generated automatically.
 
 | File | Description |
 |------|-------------|
-| [`examples/github-workflow.yml`](../examples/github-workflow.yml) | Minimal 30-line GitHub workflow |
-| [`examples/gitlab-pipeline.yml`](../examples/gitlab-pipeline.yml) | Minimal 25-line GitLab job |
+| [`examples/github-release-notes.yml`](../examples/github-release-notes.yml) | GitHub Actions workflow for release notes |
+| [`examples/gitlab-release-notes.yml`](../examples/gitlab-release-notes.yml) | GitLab CI job for release notes |
 | [`examples/.releasepilot.json`](../examples/.releasepilot.json) | Example config with CI settings |
+| [`examples/multi-repo-config.json`](../examples/multi-repo-config.json) | Multi-repository config example |
+| [`examples/cli-usage.sh`](../examples/cli-usage.sh) | CLI usage examples |
+| [`examples/remote-repos.md`](../examples/remote-repos.md) | Remote/multi-repo dashboard guide |
 
 ## Configuration
 

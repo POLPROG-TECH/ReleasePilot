@@ -24,7 +24,12 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingRes
 from releasepilot import __version__
 from releasepilot.shared.logging import get_logger
 from releasepilot.web.middleware import RequestLoggingMiddleware, SecurityHeadersMiddleware
-from releasepilot.web.state import AnalysisPhase, AnalysisProgress, AppState
+from releasepilot.web.state import (
+    AnalysisPhase,
+    AnalysisProgress,
+    AppState,
+    WizardStep,
+)
 
 logger = get_logger("web.server")
 
@@ -133,6 +138,10 @@ def _build_settings_from_config(config: dict) -> Any:
         since_date = since_dt.isoformat()
         config["since_date"] = since_date
 
+    # Multi-repo sources
+    multi_sources_raw = config.get("multi_repo_sources", ())
+    multi_sources = tuple(dict(s) for s in multi_sources_raw) if multi_sources_raw else ()
+
     return Settings(
         repo_path=config.get("repo_path", "."),
         from_ref=from_ref,
@@ -146,6 +155,18 @@ def _build_settings_from_config(config: dict) -> Any:
         app_name=config.get("app_name", ""),
         language=lang,
         render=RenderConfig(language=lang),
+        # Remote source settings
+        gitlab_url=config.get("gitlab_url", ""),
+        gitlab_token=config.get("gitlab_token", ""),
+        gitlab_project=config.get("gitlab_project", ""),
+        gitlab_ssl_verify=config.get("gitlab_ssl_verify", True),
+        github_token=config.get("github_token", ""),
+        github_owner=config.get("github_owner", ""),
+        github_repo=config.get("github_repo", ""),
+        github_url=config.get("github_url", "https://api.github.com"),
+        github_ssl_verify=config.get("github_ssl_verify", True),
+        # Multi-repo sources
+        multi_repo_sources=multi_sources,
     )
 
 
@@ -162,6 +183,28 @@ def _generate_dashboard_full(config: dict) -> tuple[str, dict]:
     from releasepilot.dashboard.view_models import serialize_data
 
     settings = _build_settings_from_config(config)
+    # Log which source is being used for debugging
+    if settings.is_github_source:
+        logger.info(
+            "Generating dashboard from GitHub: %s/%s",
+            settings.github_owner,
+            settings.github_repo,
+        )
+    elif settings.is_gitlab_source:
+        logger.info("Generating dashboard from GitLab: %s", settings.gitlab_project)
+    elif settings.is_multi_repo:
+        src_labels = [
+            s.get("app_label", s.get("url", s.get("path", "?")))
+            for s in settings.multi_repo_sources
+        ]
+        logger.info(
+            "Generating dashboard from %d multi-repo sources: %s",
+            len(settings.multi_repo_sources),
+            ", ".join(src_labels),
+        )
+    else:
+        logger.info("Generating dashboard from local repo: %s", settings.repo_path)
+
     data = DashboardUseCase().execute(settings)
     html = HtmlReporter().render(data)
     return html, serialize_data(data)
@@ -592,6 +635,7 @@ def create_app(config: dict | None = None, *, root_path: str = "") -> FastAPI:
             "app_name": state.config.get("app_name", ""),
             "version": state.config.get("version", ""),
             "title": state.config.get("title", ""),
+            "source_type": state.config.get("source_type", "local"),
         }
         # Include GitLab config (token masked)
         if state.config.get("gitlab_url"):
@@ -600,6 +644,15 @@ def create_app(config: dict | None = None, *, root_path: str = "") -> FastAPI:
             cfg["gitlab_project"] = state.config["gitlab_project"]
         if state.config.get("gitlab_token"):
             cfg["gitlab_token_set"] = True
+        # Include GitHub config (token masked)
+        if state.config.get("github_owner"):
+            cfg["github_owner"] = state.config["github_owner"]
+        if state.config.get("github_repo"):
+            cfg["github_repo"] = state.config["github_repo"]
+        if state.config.get("github_url"):
+            cfg["github_url"] = state.config["github_url"]
+        if state.config.get("github_token"):
+            cfg["github_token_set"] = True
         return cfg
 
     @app.put("/api/config")
@@ -635,6 +688,12 @@ def create_app(config: dict | None = None, *, root_path: str = "") -> FastAPI:
             "gitlab_token",
             "gitlab_project",
             "gitlab_ssl_verify",
+            "github_token",
+            "github_owner",
+            "github_repo",
+            "github_url",
+            "github_ssl_verify",
+            "source_type",
         }
         # Validate enum-like fields before accepting
         _valid_audiences = {
@@ -650,7 +709,7 @@ def create_app(config: dict | None = None, *, root_path: str = "") -> FastAPI:
         _valid_formats = {"markdown", "plaintext", "json", "pdf", "docx"}
         _valid_languages = {"en", "pl", "de", "fr", "es", "it", "pt", "nl", "uk", "cs"}
 
-        _bool_fields = {"gitlab_ssl_verify"}
+        _bool_fields = {"gitlab_ssl_verify", "github_ssl_verify"}
 
         for key, value in body.items():
             if key not in allowed:
@@ -702,109 +761,26 @@ def create_app(config: dict | None = None, *, root_path: str = "") -> FastAPI:
     async def favicon() -> Response:
         return Response(content=_FAVICON_PNG, media_type="image/png")
 
-    # ── GitLab Integration ──────────────────────────────────────────────
+    # ── Include extracted route modules ─────────────────────────────────
 
-    def _get_gitlab_inspector():
-        """Create a GitLabInspector from config or env.
+    from releasepilot.web.routes_github import router as github_router
+    from releasepilot.web.routes_gitlab import router as gitlab_router
+    from releasepilot.web.routes_wizard import router as wizard_router
 
-        Returns (inspector, error_response). If the inspector cannot be
-        created, error_response is a JSONResponse explaining why.
-        """
-        from releasepilot.sources.gitlab import GitLabError
-        from releasepilot.sources.gitlab_inspector import GitLabInspector
+    app.include_router(gitlab_router)
+    app.include_router(github_router)
+    app.include_router(wizard_router)
 
-        gitlab_url = state.config.get(
-            "gitlab_url",
-            os.environ.get("RELEASEPILOT_GITLAB_URL", ""),
-        )
-        gitlab_token = state.config.get(
-            "gitlab_token",
-            os.environ.get("RELEASEPILOT_GITLAB_TOKEN", ""),
-        )
-        verify_ssl = state.config.get("gitlab_ssl_verify", True)
+    # Expose shared state on app.state for route modules
+    app.state.app_state = state
+    app.state.api_key = api_key
+    app.state.rate_buckets = _rate_buckets
 
-        if not gitlab_url:
-            return None, JSONResponse(
-                {
-                    "ok": False,
-                    "error": "GitLab URL not configured. "
-                    "Set gitlab_url in config or RELEASEPILOT_GITLAB_URL env var.",
-                },
-                status_code=400,
-            )
-        if not gitlab_token:
-            return None, JSONResponse(
-                {
-                    "ok": False,
-                    "error": "GitLab token not configured. "
-                    "Set gitlab_token in config or RELEASEPILOT_GITLAB_TOKEN env var.",
-                },
-                status_code=400,
-            )
+    # ── Wizard Generate (stays here — needs _background_tasks) ─────────
 
-        try:
-            inspector = GitLabInspector.from_config(
-                gitlab_url=gitlab_url,
-                gitlab_token=gitlab_token,
-                verify_ssl=verify_ssl,
-            )
-            return inspector, None
-        except GitLabError as exc:
-            return None, JSONResponse(
-                {"ok": False, "error": str(exc), "error_kind": exc.kind.value},
-                status_code=400,
-            )
-
-    @app.post("/api/gitlab/validate")
-    async def api_gitlab_validate(request: Request) -> Response:
-        """Validate GitLab connection and token.
-
-        Accepts optional body with gitlab_url and gitlab_token to override config.
-        """
-        auth_err = _check_auth(request)
-        if auth_err:
-            return auth_err
-
-        body, body_err = await _read_json_body(request)
-        if body_err:
-            return body_err
-
-        # Allow override from request body
-        if body:
-            for key in ("gitlab_url", "gitlab_token", "gitlab_ssl_verify"):
-                if key in body:
-                    state.config[key] = body[key]
-
-        inspector, err = _get_gitlab_inspector()
-        if err:
-            return err
-
-        from releasepilot.sources.gitlab import GitLabError
-
-        try:
-            result = await asyncio.to_thread(inspector._client.validate_token)
-            return JSONResponse(
-                {
-                    "ok": True,
-                    "user": result.get("username", ""),
-                    "name": result.get("name", ""),
-                    "message": f"Authenticated as {result.get('username', 'unknown')}",
-                }
-            )
-        except GitLabError as exc:
-            return JSONResponse(
-                {"ok": False, "error": str(exc), "error_kind": exc.kind.value},
-                status_code=401 if exc.is_auth_error else 502,
-            )
-
-    @app.post("/api/gitlab/inspect")
-    async def api_gitlab_inspect(request: Request) -> Response:
-        """Inspect a remote GitLab project.
-
-        Body: {"project": "group/subgroup/repo"}
-
-        Returns full inspection: branches, tags, default branch, diagnostics.
-        """
+    @app.post("/api/wizard/generate")
+    async def api_wizard_generate(request: Request) -> Response:
+        """Generate release notes from the wizard configuration."""
         auth_err = _check_auth(request)
         if auth_err:
             return auth_err
@@ -813,174 +789,45 @@ def create_app(config: dict | None = None, *, root_path: str = "") -> FastAPI:
         if rate_err:
             return rate_err
 
-        body, body_err = await _read_json_body(request)
-        if body_err:
-            return body_err
-
-        project_path = (body or {}).get("project", "")
-        if not project_path:
+        if not state.wizard.repositories:
             return JSONResponse(
-                {"ok": False, "error": "Missing 'project' field (e.g. 'group/repo')"},
+                {"ok": False, "error": "No repositories configured. Add at least one repository."},
                 status_code=400,
             )
 
-        inspector, err = _get_gitlab_inspector()
-        if err:
-            return err
-
-        result = await asyncio.to_thread(inspector.inspect, project_path)
-
-        response = {
-            "ok": result.is_accessible,
-            "is_authenticated": result.is_authenticated,
-            "is_accessible": result.is_accessible,
-            "default_branch": result.default_branch,
-            "diagnostics": list(result.diagnostics),
-        }
-
-        if result.project:
-            response["project"] = {
-                "id": result.project.id,
-                "name": result.project.name,
-                "path": result.project.path_with_namespace,
-                "web_url": result.project.web_url,
-                "visibility": result.project.visibility,
-            }
-
-        if result.branches:
-            response["branches"] = [
-                {"name": b.name, "commit": b.commit_sha[:8], "default": b.is_default}
-                for b in result.branches
-            ]
-
-        if result.tags:
-            response["tags"] = [{"name": t.name, "commit": t.commit_sha[:8]} for t in result.tags]
-
-        if result.error:
-            response["error"] = result.error
-            response["error_kind"] = result.error_kind
-
-        status = 200 if result.is_accessible else (401 if not result.is_authenticated else 404)
-        return JSONResponse(response, status_code=status)
-
-    @app.get("/api/gitlab/branches/{project_id}")
-    async def api_gitlab_branches(project_id: int, request: Request) -> Response:
-        """List branches for a GitLab project."""
-        auth_err = _check_auth(request)
-        if auth_err:
-            return auth_err
-
-        inspector, err = _get_gitlab_inspector()
-        if err:
-            return err
-
-        from releasepilot.sources.gitlab import GitLabError
-
-        try:
-            branches = await asyncio.to_thread(
-                inspector._client.list_branches,
-                project_id,
-            )
-            return JSONResponse(
-                {
-                    "ok": True,
-                    "count": len(branches),
-                    "branches": [
-                        {
-                            "name": b.name,
-                            "commit": b.commit_sha[:8],
-                            "date": b.commit_date,
-                            "default": b.is_default,
-                            "protected": b.is_protected,
-                        }
-                        for b in branches
-                    ],
-                }
-            )
-        except GitLabError as exc:
-            return JSONResponse(
-                {"ok": False, "error": str(exc), "error_kind": exc.kind.value},
-                status_code=502,
-            )
-
-    @app.get("/api/gitlab/branch/{project_id}/{branch_name:path}")
-    async def api_gitlab_branch_lookup(
-        project_id: int,
-        branch_name: str,
-        request: Request,
-    ) -> Response:
-        """Look up a specific branch. Branch names with slashes are supported."""
-        auth_err = _check_auth(request)
-        if auth_err:
-            return auth_err
-
-        inspector, err = _get_gitlab_inspector()
-        if err:
-            return err
-
-        result = await asyncio.to_thread(
-            inspector.lookup_branch,
-            project_id,
-            branch_name,
-        )
-
-        if result.found and result.branch:
-            return JSONResponse(
-                {
-                    "ok": True,
-                    "found": True,
-                    "branch": {
-                        "name": result.branch.name,
-                        "commit": result.branch.commit_sha,
-                        "date": result.branch.commit_date,
-                        "default": result.branch.is_default,
-                        "protected": result.branch.is_protected,
+        for repo in state.wizard.repositories:
+            if repo.source_type in ("github", "gitlab") and repo.requires_token:
+                return JSONResponse(
+                    {
+                        "ok": False,
+                        "error": f"Repository '{repo.display_name}' requires authentication. "
+                        "Provide a token.",
                     },
-                }
-            )
-        else:
-            return JSONResponse(
-                {
-                    "ok": True,
-                    "found": False,
-                    "error": result.error,
-                    "error_kind": result.error_kind,
-                },
-                status_code=200,
-            )  # 200 because the API call succeeded
+                    status_code=400,
+                )
 
-    @app.get("/api/gitlab/tags/{project_id}")
-    async def api_gitlab_tags(project_id: int, request: Request) -> Response:
-        """List tags for a GitLab project."""
-        auth_err = _check_auth(request)
-        if auth_err:
-            return auth_err
-
-        inspector, err = _get_gitlab_inspector()
-        if err:
-            return err
-
-        from releasepilot.sources.gitlab import GitLabError
-
-        try:
-            tags = await asyncio.to_thread(
-                inspector._client.list_tags,
-                project_id,
+        async with state.analysis_lock:
+            if state.analysis_progress.phase == AnalysisPhase.RUNNING:
+                return JSONResponse(
+                    {"ok": False, "error": "Generation already in progress"},
+                    status_code=409,
+                )
+            state.analysis_progress = AnalysisProgress(
+                phase=AnalysisPhase.RUNNING, started_at=time.time()
             )
-            return JSONResponse(
-                {
-                    "ok": True,
-                    "count": len(tags),
-                    "tags": [
-                        {"name": t.name, "commit": t.commit_sha[:8], "date": t.commit_date}
-                        for t in tags
-                    ],
-                }
-            )
-        except GitLabError as exc:
-            return JSONResponse(
-                {"ok": False, "error": str(exc), "error_kind": exc.kind.value},
-                status_code=502,
-            )
+
+        gen_config = {**state.config, **state.wizard.to_generation_config()}
+        state.wizard.step = WizardStep.GENERATING
+
+        task = asyncio.create_task(_run_generation(gen_config))
+        _background_tasks.append(task)
+        return JSONResponse(
+            {
+                "ok": True,
+                "message": "Generation started",
+                "repository_count": len(state.wizard.repositories),
+                "source_type": state.wizard.source_type,
+            }
+        )
 
     return app

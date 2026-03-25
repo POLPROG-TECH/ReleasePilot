@@ -258,11 +258,11 @@ class TestErrorHandling:
         result = runner.invoke(cli, ["--version"])
 
         """THEN version is shown."""
-        assert "1.0.0" in result.output
+        assert "1.1.0" in result.output
 
 
 class TestIsolatedGenerate:
-    """Regression: generate command works from an isolated directory (no config pollution)."""
+    """Generate command works from an isolated directory (no config pollution)."""
 
     def test_generate_isolated_no_config(self, runner, sample_input_file, isolated_dir):
         """GIVEN an isolated tmp directory with no .releasepilot.json."""
