@@ -1,4 +1,4 @@
-"""ReleasePilot — Production-grade release notes and release communication tool."""
+"""ReleasePilot - Production-grade release notes and release communication tool."""
 
 __version__ = "1.1.0"
 

@@ -39,12 +39,12 @@ CLI arguments always override config-file values.
 
 ReleasePilot looks for configuration in this order (first match wins):
 
-1. `.releasepilot.json` — project directory **(recommended)**
-2. `releasepilot.json` — project directory
-3. `.releasepilot.toml` — project directory
-4. `releasepilot.toml` — project directory
-5. `pyproject.toml` — under the `[tool.releasepilot]` section
-6. `~/.config/releasepilot/config.json` — user-level defaults
+1. `.releasepilot.json` - project directory **(recommended)**
+2. `releasepilot.json` - project directory
+3. `.releasepilot.toml` - project directory
+4. `releasepilot.toml` - project directory
+5. `pyproject.toml` - under the `[tool.releasepilot]` section
+6. `~/.config/releasepilot/config.json` - user-level defaults
 
 If no config file is found, the tool falls back to CLI arguments and guided prompts.
 
@@ -136,7 +136,7 @@ Final value = CLI argument > Config file > Built-in default
 | Config has `audience = "user"`   | Uses `user` (CLI default is `changelog`)   |
 | Neither specified                | Uses built-in default `changelog`          |
 
-The guided workflow (`releasepilot guide`) still asks interactively even when config values exist —
+The guided workflow (`releasepilot guide`) still asks interactively even when config values exist -
 config values are applied when using non-interactive CLI commands.
 
 ---
@@ -258,7 +258,7 @@ For full CI/CD integration documentation, see [CI/CD Integration Guide](ci-cd.md
 }
 ```
 
-**Warning:** `Config: 'theme' — Unknown config key. Valid keys: app_name, audience, branch, ci, export_formats, format, language, output_dir, overwrite, repos, show_authors, show_hashes, title, version`
+**Warning:** `Config: 'theme' - Unknown config key. Valid keys: app_name, audience, branch, ci, export_formats, format, language, output_dir, overwrite, repos, show_authors, show_hashes, title, version`
 
 ### Invalid audience value
 
@@ -268,7 +268,7 @@ For full CI/CD integration documentation, see [CI/CD Integration Guide](ci-cd.md
 }
 ```
 
-**Warning:** `Config: 'audience' — Invalid value 'managers'. Must be one of: changelog, executive, summary, technical, user`
+**Warning:** `Config: 'audience' - Invalid value 'managers'. Must be one of: changelog, executive, summary, technical, user`
 
 The invalid value is **ignored** (treated as empty) and the built-in default is used instead.
 
@@ -280,7 +280,7 @@ The invalid value is **ignored** (treated as empty) and the built-in default is 
 }
 ```
 
-**Warning:** `Config: 'repos' — Expected a list, got str.`
+**Warning:** `Config: 'repos' - Expected a list, got str.`
 
 ---
 
@@ -289,9 +289,9 @@ The invalid value is **ignored** (treated as empty) and the built-in default is 
 - **Unknown keys** produce a warning but do not prevent loading.
 - **Invalid enum values** (audience, format, language) produce a warning and are ignored (empty string).
 - **Wrong types** produce a warning; the field falls back to its default.
-- **Missing config file** is silently ignored — no error.
+- **Missing config file** is silently ignored - no error.
 - **Empty config file** is treated as no config.
-- **TOML parse errors** are silently ignored — the tool falls back to CLI/defaults.
+- **TOML parse errors** are silently ignored - the tool falls back to CLI/defaults.
 
 Warnings are printed to stderr when the CLI loads the config.
 
@@ -303,7 +303,7 @@ The following must be provided via CLI arguments or guided prompts:
 
 | Setting       | Why                                                   |
 |---------------|-------------------------------------------------------|
-| `--from`      | Start ref varies per release — rarely a static default|
+| `--from`      | Start ref varies per release - rarely a static default|
 | `--to`        | End ref is typically `HEAD`                           |
 | `--since`     | Date range is usually chosen per run                  |
 | `--source-file`| Structured input file path varies                    |

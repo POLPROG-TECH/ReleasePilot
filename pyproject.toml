@@ -68,6 +68,13 @@ releasepilot = ["dashboard/templates/*.j2"]
 target-version = "py312"
 line-length = 100
 
+[tool.ruff.format]
+# Tests use a GIVEN/WHEN/THEN bare-string convention that places the GIVEN
+# docstring directly above the test method with no blank line in between.
+# PEP 8 auto-spacing would break this layout, so we exclude tests from
+# auto-formatting. Linting still applies.
+exclude = ["tests/**"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
 ignore = ["E501"]

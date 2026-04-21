@@ -41,10 +41,10 @@ def sample_input_file(tmp_path: Path) -> Path:
 class TestGenerateCommand:
     """Scenarios for the generate command."""
 
-    def test_generate_from_file(self, runner, sample_input_file, isolated_dir):
-        """GIVEN a structured input file."""
+    """GIVEN a structured input file"""
 
-        """WHEN running generate."""
+    def test_generate_from_file(self, runner, sample_input_file, isolated_dir):
+        """WHEN running generate"""
         result = runner.invoke(
             cli,
             [
@@ -56,15 +56,15 @@ class TestGenerateCommand:
             ],
         )
 
-        """THEN it succeeds with markdown output."""
+        """THEN it succeeds with markdown output"""
         assert result.exit_code == 0
         assert "Version 3.0.0" in result.output
         assert "New Features" in result.output
 
-    def test_generate_json_format(self, runner, sample_input_file):
-        """GIVEN a structured input file."""
+    """GIVEN a structured input file"""
 
-        """WHEN generating with JSON format."""
+    def test_generate_json_format(self, runner, sample_input_file):
+        """WHEN generating with JSON format"""
         result = runner.invoke(
             cli,
             [
@@ -76,15 +76,15 @@ class TestGenerateCommand:
             ],
         )
 
-        """THEN it produces valid JSON."""
+        """THEN it produces valid JSON"""
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert "groups" in data
 
-    def test_generate_user_audience(self, runner, sample_input_file):
-        """GIVEN a structured input file."""
+    """GIVEN a structured input file"""
 
-        """WHEN generating for user audience."""
+    def test_generate_user_audience(self, runner, sample_input_file):
+        """WHEN generating for user audience"""
         result = runner.invoke(
             cli,
             [
@@ -96,14 +96,14 @@ class TestGenerateCommand:
             ],
         )
 
-        """THEN output hides internal details."""
+        """THEN output hides internal details"""
         assert result.exit_code == 0
         assert "Refactoring" not in result.output
 
-    def test_generate_summary_audience(self, runner, sample_input_file):
-        """GIVEN a structured input file."""
+    """GIVEN a structured input file"""
 
-        """WHEN generating a summary."""
+    def test_generate_summary_audience(self, runner, sample_input_file):
+        """WHEN generating a summary"""
         result = runner.invoke(
             cli,
             [
@@ -115,17 +115,17 @@ class TestGenerateCommand:
             ],
         )
 
-        """THEN output is produced."""
+        """THEN output is produced"""
         assert result.exit_code == 0
 
 
 class TestPreviewCommand:
     """Scenarios for the preview command."""
 
-    def test_preview_from_file(self, runner, sample_input_file):
-        """GIVEN a structured input file."""
+    """GIVEN a structured input file"""
 
-        """WHEN previewing."""
+    def test_preview_from_file(self, runner, sample_input_file):
+        """WHEN previewing"""
         result = runner.invoke(
             cli,
             [
@@ -137,17 +137,17 @@ class TestPreviewCommand:
             ],
         )
 
-        """THEN it succeeds (rich panel goes to stderr, so just check exit code)."""
+        """THEN it succeeds (rich panel goes to stderr, so just check exit code)"""
         assert result.exit_code == 0
 
 
 class TestCollectCommand:
     """Scenarios for the collect command."""
 
-    def test_collect_from_file(self, runner, sample_input_file):
-        """GIVEN a structured input file."""
+    """GIVEN a structured input file"""
 
-        """WHEN collecting."""
+    def test_collect_from_file(self, runner, sample_input_file):
+        """WHEN collecting"""
         result = runner.invoke(
             cli,
             [
@@ -157,17 +157,17 @@ class TestCollectCommand:
             ],
         )
 
-        """THEN it shows the collected items."""
+        """THEN it shows the collected items"""
         assert result.exit_code == 0
 
 
 class TestAnalyzeCommand:
     """Scenarios for the analyze command."""
 
-    def test_analyze_from_file(self, runner, sample_input_file):
-        """GIVEN a structured input file."""
+    """GIVEN a structured input file"""
 
-        """WHEN analyzing."""
+    def test_analyze_from_file(self, runner, sample_input_file):
+        """WHEN analyzing"""
         result = runner.invoke(
             cli,
             [
@@ -177,18 +177,19 @@ class TestAnalyzeCommand:
             ],
         )
 
-        """THEN it shows analysis output."""
+        """THEN it shows analysis output"""
         assert result.exit_code == 0
 
 
 class TestExportCommand:
     """Scenarios for the export command."""
 
+    """GIVEN a structured input file and an output path"""
+
     def test_export_to_file(self, runner, sample_input_file, tmp_path, isolated_dir):
-        """GIVEN a structured input file and an output path."""
         output_file = tmp_path / "RELEASE_NOTES.md"
 
-        """WHEN exporting."""
+        """WHEN exporting"""
         result = runner.invoke(
             cli,
             [
@@ -202,17 +203,18 @@ class TestExportCommand:
             ],
         )
 
-        """THEN the file is written."""
+        """THEN the file is written"""
         assert result.exit_code == 0
         assert output_file.exists()
         content = output_file.read_text()
         assert "Version 3.0.0" in content
 
+    """GIVEN output path for JSON"""
+
     def test_export_json(self, runner, sample_input_file, tmp_path):
-        """GIVEN output path for JSON."""
         output_file = tmp_path / "release.json"
 
-        """WHEN exporting as JSON."""
+        """WHEN exporting as JSON"""
         result = runner.invoke(
             cli,
             [
@@ -226,7 +228,7 @@ class TestExportCommand:
             ],
         )
 
-        """THEN valid JSON is written."""
+        """THEN valid JSON is written"""
         assert result.exit_code == 0
         data = json.loads(output_file.read_text())
         assert "groups" in data
@@ -235,10 +237,10 @@ class TestExportCommand:
 class TestErrorHandling:
     """Scenarios for CLI error handling."""
 
-    def test_missing_source_file(self, runner):
-        """GIVEN a nonexistent source file."""
+    """GIVEN a nonexistent source file"""
 
-        """WHEN generating."""
+    def test_missing_source_file(self, runner):
+        """WHEN generating"""
         result = runner.invoke(
             cli,
             [
@@ -248,26 +250,26 @@ class TestErrorHandling:
             ],
         )
 
-        """THEN it fails gracefully."""
+        """THEN it fails gracefully"""
         assert result.exit_code != 0
 
-    def test_version_flag(self, runner):
-        """GIVEN the CLI."""
+    """GIVEN the CLI"""
 
-        """WHEN requesting version."""
+    def test_version_flag(self, runner):
+        """WHEN requesting version"""
         result = runner.invoke(cli, ["--version"])
 
-        """THEN version is shown."""
+        """THEN version is shown"""
         assert "1.1.0" in result.output
 
 
 class TestIsolatedGenerate:
     """Generate command works from an isolated directory (no config pollution)."""
 
-    def test_generate_isolated_no_config(self, runner, sample_input_file, isolated_dir):
-        """GIVEN an isolated tmp directory with no .releasepilot.json."""
+    """GIVEN an isolated tmp directory with no .releasepilot.json"""
 
-        """WHEN generating release notes."""
+    def test_generate_isolated_no_config(self, runner, sample_input_file, isolated_dir):
+        """WHEN generating release notes"""
         result = runner.invoke(
             cli,
             [
@@ -279,7 +281,7 @@ class TestIsolatedGenerate:
             ],
         )
 
-        """THEN output uses plain 'Version X.Y.Z' heading (no app_name leak)."""
+        """THEN output uses plain 'Version X.Y.Z' heading (no app_name leak)"""
         assert result.exit_code == 0
         assert "Version 4.0.0" in result.output
         assert "TEST" not in result.output

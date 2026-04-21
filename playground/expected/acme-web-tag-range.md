@@ -1,6 +1,6 @@
 # Acme Web
 
-##  — Version 2.10.0
+##  - Version 2.10.0
 
 > Released on 2026-03-16
 
@@ -16,16 +16,16 @@
 
 ## ✨ New Features
 
-- Implement real-time analytics widget — `dashboard`
-- Add full-text search with Elasticsearch — `search`
+- Implement real-time analytics widget - `dashboard`
+- Add full-text search with Elasticsearch - `search`
 
 ## 🐛 Bug Fixes
 
-- Correct dark mode color contrast issues — `ui`
+- Correct dark mode color contrast issues - `ui`
 
 ## ⚡ Performance
 
-- Optimize user query with composite index — `db`
+- Optimize user query with composite index - `db`
 
 ## 📝 Documentation
 
@@ -33,7 +33,7 @@
 
 ## ♻️ Refactoring
 
-- Migrate from REST to GraphQL endpoints — `api`
+- Migrate from REST to GraphQL endpoints - `api`
 
 ---
 *6 changes in this release*

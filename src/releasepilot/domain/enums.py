@@ -27,7 +27,7 @@ class ChangeCategory(StrEnum):
 
     @property
     def sort_order(self) -> int:
-        """Deterministic display order — higher-impact categories first."""
+        """Deterministic display order - higher-impact categories first."""
         return _CATEGORY_ORDER[self]
 
 

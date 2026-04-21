@@ -10,13 +10,13 @@ Common issues and their solutions when working with ReleasePilot.
 
 **Cause:** Corporate proxy (Zscaler, Netskope, etc.) intercepts HTTPS and uses its own CA certificate that Python doesn't trust.
 
-**Fix — find and export your corporate CA bundle:**
+**Fix - find and export your corporate CA bundle:**
 
 <details>
 <summary><b>macOS / Linux</b></summary>
 
 ```bash
-# macOS — export system certificates (includes Zscaler CA)
+# macOS - export system certificates (includes Zscaler CA)
 security find-certificate -a -p \
   /Library/Keychains/System.keychain \
   /System/Library/Keychains/SystemRootCertificates.keychain \
@@ -58,11 +58,11 @@ releasepilot inspect --remote https://gitlab.example.com/group/project
 > **Tip:** To make environment variables permanent on Windows, use `[System.Environment]::SetEnvironmentVariable("SSL_CERT_FILE", "$env:USERPROFILE\corporate-ca-bundle.pem", "User")` or set them via System Properties → Environment Variables.
 </details>
 
-**Quick check — is your venv working?**
+**Quick check - is your venv working?**
 
 ```bash
 pip install --dry-run requests 2>&1 | head -5
-# Should show "Would install …" — not an SSL error
+# Should show "Would install …" - not an SSL error
 ```
 
 > **How it works:** ReleasePilot's SSL resolution order is: `SSL_CERT_FILE` env → `certifi` package → macOS system keychain (automatic) → Python default. In most corporate environments, setting `SSL_CERT_FILE` is the most reliable fix.
@@ -73,7 +73,7 @@ pip install --dry-run requests 2>&1 | head -5
 
 **Symptom:** `pip install -e ".[dev]"` fails with `SSL: CERTIFICATE_VERIFY_FAILED` or similar.
 
-**Cause:** Same corporate proxy issue — `pip` also needs the CA bundle.
+**Cause:** Same corporate proxy issue - `pip` also needs the CA bundle.
 
 **Fix:** Set `SSL_CERT_FILE` and `REQUESTS_CA_BUNDLE` before running pip (see above), then:
 
@@ -88,18 +88,18 @@ pip install -e ".[dev]"
 
 **Symptom:** `[not_found] Resource not found` for repos that definitely exist.
 
-**Cause:** GitLab returns 404 (not 401/403) for private repositories when the request is unauthenticated. This is by design — GitLab hides private repos from anonymous users.
+**Cause:** GitLab returns 404 (not 401/403) for private repositories when the request is unauthenticated. This is by design - GitLab hides private repos from anonymous users.
 
-**Fix — provide a GitLab Personal Access Token:**
+**Fix - provide a GitLab Personal Access Token:**
 
-Option A — **environment variable:**
+Option A - **environment variable:**
 
 ```bash
 export RELEASEPILOT_GITLAB_TOKEN="glpat-xxxxxxxxxxxxxxxxxxxx"
 releasepilot inspect --remote https://gitlab.example.com/group/project
 ```
 
-Option B — **config file** (`.releasepilot.json`):
+Option B - **config file** (`.releasepilot.json`):
 
 ```json
 {
@@ -107,7 +107,7 @@ Option B — **config file** (`.releasepilot.json`):
 }
 ```
 
-Option C — **via the Web Dashboard** (recommended for interactive use):
+Option C - **via the Web Dashboard** (recommended for interactive use):
 
 1. Start `releasepilot serve`
 2. Enter the GitLab token in the configuration panel
@@ -117,13 +117,13 @@ Option C — **via the Web Dashboard** (recommended for interactive use):
 
 ---
 
-## Wrong GitLab hostname — all repos fail
+## Wrong GitLab hostname - all repos fail
 
 **Symptom:** All repos return `not_found` or `network_error`, but your token is correct.
 
 **Cause:** The GitLab hostname in your config doesn't match the actual server.
 
-**Fix — verify the correct hostname from a local clone:**
+**Fix - verify the correct hostname from a local clone:**
 
 ```bash
 cd your-project
@@ -163,7 +163,7 @@ No additional ReleasePilot configuration is needed.
 
 ---
 
-## Server won't start — `address already in use`
+## Server won't start - `address already in use`
 
 ```bash
 # Find and kill whatever is using the port

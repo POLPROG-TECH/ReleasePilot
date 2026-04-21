@@ -102,7 +102,7 @@ def _render_footer(brief: NarrativeBrief, lang: str) -> str:
     lines: list[str] = []
     lines.append(f"*{footer_text(include_url=True, lang=lang)}*")
 
-    # Provenance note — how many source facts back this narrative
+    # Provenance note - how many source facts back this narrative
     from releasepilot.i18n import get_label
 
     provenance = get_label("narrative_provenance", lang).format(

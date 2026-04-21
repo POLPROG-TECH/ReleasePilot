@@ -59,7 +59,7 @@ def translate_text(
             target=target_lang,
         ).translate(protected)
     except ImportError:
-        logger.debug("deep-translator not installed — skipping translation")
+        logger.debug("deep-translator not installed - skipping translation")
         return text
     except Exception:  # noqa: BLE001
         logger.warning(

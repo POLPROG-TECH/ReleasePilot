@@ -1,4 +1,4 @@
-"""Shared networking utilities — SSL context, HTTP helpers.
+"""Shared networking utilities - SSL context, HTTP helpers.
 
 This module centralises corporate-network concerns (proxy CAs, Zscaler,
 custom cert bundles) so that *every* outgoing HTTPS call uses the same
@@ -75,7 +75,7 @@ def make_ssl_context(*, force_new: bool = False) -> ssl.SSLContext:
 
 
 def _build_ssl_context() -> ssl.SSLContext:
-    """Internal builder — not cached, always creates a fresh context."""
+    """Internal builder - not cached, always creates a fresh context."""
     # 1. Honour explicit env var
     for env in ("SSL_CERT_FILE", "REQUESTS_CA_BUNDLE"):
         ca = os.environ.get(env)

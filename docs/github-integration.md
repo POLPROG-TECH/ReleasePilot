@@ -186,8 +186,8 @@ These are set in the workflow file and control pipeline behavior:
 | `version` | Version label | Auto-detect from tag |
 | `from-ref` | Start ref | Auto-detect (latest tag) |
 | `to-ref` | End ref | `HEAD` |
-| `since` | Since date (date-range mode) | — |
-| `branch` | Branch (date-range mode) | — |
+| `since` | Since date (date-range mode) | - |
+| `branch` | Branch (date-range mode) | - |
 | `show-authors` | Include author names | `false` |
 | `show-hashes` | Include commit hashes | `false` |
 | `output-dir` | Output directory | `release-notes` |
@@ -225,7 +225,7 @@ To automatically set the body of a GitHub Release:
     gh release edit "$TAG" --notes-file release-notes/RELEASE_NOTES.md
 ```
 
-2. The `GITHUB_TOKEN` is automatically available — no additional secrets needed.
+2. The `GITHUB_TOKEN` is automatically available - no additional secrets needed.
 
 3. **Important:** The GitHub Release must already exist. If you create releases manually, push the tag first, create the release, then the workflow will update it. Or use `gh release create` in your workflow.
 
@@ -292,7 +292,7 @@ No additional secrets are needed. ReleasePilot reads git history directly from t
 ```yaml
 - uses: actions/checkout@v4
   with:
-    fetch-depth: 0    # REQUIRED — full history
+    fetch-depth: 0    # REQUIRED - full history
 ```
 
 ### Empty release notes

@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Remote Repository Examples (Dashboard)
+# ReleasePilot - Remote Repository Examples (Dashboard)
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # These examples show how to use the ReleasePilot web dashboard to generate
@@ -33,7 +33,7 @@
 #   9. Generate
 #
 # The dashboard will fetch commits directly from the GitHub API and generate
-# release notes from the remote repository — your local working directory
+# release notes from the remote repository - your local working directory
 # is never used as a source.
 
 # ─── Single Remote Repository (GitLab) ──────────────────────────────────────

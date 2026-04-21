@@ -6,7 +6,7 @@ Inspects a local git repository to gather metadata useful for guided workflows:
 - Recent tags
 - Repository validity
 
-This module is pure infrastructure — it reads from the repo but does not
+This module is pure infrastructure - it reads from the repo but does not
 modify it or participate in the pipeline data flow.
 """
 
@@ -68,7 +68,7 @@ class RepoInspection:
 def inspect_repo(repo_path: str) -> RepoInspection:
     """Inspect a local git repository and return structured metadata.
 
-    This never raises — it returns an inspection result with is_valid_repo=False
+    This never raises - it returns an inspection result with is_valid_repo=False
     and an error message if the repo cannot be inspected.
     """
     path = Path(repo_path).resolve()

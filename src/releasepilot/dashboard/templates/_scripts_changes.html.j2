@@ -61,11 +61,11 @@ function renderChanges(){
       h+='<tr>';
       h+='<td class="fw-600">'+esc(c.title)+(c.breaking?' <span class="pill pill-breaking">'+_t('ui.changes.breaking_badge')+'</span>':'')+'</td>';
       h+='<td>'+catBadge(c.category)+'</td>';
-      h+='<td>'+esc(c.scope||'—')+'</td>';
+      h+='<td>'+esc(c.scope||'-')+'</td>';
       h+='<td>'+impBadge(c.importance)+'</td>';
       h+='<td>'+(c.authors||[]).map(esc).join(', ')+'</td>';
-      h+='<td class="text-secondary">'+esc(c.date||'—')+'</td>';
-      h+='<td class="text-tertiary" style="font-family:var(--font-mono);font-size:.75rem">'+esc(c.hash||'—')+'</td>';
+      h+='<td class="text-secondary">'+esc(c.date||'-')+'</td>';
+      h+='<td class="text-tertiary" style="font-family:var(--font-mono);font-size:.75rem">'+esc(c.hash||'-')+'</td>';
       h+='</tr>';
     });
   }

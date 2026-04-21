@@ -14,8 +14,10 @@ from unittest.mock import patch
 class TestFirstCommitDate:
     """Scenarios for first_commit_date with --all flag and branch kwarg."""
 
+    """GIVEN a GitSourceCollector with mocked _run_git"""
+
     def test_first_commit_uses_rev_list(self, tmp_path: Path) -> None:
-        """GIVEN a GitSourceCollector with mocked _run_git."""
+        """WHEN the test exercises first commit uses rev list"""
         from releasepilot.sources.git import GitSourceCollector
 
         git = GitSourceCollector(str(tmp_path))
@@ -32,8 +34,10 @@ class TestFirstCommitDate:
             assert "HEAD" in args
             assert result == "2025-01-15T10:00:00+00:00"
 
+    """GIVEN a GitSourceCollector with mocked _run_git"""
+
     def test_first_commit_with_branch(self, tmp_path: Path) -> None:
-        """GIVEN a GitSourceCollector with mocked _run_git."""
+        """WHEN the test exercises first commit with branch"""
         from releasepilot.sources.git import GitSourceCollector
 
         git = GitSourceCollector(str(tmp_path))
@@ -49,8 +53,10 @@ class TestFirstCommitDate:
             assert "HEAD" not in args
             assert result == "2025-02-01T08:00:00+00:00"
 
+    """GIVEN a GitSourceCollector where _run_git raises GitCollectionError"""
+
     def test_first_commit_empty_repo(self, tmp_path: Path) -> None:
-        """GIVEN a GitSourceCollector where _run_git raises GitCollectionError."""
+        """WHEN the test exercises first commit empty repo"""
         from releasepilot.sources.git import GitCollectionError, GitSourceCollector
 
         git = GitSourceCollector(str(tmp_path))
@@ -58,8 +64,9 @@ class TestFirstCommitDate:
             """WHEN first_commit_date is called THEN None is returned."""
             assert git.first_commit_date() is None
 
+    """GIVEN a real git repo with multiple branches and dated commits"""
+
     def test_first_commit_in_real_git_repo(self, tmp_path: Path) -> None:
-        """GIVEN a real git repo with multiple branches and dated commits."""
         from releasepilot.sources.git import GitSourceCollector
 
         repo = tmp_path / "repo"
@@ -99,11 +106,11 @@ class TestFirstCommitDate:
 
         git = GitSourceCollector(str(repo))
 
-        """WHEN first_commit_date is called with and without branch."""
+        """WHEN first_commit_date is called with and without branch"""
         # --all should find the oldest commit (2025-01-10)
         first_all = git.first_commit_date()
 
-        """THEN the oldest commit date is returned."""
+        """THEN the oldest commit date is returned"""
         assert first_all is not None
         assert first_all.startswith("2025-01-10")
 
@@ -119,46 +126,50 @@ class TestFirstCommitDate:
 class TestPipelineStats:
     """Scenarios for extended PipelineStats with category, contributor, and scope data."""
 
+    """GIVEN a PipelineStats instance"""
+
     def test_category_counts(self) -> None:
-        """GIVEN a PipelineStats instance."""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         stats = PipelineStats()
 
-        """WHEN category_counts are assigned."""
+        """WHEN category_counts are assigned"""
         stats.category_counts = {"feat": 5, "fix": 3, "refactor": 1}
 
-        """THEN the counts are accessible and correct."""
+        """THEN the counts are accessible and correct"""
         assert stats.category_counts["feat"] == 5
         assert stats.category_counts["fix"] == 3
 
+    """GIVEN a PipelineStats instance"""
+
     def test_contributor_count(self) -> None:
-        """GIVEN a PipelineStats instance."""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         stats = PipelineStats()
 
-        """WHEN contributor_count is assigned."""
+        """WHEN contributor_count is assigned"""
         stats.contributor_count = 7
 
-        """THEN the count is correct."""
+        """THEN the count is correct"""
         assert stats.contributor_count == 7
 
+    """GIVEN a PipelineStats instance"""
+
     def test_scopes(self) -> None:
-        """GIVEN a PipelineStats instance."""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         stats = PipelineStats()
 
-        """WHEN scopes are assigned."""
+        """WHEN scopes are assigned"""
         stats.scopes = ("api", "auth", "dashboard")
 
-        """THEN the scopes are accessible and correct."""
+        """THEN the scopes are accessible and correct"""
         assert "api" in stats.scopes
         assert len(stats.scopes) == 3
 
+    """GIVEN a fully populated PipelineStats"""
+
     def test_detailed_summary_full(self) -> None:
-        """GIVEN a fully populated PipelineStats."""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         stats = PipelineStats()
@@ -170,18 +181,19 @@ class TestPipelineStats:
         stats.scopes = ("api", "auth", "dashboard")
         stats.category_counts = {"feat": 6, "fix": 4, "refactor": 2}
 
-        """WHEN detailed_summary is called."""
+        """WHEN detailed_summary is called"""
         detail = stats.detailed_summary()
 
-        """THEN the summary includes contributor, component, and category info."""
+        """THEN the summary includes contributor, component, and category info"""
         assert "Contributors: 4" in detail
         assert "Components: api, auth, dashboard" in detail
         assert "feat: 6" in detail
         assert "fix: 4" in detail
         assert "refactor: 2" in detail
 
+    """GIVEN a PipelineStats with only basic counts set"""
+
     def test_detailed_summary_minimal(self) -> None:
-        """GIVEN a PipelineStats with only basic counts set."""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         stats = PipelineStats()
@@ -190,16 +202,17 @@ class TestPipelineStats:
         stats.after_dedup = 5
         stats.final = 5
 
-        """WHEN detailed_summary is called."""
+        """WHEN detailed_summary is called"""
         detail = stats.detailed_summary()
 
-        """THEN the summary omits contributor, component, and category info."""
+        """THEN the summary omits contributor, component, and category info"""
         assert "Contributors" not in detail
         assert "Components" not in detail
         assert "Categories" not in detail
 
+    """GIVEN ChangeItems with authors and scopes"""
+
     def test_process_with_stats_enriches(self) -> None:
-        """GIVEN ChangeItems with authors and scopes."""
         from releasepilot.config.settings import FilterConfig, Settings
         from releasepilot.domain.enums import ChangeCategory
         from releasepilot.domain.models import ChangeItem
@@ -232,10 +245,10 @@ class TestPipelineStats:
         ]
         settings = Settings(filter=FilterConfig())
 
-        """WHEN process_with_stats is called."""
+        """WHEN process_with_stats is called"""
         processed, stats = process_with_stats(settings, items)
 
-        """THEN stats are enriched with category and contributor data."""
+        """THEN stats are enriched with category and contributor data"""
         assert stats.contributor_count >= 1  # At least one author found
         assert isinstance(stats.category_counts, dict)
 
@@ -246,8 +259,9 @@ class TestPipelineStats:
 class TestJsonConfig:
     """Scenarios for JSON config file loading."""
 
+    """GIVEN a .releasepilot.json file with valid configuration"""
+
     def test_load_json_config(self, tmp_path: Path) -> None:
-        """GIVEN a .releasepilot.json file with valid configuration."""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {
@@ -258,18 +272,19 @@ class TestJsonConfig:
         }
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
 
-        """WHEN load_config is called."""
+        """WHEN load_config is called"""
         cfg = load_config(str(tmp_path))
 
-        """THEN all values are loaded correctly."""
+        """THEN all values are loaded correctly"""
         assert cfg.app_name == "TestApp"
         assert cfg.audience == "user"
         assert cfg.language == "de"
         assert cfg.branch == "develop"
         assert ".releasepilot.json" in cfg.source
 
+    """GIVEN both .releasepilot.json and .releasepilot.toml files exist"""
+
     def test_json_takes_precedence_over_toml(self, tmp_path: Path) -> None:
-        """GIVEN both .releasepilot.json and .releasepilot.toml files exist."""
         from releasepilot.config.file_config import load_config
 
         # JSON config
@@ -277,28 +292,30 @@ class TestJsonConfig:
         # TOML config
         (tmp_path / ".releasepilot.toml").write_text('app_name = "FromTOML"')
 
-        """WHEN load_config is called."""
+        """WHEN load_config is called"""
         cfg = load_config(str(tmp_path))
 
-        """THEN the JSON config takes precedence."""
+        """THEN the JSON config takes precedence"""
         assert cfg.app_name == "FromJSON"
 
+    """GIVEN an invalid .releasepilot.json and a valid .releasepilot.toml"""
+
     def test_invalid_json_falls_through(self, tmp_path: Path) -> None:
-        """GIVEN an invalid .releasepilot.json and a valid .releasepilot.toml."""
         from releasepilot.config.file_config import load_config
 
         (tmp_path / ".releasepilot.json").write_text("not valid json {{{")
         (tmp_path / ".releasepilot.toml").write_text('app_name = "FallbackTOML"')
 
-        """WHEN load_config is called."""
+        """WHEN load_config is called"""
         cfg = load_config(str(tmp_path))
 
-        """THEN the TOML config is used as fallback."""
+        """THEN the TOML config is used as fallback"""
         # Invalid JSON should be skipped, fallback to TOML
         assert cfg.app_name == "FallbackTOML"
 
+    """GIVEN a .releasepilot.json with a $schema key"""
+
     def test_json_schema_field(self, tmp_path: Path) -> None:
-        """GIVEN a .releasepilot.json with a $schema key."""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {
@@ -307,33 +324,36 @@ class TestJsonConfig:
         }
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
 
-        """WHEN load_config is called."""
+        """WHEN load_config is called"""
         cfg = load_config(str(tmp_path))
 
-        """THEN app_name is loaded and no $schema warning is produced."""
+        """THEN app_name is loaded and no $schema warning is produced"""
         assert cfg.app_name == "WithSchema"
         # $schema should not trigger unknown-key warning
         schema_warnings = [w for w in cfg.warnings if w.field == "$schema"]
         assert len(schema_warnings) == 0
 
+    """GIVEN a .releasepilot.json with invalid audience and language values"""
+
     def test_json_with_invalid_values(self, tmp_path: Path) -> None:
-        """GIVEN a .releasepilot.json with invalid audience and language values."""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {"audience": "managers", "language": "xx"}
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
 
-        """WHEN load_config is called."""
+        """WHEN load_config is called"""
         cfg = load_config(str(tmp_path))
 
-        """THEN invalid values are sanitised to empty and warnings are produced."""
+        """THEN invalid values are sanitised to empty and warnings are produced"""
         # Invalid values should be sanitised to empty
         assert cfg.audience == ""
         assert cfg.language == ""
         assert len(cfg.warnings) >= 2
 
+    """GIVEN a user-level config.json at the user config directory"""
+
     def test_user_level_config(self, tmp_path: Path) -> None:
-        """GIVEN a user-level config.json at the user config directory."""
+        """WHEN the test exercises user level config"""
         from releasepilot.config.file_config import load_config
 
         user_dir = tmp_path / "user_config"
@@ -352,72 +372,86 @@ class TestJsonConfig:
             """THEN the user-level config is loaded as fallback."""
             assert cfg.app_name == "UserDefault"
 
+    """GIVEN a .releasepilot.json containing an empty object"""
+
     def test_empty_json_returns_empty_config(self, tmp_path: Path) -> None:
-        """GIVEN a .releasepilot.json containing an empty object."""
         from releasepilot.config.file_config import load_config
 
         (tmp_path / ".releasepilot.json").write_text("{}")
 
-        """WHEN load_config is called."""
+        """WHEN load_config is called"""
         cfg = load_config(str(tmp_path))
 
-        """THEN the config is empty."""
+        """THEN the config is empty"""
         assert cfg.is_empty
 
+    """GIVEN a .releasepilot.json with a repos list"""
+
     def test_json_repos_list(self, tmp_path: Path) -> None:
-        """GIVEN a .releasepilot.json with a repos list."""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {"repos": ["./repo1", "./repo2", "./repo3"]}
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
 
-        """WHEN load_config is called."""
+        """WHEN load_config is called"""
         cfg = load_config(str(tmp_path))
 
-        """THEN the repos list is loaded correctly."""
+        """THEN the repos list is loaded correctly"""
         assert cfg.repos == ["./repo1", "./repo2", "./repo3"]
 
+    """GIVEN a config with no SSL verify fields"""
+
     def test_ssl_verify_defaults_true(self, tmp_path: Path) -> None:
-        """GIVEN a config with no SSL verify fields."""
+        """WHEN the test exercises ssl verify defaults true"""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {"app_name": "TestApp"}
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
         cfg = load_config(str(tmp_path))
 
+        """THEN the expected behavior for ssl verify defaults true is observed"""
         assert cfg.gitlab_ssl_verify is True
         assert cfg.github_ssl_verify is True
 
+    """GIVEN a config with SSL verify set to false"""
+
     def test_ssl_verify_false(self, tmp_path: Path) -> None:
-        """GIVEN a config with SSL verify set to false."""
+        """WHEN the test exercises ssl verify false"""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {"gitlab_ssl_verify": False, "github_ssl_verify": False}
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
         cfg = load_config(str(tmp_path))
 
+        """THEN the expected behavior for ssl verify false is observed"""
         assert cfg.gitlab_ssl_verify is False
         assert cfg.github_ssl_verify is False
 
+    """GIVEN a config with SSL verify as string 'false'"""
+
     def test_ssl_verify_string_false(self, tmp_path: Path) -> None:
-        """GIVEN a config with SSL verify as string 'false'."""
+        """WHEN the test exercises ssl verify string false"""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {"gitlab_ssl_verify": "false", "github_ssl_verify": "0"}
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
         cfg = load_config(str(tmp_path))
 
+        """THEN the expected behavior for ssl verify string false is observed"""
         assert cfg.gitlab_ssl_verify is False
         assert cfg.github_ssl_verify is False
 
+    """GIVEN a config with kebab-case SSL verify keys"""
+
     def test_ssl_verify_kebab_case(self, tmp_path: Path) -> None:
-        """GIVEN a config with kebab-case SSL verify keys."""
+        """WHEN the test exercises ssl verify kebab case"""
         from releasepilot.config.file_config import load_config
 
         cfg_data = {"gitlab-ssl-verify": False, "github-ssl-verify": False}
         (tmp_path / ".releasepilot.json").write_text(json.dumps(cfg_data))
         cfg = load_config(str(tmp_path))
 
+        """THEN the expected behavior for ssl verify kebab case is observed"""
         assert cfg.gitlab_ssl_verify is False
         assert cfg.github_ssl_verify is False
 
@@ -428,33 +462,37 @@ class TestJsonConfig:
 class TestJsonSchema:
     """Scenarios for JSON Schema file validity and completeness."""
 
+    """GIVEN the expected schema file path"""
+
     def test_schema_file_exists(self) -> None:
-        """GIVEN the expected schema file path."""
+        """WHEN the test exercises schema file exists"""
         schema_path = Path(__file__).parent.parent / "schema" / "releasepilot.schema.json"
 
-        """THEN the schema file exists."""
+        """THEN the schema file exists"""
         assert schema_path.exists(), f"Schema file not found at {schema_path}"
 
+    """GIVEN the schema file"""
+
     def test_schema_is_valid_json(self) -> None:
-        """GIVEN the schema file."""
         schema_path = Path(__file__).parent.parent / "schema" / "releasepilot.schema.json"
 
-        """WHEN the schema is parsed as JSON."""
+        """WHEN the schema is parsed as JSON"""
         data = json.loads(schema_path.read_text())
 
-        """THEN it has the expected top-level structure."""
+        """THEN it has the expected top-level structure"""
         assert data.get("type") == "object"
         assert "properties" in data
 
+    """GIVEN the schema file parsed as JSON"""
+
     def test_schema_has_all_fields(self) -> None:
-        """GIVEN the schema file parsed as JSON."""
         schema_path = Path(__file__).parent.parent / "schema" / "releasepilot.schema.json"
         data = json.loads(schema_path.read_text())
 
-        """WHEN the properties are extracted."""
+        """WHEN the properties are extracted"""
         props = data["properties"]
 
-        """THEN all expected fields are present."""
+        """THEN all expected fields are present"""
         expected = {
             "app_name",
             "audience",
@@ -476,16 +514,17 @@ class TestJsonSchema:
 class TestSchemaKeyHandling:
     """Scenarios for $schema key being silently ignored."""
 
+    """GIVEN a config dict containing a $schema key"""
+
     def test_schema_key_not_warned(self) -> None:
-        """GIVEN a config dict containing a $schema key."""
         from releasepilot.config.file_config import validate_config
 
-        """WHEN validate_config is called."""
+        """WHEN validate_config is called"""
         warnings = validate_config(
             {"$schema": "./schema/releasepilot.schema.json", "app_name": "X"}
         )
 
-        """THEN no warnings are produced for the $schema key."""
+        """THEN no warnings are produced for the $schema key"""
         schema_warnings = [w for w in warnings if "$schema" in w.field]
         assert len(schema_warnings) == 0
 
@@ -496,8 +535,9 @@ class TestSchemaKeyHandling:
 class TestComposeMetadata:
     """Scenarios for compose() storing richer metadata from stats."""
 
+    """GIVEN ChangeItems, a ReleaseRange, and a fully populated PipelineStats"""
+
     def test_compose_stores_contributors(self) -> None:
-        """GIVEN ChangeItems, a ReleaseRange, and a fully populated PipelineStats."""
         from releasepilot.config.settings import Settings
         from releasepilot.domain.enums import ChangeCategory
         from releasepilot.domain.models import ChangeItem, ReleaseRange
@@ -522,10 +562,10 @@ class TestComposeMetadata:
         stats.scopes = ("core",)
         stats.category_counts = {"feature": 1}
 
-        """WHEN compose is called with items, range, and stats."""
+        """WHEN compose is called with items, range, and stats"""
         notes = compose(Settings(), items, rr, stats)
 
-        """THEN the metadata includes contributor, component, and category info."""
+        """THEN the metadata includes contributor, component, and category info"""
         assert notes.metadata.get("contributors") == "1"
         assert "core" in notes.metadata.get("components", "")
         assert "feature: 1" in notes.metadata.get("category_breakdown", "")

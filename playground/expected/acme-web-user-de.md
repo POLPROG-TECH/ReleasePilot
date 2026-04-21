@@ -15,18 +15,18 @@
 
 ## ✨ Neue Funktionen
 
-- Add rate limiting middleware — `api`
-- Add PDF export for reports — `export`
-- Add team management and role-based access — `teams`
+- Add rate limiting middleware - `api`
+- Add PDF export for reports - `export`
+- Add team management and role-based access - `teams`
 
 ## 🐛 Fehlerbehebungen
 
-- Correct Polish date formatting — `i18n`
-- Handle large file uploads gracefully — `upload`
+- Correct Polish date formatting - `i18n`
+- Handle large file uploads gracefully - `upload`
 
 ## ⚡ Leistung
 
-- Implement Redis caching layer — `cache`
+- Implement Redis caching layer - `cache`
 
 ## 📝 Dokumentation
 

@@ -26,17 +26,19 @@ from releasepilot.config.settings import Settings
 class TestUserError:
     """Scenarios for UserError construction."""
 
+    """GIVEN a UserError with a summary"""
+
     def test_error_has_summary(self):
-        """GIVEN a UserError with a summary."""
         err = UserError(summary="Test error")
 
-        """WHEN accessing the summary."""
+        """WHEN accessing the summary"""
 
-        """THEN it matches the provided value."""
+        """THEN it matches the provided value"""
         assert err.summary == "Test error"
 
+    """GIVEN a UserError with full context"""
+
     def test_error_with_full_context(self):
-        """GIVEN a UserError with full context."""
         err = UserError(
             summary="Test",
             reason="Because X",
@@ -45,16 +47,17 @@ class TestUserError:
             hint="Hint A",
         )
 
-        """WHEN accessing error fields."""
+        """WHEN accessing error fields"""
 
-        """THEN all context is preserved."""
+        """THEN all context is preserved"""
         assert err.reason == "Because X"
         assert "Try Y" in err.suggestions
         assert "cmd Z" in err.commands
         assert err.hint == "Hint A"
 
+    """GIVEN a fully-populated error"""
+
     def test_display_does_not_raise(self, capsys):
-        """GIVEN a fully-populated error."""
         err = UserError(
             summary="Test display",
             reason="Reason",
@@ -63,123 +66,127 @@ class TestUserError:
             hint="A helpful hint",
         )
 
-        """WHEN displaying."""
+        """WHEN displaying"""
         err.display()
 
-        """THEN it does not raise (output goes to stderr via rich)."""
+        """THEN it does not raise (output goes to stderr via rich)"""
 
 
 class TestErrorFactories:
     """Scenarios for error factory functions."""
 
-    def test_not_a_git_repo(self):
-        """GIVEN a path that is not a git repository."""
+    """GIVEN a path that is not a git repository"""
 
-        """WHEN creating the error."""
+    def test_not_a_git_repo(self):
+        """WHEN creating the error"""
         err = not_a_git_repo("/tmp/foo")
 
-        """THEN the error describes the issue."""
+        """THEN the error describes the issue"""
         assert "git repository" in err.summary.lower()
         assert "/tmp/foo" in err.reason
         assert len(err.suggestions) > 0
 
-    def test_ref_not_found(self):
-        """GIVEN a nonexistent tag reference."""
+    """GIVEN a nonexistent tag reference"""
 
-        """WHEN creating the error."""
+    def test_ref_not_found(self):
+        """WHEN creating the error"""
         err = ref_not_found("v99.0.0", "tag")
 
-        """THEN the error includes the ref and kind."""
+        """THEN the error includes the ref and kind"""
         assert "v99.0.0" in err.summary
         assert "tag" in err.summary
 
-    def test_no_tags_found(self):
-        """GIVEN a repository path with no tags."""
+    """GIVEN a repository path with no tags"""
 
-        """WHEN creating the error."""
+    def test_no_tags_found(self):
+        """WHEN creating the error"""
         err = no_tags_found(".")
 
-        """THEN the error mentions tags and suggests commands."""
+        """THEN the error mentions tags and suggests commands"""
         assert "tags" in err.summary.lower()
         assert len(err.commands) > 0
 
-    def test_source_file_not_found(self):
-        """GIVEN a missing source file path."""
+    """GIVEN a missing source file path"""
 
-        """WHEN creating the error."""
+    def test_source_file_not_found(self):
+        """WHEN creating the error"""
         err = source_file_not_found("missing.json")
 
-        """THEN the error includes the file name."""
+        """THEN the error includes the file name"""
         assert "missing.json" in err.summary
 
-    def test_git_command_failed_unknown_revision(self):
-        """GIVEN a git error mentioning unknown revision."""
+    """GIVEN a git error mentioning unknown revision"""
 
-        """WHEN creating the error."""
+    def test_git_command_failed_unknown_revision(self):
+        """WHEN creating the error"""
         err = git_command_failed("fatal: ambiguous argument 'v1.0.0..v1.1.0': unknown revision")
 
-        """THEN the error identifies the missing ref."""
+        """THEN the error identifies the missing ref"""
         assert "not found" in err.summary.lower()
         assert "v1.0.0..v1.1.0" in err.summary
 
-    def test_git_command_failed_not_a_repo(self):
-        """GIVEN a git error about not being a repository."""
+    """GIVEN a git error about not being a repository"""
 
-        """WHEN creating the error."""
+    def test_git_command_failed_not_a_repo(self):
+        """WHEN creating the error"""
         err = git_command_failed("fatal: not a git repository")
 
-        """THEN the error mentions git repository."""
+        """THEN the error mentions git repository"""
         assert "git repository" in err.summary.lower()
 
-    def test_git_command_failed_generic(self):
-        """GIVEN an unrecognized git error."""
+    """GIVEN an unrecognized git error"""
 
-        """WHEN creating the error."""
+    def test_git_command_failed_generic(self):
+        """WHEN creating the error"""
         err = git_command_failed("some unknown error")
 
-        """THEN a generic failure message is returned."""
+        """THEN a generic failure message is returned"""
         assert "failed" in err.summary.lower()
 
 
 class TestValidateSettings:
     """Scenarios for settings validation."""
 
+    """GIVEN a valid JSON source file"""
+
     def test_valid_source_file(self, tmp_path: Path):
-        """GIVEN a valid JSON source file."""
         f = tmp_path / "changes.json"
         f.write_text('{"changes":[]}')
         settings = Settings(source_file=str(f))
 
-        """WHEN validating settings."""
+        """WHEN validating settings"""
         result = validate_settings(settings)
 
-        """THEN no error is returned."""
+        """THEN no error is returned"""
         assert result is None
 
+    """GIVEN a nonexistent source file path"""
+
     def test_missing_source_file(self):
-        """GIVEN a nonexistent source file path."""
         settings = Settings(source_file="/nonexistent/file.json")
 
-        """WHEN validating settings."""
+        """WHEN validating settings"""
         result = validate_settings(settings)
 
-        """THEN a not-found error is returned."""
+        """THEN a not-found error is returned"""
         assert result is not None
         assert "not found" in result.summary.lower()
 
+    """GIVEN a path that is not a git repository"""
+
     def test_not_a_git_repo(self, tmp_path: Path):
-        """GIVEN a path that is not a git repository."""
         settings = Settings(repo_path=str(tmp_path))
 
-        """WHEN validating settings."""
+        """WHEN validating settings"""
         result = validate_settings(settings)
 
-        """THEN a git repository error is returned."""
+        """THEN a git repository error is returned"""
         assert result is not None
         assert "git repository" in result.summary.lower()
 
+    """GIVEN a valid git repository with settings"""
+
     def test_valid_git_repo(self, tmp_path: Path):
-        """GIVEN a valid git repository with settings."""
         _init_repo(tmp_path)
         settings = Settings(
             repo_path=str(tmp_path),
@@ -187,39 +194,41 @@ class TestValidateSettings:
             branch="main",
         )
 
-        """WHEN validating settings."""
+        """WHEN validating settings"""
         result = validate_settings(settings)
 
-        """THEN no error is returned."""
+        """THEN no error is returned"""
         assert result is None
 
+    """GIVEN a git repo with an invalid since_date"""
+
     def test_invalid_date(self, tmp_path: Path):
-        """GIVEN a git repo with an invalid since_date."""
         _init_repo(tmp_path)
         settings = Settings(
             repo_path=str(tmp_path),
             since_date="not-a-date",
         )
 
-        """WHEN validating settings."""
+        """WHEN validating settings"""
         result = validate_settings(settings)
 
-        """THEN a date-related error is returned."""
+        """THEN a date-related error is returned"""
         assert result is not None
         assert "date" in result.summary.lower()
 
+    """GIVEN a git repo with a nonexistent from_ref"""
+
     def test_invalid_ref(self, tmp_path: Path):
-        """GIVEN a git repo with a nonexistent from_ref."""
         _init_repo(tmp_path)
         settings = Settings(
             repo_path=str(tmp_path),
             from_ref="v99.99.99",
         )
 
-        """WHEN validating settings."""
+        """WHEN validating settings"""
         result = validate_settings(settings)
 
-        """THEN a not-found error is returned."""
+        """THEN a not-found error is returned"""
         assert result is not None
         assert "not found" in result.summary.lower()
 
@@ -227,57 +236,60 @@ class TestValidateSettings:
 class TestValidateExportPath:
     """Scenarios for export path validation."""
 
-    def test_valid_path(self, tmp_path: Path):
-        """GIVEN a valid export directory."""
+    """GIVEN a valid export directory"""
 
-        """WHEN validating the export path."""
+    def test_valid_path(self, tmp_path: Path):
+        """WHEN validating the export path"""
         result = validate_export_path(str(tmp_path / "output.md"))
 
-        """THEN no error is returned."""
+        """THEN no error is returned"""
         assert result is None
 
-    def test_missing_parent_dir(self):
-        """GIVEN a path with a nonexistent parent directory."""
+    """GIVEN a path with a nonexistent parent directory"""
 
-        """WHEN validating the export path."""
+    def test_missing_parent_dir(self):
+        """WHEN validating the export path"""
         result = validate_export_path("/nonexistent/dir/output.md")
 
-        """THEN an error about the missing directory is returned."""
+        """THEN an error about the missing directory is returned"""
         assert result is not None
         assert "does not exist" in result.reason
 
+    """GIVEN an existing file and overwrite disabled"""
+
     def test_existing_file_without_overwrite(self, tmp_path: Path):
-        """GIVEN an existing file and overwrite disabled."""
         f = tmp_path / "existing.md"
         f.write_text("old")
 
-        """WHEN validating the export path."""
+        """WHEN validating the export path"""
         result = validate_export_path(str(f), allow_overwrite=False)
 
-        """THEN an already-exists error is returned."""
+        """THEN an already-exists error is returned"""
         assert result is not None
         assert "already exists" in result.summary.lower()
 
+    """GIVEN an existing file and overwrite enabled"""
+
     def test_existing_file_with_overwrite(self, tmp_path: Path):
-        """GIVEN an existing file and overwrite enabled."""
         f = tmp_path / "existing.md"
         f.write_text("old")
 
-        """WHEN validating the export path."""
+        """WHEN validating the export path"""
         result = validate_export_path(str(f), allow_overwrite=True)
 
-        """THEN no error is returned."""
+        """THEN no error is returned"""
         assert result is None
 
 
 class TestCLIErrorMessages:
     """Scenarios for CLI error messages."""
 
+    """GIVEN a nonexistent repository path"""
+
     def test_generate_invalid_repo(self):
-        """GIVEN a nonexistent repository path."""
         runner = CliRunner()
 
-        """WHEN running generate."""
+        """WHEN running generate"""
         result = runner.invoke(
             cli,
             [
@@ -289,15 +301,16 @@ class TestCLIErrorMessages:
             ],
         )
 
-        """THEN it fails."""
+        """THEN it fails"""
         assert result.exit_code != 0
 
+    """GIVEN a git repo with a nonexistent ref"""
+
     def test_generate_invalid_ref(self, tmp_path: Path):
-        """GIVEN a git repo with a nonexistent ref."""
         _init_repo(tmp_path)
         runner = CliRunner()
 
-        """WHEN running generate with the invalid ref."""
+        """WHEN running generate with the invalid ref"""
         result = runner.invoke(
             cli,
             [
@@ -311,15 +324,16 @@ class TestCLIErrorMessages:
             ],
         )
 
-        """THEN it fails."""
+        """THEN it fails"""
         assert result.exit_code != 0
 
+    """GIVEN a git repo and an invalid date"""
+
     def test_generate_invalid_date(self, tmp_path: Path):
-        """GIVEN a git repo and an invalid date."""
         _init_repo(tmp_path)
         runner = CliRunner()
 
-        """WHEN running generate with the bad date."""
+        """WHEN running generate with the bad date"""
         result = runner.invoke(
             cli,
             [
@@ -331,15 +345,16 @@ class TestCLIErrorMessages:
             ],
         )
 
-        """THEN it fails."""
+        """THEN it fails"""
         assert result.exit_code != 0
 
+    """GIVEN a nonexistent output directory"""
+
     def test_export_missing_dir(self, tmp_path: Path):
-        """GIVEN a nonexistent output directory."""
         _init_repo(tmp_path)
         runner = CliRunner()
 
-        """WHEN running export to that directory."""
+        """WHEN running export to that directory"""
         result = runner.invoke(
             cli,
             [
@@ -351,18 +366,19 @@ class TestCLIErrorMessages:
             ],
         )
 
-        """THEN it fails."""
+        """THEN it fails"""
         assert result.exit_code != 0
 
 
 class TestDryRun:
     """Scenarios for dry-run mode."""
 
+    """GIVEN a valid source file and the dry-run flag"""
+
     def test_dry_run_flag(self):
-        """GIVEN a valid source file and the dry-run flag."""
         runner = CliRunner()
 
-        """WHEN running generate with --dry-run."""
+        """WHEN running generate with --dry-run"""
         result = runner.invoke(
             cli,
             [
@@ -373,15 +389,16 @@ class TestDryRun:
             ],
         )
 
-        """THEN it succeeds without crashing."""
+        """THEN it succeeds without crashing"""
         assert result.exit_code == 0
         # Dry run output goes to stderr, but should not crash
 
+    """GIVEN a valid source file, version, and the dry-run flag"""
+
     def test_dry_run_with_version(self):
-        """GIVEN a valid source file, version, and the dry-run flag."""
         runner = CliRunner()
 
-        """WHEN running generate with --dry-run and --version."""
+        """WHEN running generate with --dry-run and --version"""
         result = runner.invoke(
             cli,
             [
@@ -394,7 +411,7 @@ class TestDryRun:
             ],
         )
 
-        """THEN it succeeds without crashing."""
+        """THEN it succeeds without crashing"""
         assert result.exit_code == 0
 
 

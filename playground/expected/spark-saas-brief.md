@@ -1,6 +1,6 @@
 # Spark SaaS
 
-## Release Brief — v3.0.0
+## Release Brief - v3.0.0
 
 *March 16, 2026*
 *Version 3.0.0*

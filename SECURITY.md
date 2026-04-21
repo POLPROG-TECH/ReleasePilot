@@ -12,7 +12,7 @@ If you discover a security vulnerability in ReleasePilot, please report it respo
 
 **Do not open a public issue.**
 
-Instead, please email **releasepilot@polprog.tech** with:
+Instead, please email **contact@polprog.pl** with:
 
 - A description of the vulnerability
 - Steps to reproduce
@@ -29,3 +29,11 @@ Security concerns relevant to ReleasePilot include:
 - **Path traversal** in repository or file operations
 - **Arbitrary code execution** through config files or input data
 - **Dependency vulnerabilities** in third-party packages
+
+## Disclosure Policy
+
+We follow coordinated disclosure:
+
+1. Report the issue privately via the contact above.
+2. We confirm receipt and begin investigation.
+3. Once a fix is released, we publicly acknowledge the reporter (with their consent).

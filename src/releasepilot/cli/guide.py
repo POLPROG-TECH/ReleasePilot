@@ -1,7 +1,7 @@
 """Guided interactive workflow for ReleasePilot.
 
 Provides a step-by-step interactive experience for users who don't know
-exact git refs or tags — testers, QA, product managers, etc.
+exact git refs or tags - testers, QA, product managers, etc.
 
 All interactive prompting is confined to this module (via the ``prompts``
 helper).  The core pipeline remains fully non-interactive for CI/CD use.
@@ -18,7 +18,7 @@ from pathlib import Path
 from rich.console import Console
 
 from releasepilot.cli.guide_steps import (
-    _AUDIENCE_CHOICES,  # noqa: F401 — re-exported for backward compat
+    _AUDIENCE_CHOICES,  # noqa: F401 - re-exported for backward compat
     _FORMAT_CHOICES,  # noqa: F401
     _FORMAT_CHOICES_EXECUTIVE,  # noqa: F401
     _FORMAT_CHOICES_NARRATIVE,  # noqa: F401
@@ -72,7 +72,7 @@ class _ProgressTracker:
             elapsed_str = f"[dim]({elapsed:.1f}s)[/dim]"
 
             if detail:
-                console.print(f"  [cyan]⟳[/cyan] {stage} — {detail} {elapsed_str}")
+                console.print(f"  [cyan]⟳[/cyan] {stage} - {detail} {elapsed_str}")
             else:
                 console.print(f"  [cyan]⟳[/cyan] {stage} {elapsed_str}")
 
@@ -157,7 +157,7 @@ def _format_analysis_period(descriptor: str, lang: str = "en") -> str:
 def run_guide(repo_path: str) -> None:
     """Run the full guided workflow."""
     console.print()
-    console.print("[bold blue]🚀 ReleasePilot — Guided Release Notes[/bold blue]")
+    console.print("[bold blue]🚀 ReleasePilot - Guided Release Notes[/bold blue]")
     console.print()
 
     # ── Step 0: Handle repository URL (clone if needed) ─────────────────

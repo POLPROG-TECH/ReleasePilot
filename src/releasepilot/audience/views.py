@@ -37,12 +37,12 @@ def apply_audience(notes: ReleaseNotes, audience: Audience) -> ReleaseNotes:
 
 
 def _technical_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """Full technical detail — all categories, all items."""
+    """Full technical detail - all categories, all items."""
     return notes
 
 
 def _user_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """User-facing view — hide internal categories, polish titles."""
+    """User-facing view - hide internal categories, polish titles."""
     hidden = {
         ChangeCategory.REFACTOR,
         ChangeCategory.INFRASTRUCTURE,
@@ -65,7 +65,7 @@ def _user_view(notes: ReleaseNotes) -> ReleaseNotes:
 
 
 def _summary_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """Concise summary — only top items per category, polished titles.
+    """Concise summary - only top items per category, polished titles.
 
     Hides internal categories and limits each group to 3 items.
     Designed for quick scanning: a short, focused overview.
@@ -93,7 +93,7 @@ def _summary_view(notes: ReleaseNotes) -> ReleaseNotes:
 
 
 def _changelog_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """Standard changelog — all categories, polished titles.
+    """Standard changelog - all categories, polished titles.
 
     Includes everything but polishes titles for readability.
     Unlike _technical_view (which keeps raw titles and all metadata),
@@ -109,7 +109,7 @@ def _changelog_view(notes: ReleaseNotes) -> ReleaseNotes:
 
 
 def _executive_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """Executive view — hide internal-only categories, polish titles.
+    """Executive view - hide internal-only categories, polish titles.
 
     This provides a clean ReleaseNotes that the executive brief composer
     can then transform into business-oriented output.
@@ -137,7 +137,7 @@ def _executive_view(notes: ReleaseNotes) -> ReleaseNotes:
 
 
 def _customer_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """Customer-facing view — high-level, polished, outcome-focused.
+    """Customer-facing view - high-level, polished, outcome-focused.
 
     Hides all internal/technical categories and limits output to changes
     that directly affect customers.  Titles are polished for readability.
@@ -192,7 +192,7 @@ def _polish_item_for_users(item: ChangeItem) -> ChangeItem:
 
 
 def _narrative_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """Narrative view — all categories, polished titles.
+    """Narrative view - all categories, polished titles.
 
     Prepares ReleaseNotes for the narrative pipeline which transforms
     them into continuous prose.  Keeps all categories (including
@@ -209,7 +209,7 @@ def _narrative_view(notes: ReleaseNotes) -> ReleaseNotes:
 
 
 def _customer_narrative_view(notes: ReleaseNotes) -> ReleaseNotes:
-    """Customer narrative view — hide internal categories, polish titles.
+    """Customer narrative view - hide internal categories, polish titles.
 
     Prepares ReleaseNotes for the customer-facing narrative pipeline.
     Hides internal technical categories before the narrative composer

@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Manual Dispatch Workflow (GitHub Actions)
+# ReleasePilot - Manual Dispatch Workflow (GitHub Actions)
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Trigger release note generation manually from the GitHub Actions UI.
@@ -51,7 +51,7 @@ on:
         type: string
         default: "HEAD"
       since:
-        description: "Since date (YYYY-MM-DD) — enables date-range mode"
+        description: "Since date (YYYY-MM-DD) - enables date-range mode"
         type: string
         default: ""
       branch:

@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Reusable GitLab CI Template
+# ReleasePilot - Reusable GitLab CI Template
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Include this template in your .gitlab-ci.yml:

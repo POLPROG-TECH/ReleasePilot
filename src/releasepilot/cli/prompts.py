@@ -7,9 +7,9 @@ Centralises all interactive selection logic so that:
 - Re-prompting on invalid input is the default behaviour
 
 Architecture:
-    select_one()   — menu selection (arrow-key or numeric)
-    confirm()      — yes/no question
-    text_prompt()  — free-form text input
+    select_one()   - menu selection (arrow-key or numeric)
+    confirm()      - yes/no question
+    text_prompt()  - free-form text input
 
 When questionary is importable *and* stdin is a TTY, arrow-key mode is used.
 Otherwise the numeric/click fallback is used.  Both paths validate strictly.
@@ -152,7 +152,7 @@ def _questionary_select[T](
             style=style,
         )
     except ValueError:
-        # Default didn't match any choice value — retry without a default
+        # Default didn't match any choice value - retry without a default
         question = questionary.select(
             title,
             choices=q_choices,

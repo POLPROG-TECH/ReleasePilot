@@ -623,7 +623,7 @@ class GitHubClient:
                         )
                     if len(items) < per_page:
                         break
-                return repos  # success — return immediately
+                return repos  # success - return immediately
             except GitHubError as exc:
                 if exc.kind == GitHubErrorKind.NOT_FOUND:
                     continue  # try next endpoint

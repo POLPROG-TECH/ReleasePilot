@@ -76,7 +76,7 @@ class ReleaseRange:
             parts.append(f"Release {self.version}")
         else:
             parts.append(f"{self.from_ref}..{self.to_ref}")
-        return " — ".join(parts)
+        return " - ".join(parts)
 
     @property
     def subtitle(self) -> str:

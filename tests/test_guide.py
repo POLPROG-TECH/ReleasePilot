@@ -16,44 +16,48 @@ from releasepilot.pipeline.orchestrator import build_release_range, collect
 class TestDateRangeSettings:
     """Scenarios for date-range settings detection."""
 
+    """GIVEN settings with a since_date"""
+
     def test_is_date_range_true(self):
-        """GIVEN settings with a since_date."""
         settings = Settings(since_date="2025-01-01")
 
-        """WHEN checking is_date_range."""
+        """WHEN checking is_date_range"""
 
-        """THEN it returns True."""
+        """THEN it returns True"""
         assert settings.is_date_range is True
 
+    """GIVEN settings without a since_date"""
+
     def test_is_date_range_false(self):
-        """GIVEN settings without a since_date."""
         settings = Settings()
 
-        """WHEN checking is_date_range."""
+        """WHEN checking is_date_range"""
 
-        """THEN it returns False."""
+        """THEN it returns False"""
         assert settings.is_date_range is False
 
 
 class TestDateRangePipeline:
     """Scenarios for date-range pipeline building."""
 
+    """GIVEN settings with a date range"""
+
     def test_build_release_range_with_date(self):
-        """GIVEN settings with a date range."""
         settings = Settings(since_date="2025-01-01", branch="main", version="1.0.0")
 
-        """WHEN building the release range."""
+        """WHEN building the release range"""
         rr = build_release_range(settings)
 
-        """THEN the range uses the date and branch."""
+        """THEN the range uses the date and branch"""
         assert rr.from_ref == "2025-01-01"
         assert rr.to_ref == "main"
         assert rr.version == "1.0.0"
         assert "since 2025-01-01" in rr.display_title
         assert "Release 1.0.0" in rr.display_title
 
+    """GIVEN a git repo with commits and date-range settings"""
+
     def test_date_range_collection_from_real_repo(self, tmp_path: Path):
-        """GIVEN a git repo with commits and date-range settings."""
         _init_repo_with_commits(tmp_path)
 
         settings = Settings(
@@ -62,24 +66,25 @@ class TestDateRangePipeline:
             branch="main",
         )
 
-        """WHEN collecting changes by date."""
+        """WHEN collecting changes by date"""
         rr = build_release_range(settings)
         items = collect(settings, rr)
 
-        """THEN recent commits are found."""
+        """THEN recent commits are found"""
         assert len(items) >= 1
 
 
 class TestDateRangeCLI:
     """Scenarios for date-range CLI generation."""
 
+    """GIVEN a git repo and the CLI"""
+
     def test_generate_with_since_flag(self, tmp_path: Path):
-        """GIVEN a git repo and the CLI."""
         _init_repo_with_commits(tmp_path)
         runner = CliRunner()
         since = (date.today() - timedelta(days=30)).isoformat()
 
-        """WHEN running generate with --since."""
+        """WHEN running generate with --since"""
         result = runner.invoke(
             cli,
             [
@@ -93,16 +98,17 @@ class TestDateRangeCLI:
             ],
         )
 
-        """THEN it succeeds."""
+        """THEN it succeeds"""
         assert result.exit_code == 0
 
+    """GIVEN a git repo and the CLI"""
+
     def test_generate_with_since_and_version(self, tmp_path: Path):
-        """GIVEN a git repo and the CLI."""
         _init_repo_with_commits(tmp_path)
         runner = CliRunner()
         since = (date.today() - timedelta(days=30)).isoformat()
 
-        """WHEN running generate with --since and --version."""
+        """WHEN running generate with --since and --version"""
         result = runner.invoke(
             cli,
             [
@@ -116,7 +122,7 @@ class TestDateRangeCLI:
             ],
         )
 
-        """THEN it includes the version in output."""
+        """THEN it includes the version in output"""
         assert result.exit_code == 0
         assert "2.0.0" in result.output
         assert "Release 2.0.0" in result.output
@@ -125,24 +131,26 @@ class TestDateRangeCLI:
 class TestGuideCLI:
     """Scenarios for the guided CLI workflow."""
 
+    """GIVEN a nonexistent repo path"""
+
     def test_guide_with_invalid_repo(self):
-        """GIVEN a nonexistent repo path."""
         runner = CliRunner()
 
-        """WHEN running guide."""
+        """WHEN running guide"""
         result = runner.invoke(cli, ["guide", "/nonexistent/repo"])
 
-        """THEN it fails gracefully with an error message."""
+        """THEN it fails gracefully with an error message"""
         assert result.exit_code != 0
 
+    """GIVEN the CLI"""
+
     def test_guide_command_exists(self):
-        """GIVEN the CLI."""
         runner = CliRunner()
 
-        """WHEN requesting help for guide."""
+        """WHEN requesting help for guide"""
         result = runner.invoke(cli, ["guide", "--help"])
 
-        """THEN it shows help text."""
+        """THEN it shows help text"""
         assert result.exit_code == 0
         assert "Interactive guided workflow" in result.output
 
@@ -182,42 +190,45 @@ def _init_repo_with_commits(path: Path) -> None:
 class TestDateRangeClamping:
     """Scenarios for date-range clamping to repository history."""
 
+    """GIVEN a git repo with commits"""
+
     def test_first_commit_date_detection(self, tmp_path: Path):
-        """GIVEN a git repo with commits."""
         _init_repo_with_commits(tmp_path)
         from releasepilot.sources.git import GitSourceCollector
 
         git = GitSourceCollector(str(tmp_path))
 
-        """WHEN detecting the first commit date."""
+        """WHEN detecting the first commit date"""
         first = git.first_commit_date()
 
-        """THEN the oldest commit date is returned."""
+        """THEN the oldest commit date is returned"""
         assert first is not None
         # The date portion should be today or yesterday (timezone offset may shift)
         assert first[:10] >= (date.today() - timedelta(days=1)).isoformat()
 
+    """GIVEN a git repo and a date far before its history"""
+
     def test_clamp_warns_when_range_exceeds_history(self, tmp_path: Path):
-        """GIVEN a git repo and a date far before its history."""
         _init_repo_with_commits(tmp_path)
         from releasepilot.cli.guide import _clamp_to_repo_history
 
-        """WHEN clamping a date before the first commit."""
+        """WHEN clamping a date before the first commit"""
         result = _clamp_to_repo_history("2000-01-01", str(tmp_path))
 
-        """THEN the date is clamped to the first commit date."""
+        """THEN the date is clamped to the first commit date"""
         assert result != "2000-01-01"
         assert result >= (date.today() - timedelta(days=1)).isoformat()
 
+    """GIVEN a git repo and a date within its history"""
+
     def test_clamp_preserves_valid_range(self, tmp_path: Path):
-        """GIVEN a git repo and a date within its history."""
         _init_repo_with_commits(tmp_path)
         from releasepilot.cli.guide import _clamp_to_repo_history
 
         today = date.today().isoformat()
 
-        """WHEN clamping a valid date."""
+        """WHEN clamping a valid date"""
         result = _clamp_to_repo_history(today, str(tmp_path))
 
-        """THEN the date is preserved unchanged."""
+        """THEN the date is preserved unchanged"""
         assert result == today

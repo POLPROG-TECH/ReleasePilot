@@ -238,7 +238,7 @@ class ExecutivePdfRenderer:
         story.append(Spacer(1, 18))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # EXECUTIVE SUMMARY — highlighted panel
+        # EXECUTIVE SUMMARY - highlighted panel
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         summary_heading = Paragraph(
             get_label("executive_summary", lang),
@@ -299,7 +299,7 @@ class ExecutivePdfRenderer:
                         ("TEXTCOLOR", (0, 1), (-1, -1), c_charcoal),
                         ("LINEBELOW", (0, 1), (-1, -2), 0.3, colors.HexColor("#f1f5f9")),
                         ("LINEBELOW", (0, -1), (-1, -1), 0.6, c_border),
-                        # Values column — bold
+                        # Values column - bold
                         ("FONTNAME", (1, 1), (1, -1), fn_b),
                         # Spacing
                         ("TOPPADDING", (0, 0), (-1, -1), 7),
@@ -362,7 +362,7 @@ class ExecutivePdfRenderer:
             story.append(Spacer(1, 10))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # RISKS — distinct visual treatment
+        # RISKS - distinct visual treatment
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.risks:
             risk_heading = Paragraph(

@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Reusable GitHub Actions Workflow
+# ReleasePilot - Reusable GitHub Actions Workflow
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Generates release notes using ReleasePilot and uploads them as artifacts.

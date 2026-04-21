@@ -1,28 +1,35 @@
-## Description
+## Summary
 
-Brief description of the changes in this PR.
+Briefly describe what this PR does and why.
+
+## Changes
+
+- ...
+- ...
 
 ## Type of Change
 
-- [ ] Bug fix
-- [ ] New feature
+- [ ] Bug fix (non-breaking change that fixes an issue)
+- [ ] New feature (non-breaking change that adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] Refactor (no behavior change)
 - [ ] Documentation update
-- [ ] Refactoring
-- [ ] Performance improvement
-- [ ] Test coverage
+- [ ] Test-only change
+- [ ] Chore / CI
 
 ## How Has This Been Tested?
 
-Describe the tests you ran to verify your changes.
-
-- [ ] `python3 -m pytest tests/ -q` — all tests pass
-- [ ] `python3 -m ruff check src/ tests/` — lint clean
-- [ ] Manual testing with `releasepilot generate ...`
+Describe the tests you ran to verify your changes (commands, scenarios, manual steps).
 
 ## Checklist
 
-- [ ] My code follows the project code style
-- [ ] I have added tests that prove my fix/feature works
-- [ ] New and existing tests pass locally
-- [ ] I have updated documentation where needed
-- [ ] My commit messages follow Conventional Commits
+- [ ] Tests pass locally (`pytest`)
+- [ ] Lint/format pass (`ruff check` / `ruff format --check`)
+- [ ] New code is covered by tests where applicable
+- [ ] Documentation updated where relevant
+- [ ] CHANGELOG.md updated for user-visible changes (if the repo has one)
+- [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/)
+
+## Related Issues
+
+Closes #

@@ -117,7 +117,7 @@ CATALOG_DE: dict[str, str] = {
     "ui.wizard.regen_hint": "Dieses Dashboard wurde mit der obigen Konfiguration generiert. Um Datumsbereich, Branch oder Repository zu ändern, generieren Sie neu mit releasepilot dashboard oder releasepilot guide.",
     "ui.wizard.recommended": "(empfohlen)",
     "ui.wizard.binary_note": "(über CLI generiert)",
-    "ui.wizard.binary_preview_note": "— Markdown-Vorschau (Binärformat über CLI generiert)",
+    "ui.wizard.binary_preview_note": "- Markdown-Vorschau (Binärformat über CLI generiert)",
     "ui.wizard.binary_export_note": "Binärformat (PDF/DOCX) wird über CLI generiert. Markdown-Inhalt unten angezeigt.",
     "ui.wizard.formats_available": "Formate für diese Zielgruppe verfügbar",
     # Export modal
@@ -223,17 +223,17 @@ CATALOG_DE: dict[str, str] = {
     "ui.plural.breaking_one": "{count} breaking change detected in this release.",
     "ui.plural.breaking_few": "{count} breaking changes detected in this release.",
     "ui.plural.breaking_other": "{count} breaking changes detected in this release.",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Repositorys",
     "ui.wizard.scope_step": "Umfang",
     "ui.wizard.review_step": "Überprüfung",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Wählen Sie, wo sich Ihr Quellcode befindet. Dies bestimmt, wie ReleasePilot sich mit Ihren Repositorys verbindet.",
     "ui.wizard.local_repo_label": "Lokales Repository",
     "ui.wizard.local_repo_desc": "Verwenden Sie ein Git-Repository auf diesem Computer. Ideal für lokale Entwicklungsworkflows.",
     "ui.wizard.remote_repo_label": "Remote-Repository",
     "ui.wizard.remote_repo_desc": "Verbinden Sie sich mit GitHub- oder GitLab-Repositorys über URL. Ideal für CI/CD und Teamworkflows.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Repositorys auswählen",
     "ui.wizard.select_repos_desc": "Wählen Sie die Repositorys aus, die in dieses Release aufgenommen werden sollen.",
     "ui.wizard.repo_mode_title": "Repository-Modus",
@@ -257,7 +257,7 @@ CATALOG_DE: dict[str, str] = {
     "ui.wizard.inspect_btn": "Repository inspizieren",
     "ui.wizard.inspect_token_hint": "Validieren Sie Ihren Token, um die Inspektion zu aktivieren.",
     "ui.wizard.add_repo_label": "Repository-URL hinzufügen",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Authentifizierung",
     "ui.wizard.gitlab_url_label": "GitLab-URL",
     "ui.wizard.gitlab_url_hint": "Basis-URL Ihrer GitLab-Instanz (z.\u00a0B. https://gitlab.company.com)",
@@ -275,7 +275,7 @@ CATALOG_DE: dict[str, str] = {
     "ui.wizard.validating": "Validierung\u2026",
     "ui.wizard.inspecting": "Inspektion\u2026",
     "ui.wizard.ssl_disabled": "SSL-Überprüfung deaktiviert",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Release-Umfang",
     "ui.wizard.scope_desc": "Definieren Sie den Zeitraum oder Versionsbereich für dieses Release. Dieser Umfang gilt für alle ausgewählten Repositorys.",
     "ui.wizard.scope_banner_multi": "Gemeinsamer Umfang \u2014 Commits werden aus <strong>{count}</strong> Repositorys mit dem unten angegebenen Bereich gesammelt.",
@@ -286,7 +286,7 @@ CATALOG_DE: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "End-Referenz. Standardmäßig HEAD (neuester Commit).",
     "ui.wizard.scanning_dir": "Verzeichnis wird gescannt\u2026",
     "ui.wizard.scan_found": "<strong>{count}</strong> Git-Repositorys gefunden",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Überprüfen & Generieren",
     "ui.wizard.review_desc": "Überprüfen Sie Ihre Konfiguration, bevor Sie die Release-Notes generieren.",
     "ui.wizard.review_source": "Quelle",
@@ -301,11 +301,11 @@ CATALOG_DE: dict[str, str] = {
     "ui.wizard.review_on_branch": "auf Branch",
     "ui.wizard.review_not_set": "(nicht festgelegt)",
     "ui.wizard.generate_btn": "Release-Notes generieren",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Verarbeitungspipeline",
     "ui.wizard.pipeline_desc": "Commits werden gesammelt, Änderungen klassifiziert und Release-Notes erstellt\u2026",
     "ui.wizard.preview_export_btn": "Vorschau & Export",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Version",
     "ui.wizard.meta_total_commits": "Commits gesamt",
     "ui.wizard.meta_last_activity": "Letzte Aktivität",
@@ -315,7 +315,7 @@ CATALOG_DE: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Standard-Branch",
     "ui.wizard.inspect_branches": "Branches",
     "ui.wizard.inspect_tags": "Tags",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Validieren Sie Ihren Zugriffstoken, bevor Sie fortfahren.",
     "ui.wizard.err_gitlab_url_required": "GitLab-URL ist erforderlich.",
     "ui.wizard.err_gitlab_url_missing": "Geben Sie Ihre GitLab-Instanz-URL ein.",

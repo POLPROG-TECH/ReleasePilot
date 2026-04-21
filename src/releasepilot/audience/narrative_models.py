@@ -79,9 +79,9 @@ class NarrativeBrief:
         rr = self.release_range
         label = "Product Update" if self.mode == "customer-narrative" else "Release Summary"
         if rr.version:
-            return f"{label} — v{rr.version}"
+            return f"{label} - v{rr.version}"
         if rr.title:
-            return f"{label} — {rr.title}"
+            return f"{label} - {rr.title}"
         return label
 
     def localized_title(self, lang: str = "en") -> str:
@@ -94,9 +94,9 @@ class NarrativeBrief:
             label = get_label("narrative_title", lang)
         rr = self.release_range
         if rr.version:
-            return f"{label} — v{rr.version}"
+            return f"{label} - v{rr.version}"
         if rr.title:
-            return f"{label} — {rr.title}"
+            return f"{label} - {rr.title}"
         return label
 
     @property

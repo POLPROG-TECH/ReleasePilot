@@ -119,7 +119,7 @@ CATALOG_CS: dict[str, str] = {
     "ui.wizard.regen_hint": "Tento panel byl vygenerován s výše uvedenou konfigurací. Pro změnu rozsahu dat, větve nebo repozitáře přegenerujte pomocí releasepilot dashboard nebo releasepilot guide.",
     "ui.wizard.recommended": "(doporučeno)",
     "ui.wizard.binary_note": "(vygenerováno přes CLI)",
-    "ui.wizard.binary_preview_note": "— Náhled markdown (binární formát vygenerován přes CLI)",
+    "ui.wizard.binary_preview_note": "- Náhled markdown (binární formát vygenerován přes CLI)",
     "ui.wizard.binary_export_note": "Binární formát (PDF/DOCX) je generován přes CLI. Obsah markdown zobrazen níže.",
     "ui.wizard.formats_available": "formátů dostupných pro toto publikum",
     # Export modal
@@ -225,17 +225,17 @@ CATALOG_CS: dict[str, str] = {
     "ui.plural.breaking_one": "{count} breaking change detected in this release.",
     "ui.plural.breaking_few": "{count} breaking changes detected in this release.",
     "ui.plural.breaking_other": "{count} breaking changes detected in this release.",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Repozitáře",
     "ui.wizard.scope_step": "Rozsah",
     "ui.wizard.review_step": "Kontrola",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Zvolte, kde se nachází váš zdrojový kód. To určuje, jak se ReleasePilot připojí k vašim repozitářům.",
     "ui.wizard.local_repo_label": "Lokální repozitář",
     "ui.wizard.local_repo_desc": "Použijte git repozitář na tomto počítači. Nejlepší pro lokální vývojové workflow.",
     "ui.wizard.remote_repo_label": "Vzdálený repozitář",
     "ui.wizard.remote_repo_desc": "Připojte se k repozitářům GitHub nebo GitLab přes URL. Ideální pro CI/CD a týmovou spolupráci.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Vybrat repozitáře",
     "ui.wizard.select_repos_desc": "Zvolte repozitáře, které chcete zahrnout do tohoto vydání.",
     "ui.wizard.repo_mode_title": "Režim repozitáře",
@@ -259,7 +259,7 @@ CATALOG_CS: dict[str, str] = {
     "ui.wizard.inspect_btn": "Zkontrolovat repozitář",
     "ui.wizard.inspect_token_hint": "Ověřte svůj token pro aktivaci kontroly.",
     "ui.wizard.add_repo_label": "Přidat URL repozitáře",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Autentizace",
     "ui.wizard.gitlab_url_label": "URL GitLab",
     "ui.wizard.gitlab_url_hint": "Základní URL vaší instance GitLab (např. https://gitlab.company.com)",
@@ -277,7 +277,7 @@ CATALOG_CS: dict[str, str] = {
     "ui.wizard.validating": "Ověřování\u2026",
     "ui.wizard.inspecting": "Kontrola\u2026",
     "ui.wizard.ssl_disabled": "Ověřování SSL vypnuto",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Rozsah vydání",
     "ui.wizard.scope_desc": "Definujte časový rozsah nebo rozsah verzí pro toto vydání. Tento rozsah se vztahuje na všechny vybrané repozitáře.",
     "ui.wizard.scope_banner_multi": "Sdílený rozsah \u2014 commity budou shromážděny z <strong>{count}</strong> repozitářů s použitím rozsahu níže.",
@@ -288,7 +288,7 @@ CATALOG_CS: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "Koncová reference. Výchozí je HEAD (nejnovější commit).",
     "ui.wizard.scanning_dir": "Prohledávání adresáře\u2026",
     "ui.wizard.scan_found": "Nalezeno <strong>{count}</strong> git repozitářů",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Kontrola a generování",
     "ui.wizard.review_desc": "Zkontrolujte konfiguraci před generováním poznámek k vydání.",
     "ui.wizard.review_source": "Zdroj",
@@ -303,11 +303,11 @@ CATALOG_CS: dict[str, str] = {
     "ui.wizard.review_on_branch": "na větvi",
     "ui.wizard.review_not_set": "(nenastaveno)",
     "ui.wizard.generate_btn": "Generovat poznámky k vydání",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Zpracovávací pipeline",
     "ui.wizard.pipeline_desc": "Shromažďování commitů, klasifikace změn a sestavování poznámek k vydání\u2026",
     "ui.wizard.preview_export_btn": "Náhled a export",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Verze",
     "ui.wizard.meta_total_commits": "Celkem commitů",
     "ui.wizard.meta_last_activity": "Poslední aktivita",
@@ -317,7 +317,7 @@ CATALOG_CS: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Výchozí větev",
     "ui.wizard.inspect_branches": "Větve",
     "ui.wizard.inspect_tags": "Tagy",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Před pokračováním ověřte svůj přístupový token.",
     "ui.wizard.err_gitlab_url_required": "URL GitLab je vyžadována.",
     "ui.wizard.err_gitlab_url_missing": "Zadejte URL vaší instance GitLab.",

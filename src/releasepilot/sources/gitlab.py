@@ -13,7 +13,7 @@ Key design decisions:
   compatibility (Zscaler, custom CA bundles, macOS keychain)
 - Transient server errors (502/503/504) and rate-limits are retried with
   exponential back-off
-- Authentication is header-based (``PRIVATE-TOKEN``), not embedded in URLs —
+- Authentication is header-based (``PRIVATE-TOKEN``), not embedded in URLs -
   Python 3.13+ rejects credentials in URLs as invalid
 """
 
@@ -333,7 +333,7 @@ class GitLabClient:
             except urllib.error.URLError as exc:
                 reason = str(exc.reason) if exc.reason else str(exc)
 
-                # SSL errors and network errors are not transient — fail immediately
+                # SSL errors and network errors are not transient - fail immediately
                 import ssl as _ssl
 
                 if isinstance(exc.reason, _ssl.SSLError):

@@ -45,22 +45,22 @@ CLI (dashboard command)
 
 `DashboardData` is a frozen dataclass containing:
 
-- **Source info** — repo path, branch, from/to refs, version, app name
-- **Pipeline results** — total changes, change entries, pipeline stage stats, category distribution
-- **Highlights & breaking** — extracted high-importance and breaking changes
-- **Groups** — changes grouped by category
-- **Artifacts** — rendered release notes previews (Markdown, JSON)
-- **Metadata** — generation timestamp, language, audience, format
-- **Diagnostics** — messages for the empty/first-run state
+- **Source info** - repo path, branch, from/to refs, version, app name
+- **Pipeline results** - total changes, change entries, pipeline stage stats, category distribution
+- **Highlights & breaking** - extracted high-importance and breaking changes
+- **Groups** - changes grouped by category
+- **Artifacts** - rendered release notes previews (Markdown, JSON)
+- **Metadata** - generation timestamp, language, audience, format
+- **Diagnostics** - messages for the empty/first-run state
 
 ### Computed properties
 
-- `is_empty` — true when no changes collected
-- `total_breaking` — count of breaking changes
-- `total_highlights` — count of highlighted changes
-- `categories_used` — number of distinct categories
-- `total_authors` — number of unique contributors
-- `scopes_used` — sorted tuple of component scopes
+- `is_empty` - true when no changes collected
+- `total_breaking` - count of breaking changes
+- `total_highlights` - count of highlighted changes
+- `categories_used` - number of distinct categories
+- `total_authors` - number of unique contributors
+- `scopes_used` - sorted tuple of component scopes
 
 ## Tabs
 
@@ -96,9 +96,9 @@ Accessible via the ⚙ Settings button in the header. Persisted in `localStorage
 
 Three built-in themes using CSS custom properties on `[data-theme]`:
 
-- **Light** — white surfaces, warm orange header
-- **Dark** — dark grey surfaces, muted orange header
-- **Midnight** — near-black surfaces, deep orange header
+- **Light** - white surfaces, warm orange header
+- **Dark** - dark grey surfaces, muted orange header
+- **Midnight** - near-black surfaces, deep orange header
 
 Custom accent colours override `--custom-primary`, `--custom-secondary`, `--custom-tertiary`.
 

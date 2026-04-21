@@ -46,7 +46,7 @@ def _render_header(brief: NarrativeBrief) -> str:
     title = brief.report_title
     rr = brief.release_range
     if rr.app_name:
-        title = f"{rr.app_name} — {title}"
+        title = f"{rr.app_name} - {title}"
     sep = "=" * len(title)
     lines = [title, sep]
 

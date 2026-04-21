@@ -76,8 +76,10 @@ class TestDedupTimestampFallback:
     """_pick_best_item uses datetime.min fallback for None timestamps to ensure
     max() comparison works without TypeError."""
 
+    """GIVEN items where all timestamps are None (PR merge scenario)"""
+
     def test_pick_best_with_none_timestamps(self):
-        """GIVEN items where all timestamps are None (PR merge scenario)."""
+        """WHEN the test exercises pick best with none timestamps"""
         from releasepilot.processing.dedup import deduplicate
 
         items = [
@@ -100,11 +102,14 @@ class TestDedupTimestampFallback:
 
         # Should not raise TypeError on None comparison.
         result = deduplicate(items)
+        """THEN the expected behavior for pick best with none timestamps is observed"""
         assert len(result) == 1
         assert result[0].description == "Detailed description of the change"
 
+    """GIVEN items where some have timestamps and some don't"""
+
     def test_pick_best_mixed_timestamps(self):
-        """GIVEN items where some have timestamps and some don't."""
+        """WHEN the test exercises pick best mixed timestamps"""
         from releasepilot.processing.dedup import deduplicate
 
         ts = datetime(2025, 6, 1, tzinfo=UTC)
@@ -126,6 +131,7 @@ class TestDedupTimestampFallback:
         ]
 
         result = deduplicate(items)
+        """THEN the expected behavior for pick best mixed timestamps is observed"""
         assert len(result) == 1
         # The item with a real timestamp should be preferred.
         assert result[0].timestamp == ts
@@ -138,8 +144,10 @@ class TestSummaryViewPolishedItems:
     """_summary_view slices items from the polished group so titles are
     capitalized in summary output."""
 
+    """GIVEN a group with lowercase-starting titles"""
+
     def test_summary_items_are_polished(self):
-        """GIVEN a group with lowercase-starting titles."""
+        """WHEN the test exercises summary items are polished"""
         from releasepilot.audience.views import apply_audience
 
         items = [
@@ -165,8 +173,10 @@ class TestCustomerViewSinglePolish:
     """_customer_view polishes each group exactly once, producing consistent
     capitalized titles and respecting the max-items-per-group limit."""
 
+    """GIVEN items with lowercase titles in customer-visible categories"""
+
     def test_customer_items_are_polished(self):
-        """GIVEN items with lowercase titles in customer-visible categories."""
+        """WHEN the test exercises customer items are polished"""
         from releasepilot.audience.views import apply_audience
 
         items = [
@@ -194,8 +204,10 @@ class TestCustomerViewSinglePolish:
                         f"Customer view item title not polished: '{item.title}'"
                     )
 
+    """GIVEN a group with many items"""
+
     def test_customer_max_items_per_group(self):
-        """GIVEN a group with many items."""
+        """WHEN the test exercises customer max items per group"""
         from releasepilot.audience.views import apply_audience
 
         items = [
@@ -222,8 +234,9 @@ class TestListTagsLimit:
     """list_tags fetches all sorted tags and slices in Python with
     tags[:limit] to honour the requested limit."""
 
+    """GIVEN a git repo with 5 tags"""
+
     def test_list_tags_with_limit(self, tmp_path):
-        """GIVEN a git repo with 5 tags."""
         import subprocess
 
         repo = tmp_path / "repo"
@@ -253,14 +266,16 @@ class TestListTagsLimit:
 
         collector = GitSourceCollector(str(repo))
 
-        """WHEN requesting 3 tags."""
+        """WHEN requesting 3 tags"""
         tags = collector.list_tags(limit=3)
 
-        """THEN exactly 3 are returned."""
+        """THEN exactly 3 are returned"""
         assert len(tags) == 3
 
+    """GIVEN a git repo with tags,"""
+
     def test_list_tags_no_limit(self, tmp_path):
-        """GIVEN a git repo with tags, WHEN limit=0, THEN all are returned."""
+        """WHEN limit=0,"""
         import subprocess
 
         repo = tmp_path / "repo"
@@ -291,6 +306,7 @@ class TestListTagsLimit:
         collector = GitSourceCollector(str(repo))
         tags = collector.list_tags(limit=0)
 
+        """THEN all are returned"""
         assert len(tags) == 7
 
 
@@ -301,20 +317,28 @@ class TestCustomerAudienceAvailability:
     """_ALL_AUDIENCES and _VALID_AUDIENCES both list every Audience enum value
     including 'customer', so all views are reachable from CLI and config."""
 
+    """GIVEN the CLI audience list"""
+
     def test_customer_in_all_audiences(self):
-        """GIVEN the CLI audience list."""
+        """WHEN the test exercises customer in all audiences"""
         from releasepilot.cli.app import _ALL_AUDIENCES
 
+        """THEN the expected behavior for customer in all audiences is observed"""
         assert "customer" in _ALL_AUDIENCES
 
+    """GIVEN the config validation audience set"""
+
     def test_customer_in_config_valid_audiences(self):
-        """GIVEN the config validation audience set."""
+        """WHEN the test exercises customer in config valid audiences"""
         from releasepilot.config.file_config import _VALID_AUDIENCES
 
+        """THEN the expected behavior for customer in config valid audiences is observed"""
         assert "customer" in _VALID_AUDIENCES
 
+    """GIVEN every Audience enum member,"""
+
     def test_audience_enum_matches_all_audiences(self):
-        """GIVEN every Audience enum member, WHEN checked, THEN it appears in _ALL_AUDIENCES."""
+        """WHEN checked,"""
         from releasepilot.cli.app import _ALL_AUDIENCES
         from releasepilot.domain.enums import Audience
 
@@ -331,38 +355,53 @@ class TestIsEmptyReleaseI18n:
     """_is_empty_release checks all supported language variants of the
     'no_notable_changes' i18n label to detect empty releases."""
 
+    """GIVEN empty-release English output"""
+
     def test_detects_empty_english(self):
-        """GIVEN empty-release English output."""
+        """WHEN the test exercises detects empty english"""
         from releasepilot.cli.app import _is_empty_release
 
         output = "# Release 1.0.0\n\nNo notable changes in this release.\n"
+        """THEN the expected behavior for detects empty english is observed"""
         assert _is_empty_release(output) is True
 
+    """GIVEN empty-release Polish output"""
+
     def test_detects_empty_polish(self):
-        """GIVEN empty-release Polish output."""
+        """WHEN the test exercises detects empty polish"""
         from releasepilot.cli.app import _is_empty_release
 
         output = "# Release 1.0.0\n\nBrak istotnych zmian w tym wydaniu.\n"
+        """THEN the expected behavior for detects empty polish is observed"""
         assert _is_empty_release(output) is True
 
+    """GIVEN empty-release German output"""
+
     def test_detects_empty_german(self):
-        """GIVEN empty-release German output."""
+        """WHEN the test exercises detects empty german"""
         from releasepilot.cli.app import _is_empty_release
 
         output = "# Release 1.0.0\n\nKeine nennenswerten Änderungen in dieser Version.\n"
+        """THEN the expected behavior for detects empty german is observed"""
         assert _is_empty_release(output) is True
 
+    """GIVEN normal release output with content"""
+
     def test_non_empty_release(self):
-        """GIVEN normal release output with content."""
+        """WHEN the test exercises non empty release"""
         from releasepilot.cli.app import _is_empty_release
 
         output = "# Release 1.0.0\n\n## Features\n- Added dark mode\n"
+        """THEN the expected behavior for non empty release is observed"""
         assert _is_empty_release(output) is False
 
+    """GIVEN blank output"""
+
     def test_blank_output_is_empty(self):
-        """GIVEN blank output."""
+        """WHEN the test exercises blank output is empty"""
         from releasepilot.cli.app import _is_empty_release
 
+        """THEN the expected behavior for blank output is empty is observed"""
         assert _is_empty_release("") is True
         assert _is_empty_release("   \n  ") is True
 
@@ -375,8 +414,10 @@ class TestBuildSettingsNoneSentinel:
     only apply when the user did not pass a CLI flag; an explicit CLI value
     always wins over the config file."""
 
+    """GIVEN audience=None (user didn't pass --audience)"""
+
     def test_none_audience_uses_config_value(self):
-        """GIVEN audience=None (user didn't pass --audience)."""
+        """WHEN the test exercises none audience uses config value"""
         from unittest.mock import patch
 
         from releasepilot.cli.app import _build_settings
@@ -394,10 +435,13 @@ class TestBuildSettingsNoneSentinel:
                 title="",
                 audience=None,
             )
+        """THEN the expected behavior for none audience uses config value is observed"""
         assert settings.audience == Audience.USER
 
+    """GIVEN audience='changelog' explicitly passed by user"""
+
     def test_explicit_audience_overrides_config(self):
-        """GIVEN audience='changelog' explicitly passed by user."""
+        """WHEN the test exercises explicit audience overrides config"""
         from unittest.mock import patch
 
         from releasepilot.cli.app import _build_settings
@@ -415,10 +459,13 @@ class TestBuildSettingsNoneSentinel:
                 title="",
                 audience="changelog",
             )
+        """THEN the expected behavior for explicit audience overrides config is observed"""
         assert settings.audience == Audience.CHANGELOG
 
+    """GIVEN lang=None (user didn't pass --language)"""
+
     def test_none_language_uses_config_value(self):
-        """GIVEN lang=None (user didn't pass --language)."""
+        """WHEN the test exercises none language uses config value"""
         from unittest.mock import patch
 
         from releasepilot.cli.app import _build_settings
@@ -436,10 +483,13 @@ class TestBuildSettingsNoneSentinel:
                 title="",
                 lang=None,
             )
+        """THEN the expected behavior for none language uses config value is observed"""
         assert settings.language == "pl"
 
+    """GIVEN lang='en' explicitly passed by user"""
+
     def test_explicit_language_overrides_config(self):
-        """GIVEN lang='en' explicitly passed by user."""
+        """WHEN the test exercises explicit language overrides config"""
         from unittest.mock import patch
 
         from releasepilot.cli.app import _build_settings
@@ -457,10 +507,13 @@ class TestBuildSettingsNoneSentinel:
                 title="",
                 lang="en",
             )
+        """THEN the expected behavior for explicit language overrides config is observed"""
         assert settings.language == "en"
 
+    """GIVEN output_format=None (user didn't pass --format)"""
+
     def test_none_format_uses_config_value(self):
-        """GIVEN output_format=None (user didn't pass --format)."""
+        """WHEN the test exercises none format uses config value"""
         from unittest.mock import patch
 
         from releasepilot.cli.app import _build_settings
@@ -480,6 +533,7 @@ class TestBuildSettingsNoneSentinel:
             )
         from releasepilot.domain.enums import OutputFormat
 
+        """THEN the expected behavior for none format uses config value is observed"""
         assert settings.output_format == OutputFormat.PLAINTEXT
 
 
@@ -490,26 +544,32 @@ class TestGuidePreferenceIndexZero:
     """Guide preference lookup uses `is not None` instead of truthiness so
     index 0 (first choice) is not mistaken for 'no preference'."""
 
+    """GIVEN a preference function returning 0 (first item in list)"""
+
     def test_preference_index_zero_not_overridden(self):
-        """GIVEN a preference function returning 0 (first item in list)."""
         # Verify the pattern used in the fix
+        """WHEN the test exercises preference index zero not overridden"""
         pref_idx = 0
         default = 5
 
         # Old pattern (buggy): result = pref_idx or default → 5
         old_result = pref_idx or default
+        """THEN the expected behavior for preference index zero not overridden is observed"""
         assert old_result == 5  # This was the bug
 
         # New pattern (fixed): result = pref_idx if pref_idx is not None else default → 0
         new_result = pref_idx if pref_idx is not None else default
         assert new_result == 0  # This is correct
 
+    """GIVEN a preference function returning None (no preference saved)"""
+
     def test_preference_none_uses_default(self):
-        """GIVEN a preference function returning None (no preference saved)."""
+        """WHEN the test exercises preference none uses default"""
         pref_idx = None
         default = 5
 
         result = pref_idx if pref_idx is not None else default
+        """THEN the expected behavior for preference none uses default is observed"""
         assert result == 5
 
 
@@ -519,47 +579,62 @@ class TestGuidePreferenceIndexZero:
 class TestDedupEmptyInput:
     """Edge case: deduplicate should handle empty input gracefully."""
 
+    """GIVEN an empty item list,"""
+
     def test_empty_list(self):
-        """GIVEN an empty item list, WHEN deduplicated, THEN result is empty."""
+        """WHEN deduplicated,"""
         from releasepilot.processing.dedup import deduplicate
 
+        """THEN result is empty"""
         assert deduplicate([]) == []
 
+    """GIVEN a single item,"""
+
     def test_single_item(self):
-        """GIVEN a single item, WHEN deduplicated, THEN it is returned unchanged."""
+        """WHEN deduplicated,"""
         from releasepilot.processing.dedup import deduplicate
 
         item = _make_item()
         result = deduplicate([item])
+        """THEN it is returned unchanged"""
         assert len(result) == 1
 
 
 class TestAudienceViewsEmptyNotes:
     """Edge case: audience views should handle notes with no groups."""
 
+    """GIVEN notes with no groups,"""
+
     def test_summary_empty_groups(self):
-        """GIVEN notes with no groups, WHEN summary view applied, THEN result has 0 groups."""
+        """WHEN summary view applied,"""
         from releasepilot.audience.views import apply_audience
 
         notes = _make_notes(items=[], groups=())
         result = apply_audience(notes, Audience.SUMMARY)
+        """THEN result has 0 groups"""
         assert len(result.groups) == 0
         assert result.total_changes == 0
 
+    """GIVEN notes with no groups,"""
+
     def test_customer_empty_groups(self):
-        """GIVEN notes with no groups, WHEN customer view applied, THEN result has 0 groups."""
+        """WHEN customer view applied,"""
         from releasepilot.audience.views import apply_audience
 
         notes = _make_notes(items=[], groups=())
         result = apply_audience(notes, Audience.CUSTOMER)
+        """THEN result has 0 groups"""
         assert len(result.groups) == 0
         assert result.total_changes == 0
 
+    """GIVEN notes with no groups,"""
+
     def test_user_empty_groups(self):
-        """GIVEN notes with no groups, WHEN user view applied, THEN result has 0 groups."""
+        """WHEN user view applied,"""
         from releasepilot.audience.views import apply_audience
 
         notes = _make_notes(items=[], groups=())
         result = apply_audience(notes, Audience.USER)
+        """THEN result has 0 groups"""
         assert len(result.groups) == 0
         assert result.total_changes == 0

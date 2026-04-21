@@ -91,7 +91,7 @@ class ConfigWarning:
     message: str
 
     def __str__(self) -> str:
-        return f"Config: '{self.field}' — {self.message}"
+        return f"Config: '{self.field}' - {self.message}"
 
 
 @dataclass
@@ -151,14 +151,14 @@ class FileConfig:
 def validate_config(data: dict) -> list[ConfigWarning]:
     """Validate a raw config dict and return warnings for any issues.
 
-    Does NOT raise — collects all problems as ConfigWarning objects.
+    Does NOT raise - collects all problems as ConfigWarning objects.
     """
     warnings: list[ConfigWarning] = []
 
     # Check for unknown keys
     for key in data:
         if key == "$schema":
-            continue  # JSON Schema reference — always allowed
+            continue  # JSON Schema reference - always allowed
         if key not in _KNOWN_KEYS:
             warnings.append(
                 ConfigWarning(
@@ -383,7 +383,7 @@ def _read_toml(path: Path) -> dict | None:
     """
     try:
         import tomllib
-    except ModuleNotFoundError:  # pragma: no cover — Python < 3.11
+    except ModuleNotFoundError:  # pragma: no cover - Python < 3.11
         try:
             import tomli as tomllib  # type: ignore[no-redef]
         except ModuleNotFoundError:
@@ -428,7 +428,7 @@ def _dict_to_config(data: dict, *, source: str = "") -> FileConfig:
             ),
         )
 
-    # Sanitise enum fields — use value only if valid, else empty string
+    # Sanitise enum fields - use value only if valid, else empty string
     audience = str(data.get("audience", ""))
     if audience and audience not in _VALID_AUDIENCES:
         audience = ""

@@ -1,4 +1,4 @@
-"""View-model builder — converts ``DashboardData`` into a plain dict for Jinja2 templates.
+"""View-model builder - converts ``DashboardData`` into a plain dict for Jinja2 templates.
 
 The single entry point is :func:`build_dashboard_vm`.
 """

@@ -1,46 +1,50 @@
 # Contributing to ReleasePilot
 
-Thank you for your interest in contributing to ReleasePilot! This guide will help you get started.
+Thank you for your interest in contributing to ReleasePilot! This guide covers everything you need to get started.
 
 ## Development Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/polprog-tech/ReleasePilot.git
 cd ReleasePilot
 
-# Create a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate  # macOS/Linux
 # .venv\Scripts\activate   # Windows
 
-# Install in development mode with dev dependencies
-pip install -e ".[dev]"
+pip3 install -e ".[all]"
 ```
+
+Verify the installation:
+
+```bash
+releasepilot --version
+```
+
+### Pre-commit hook
+
+```bash
+cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+The hook runs ruff lint (with auto-fix), ruff format check, and the full test suite before each commit.
 
 ## Running Tests
 
 ```bash
-# Run the full test suite
-python3 -m pytest tests/ -q
-
-# Run with verbose output
-python3 -m pytest tests/ -v
-
-# Run a specific test file
-python3 -m pytest tests/test_rendering.py -v
+pytest                                    # all tests
+pytest -v                                 # verbose
+pytest tests/test_dedup.py                # specific file
+pytest tests/test_dedup.py::TestExactDedup # specific class
 ```
+
+Tests follow the **GIVEN/WHEN/THEN** docstring pattern (see existing tests for examples).
 
 ## Code Quality
 
-We use [Ruff](https://docs.astral.sh/ruff/) for linting and formatting:
-
 ```bash
-# Lint
-python3 -m ruff check src/ tests/
-
-# Auto-fix lint issues
-python3 -m ruff check --fix src/ tests/
+ruff check src/ tests/
+ruff format --check src/ tests/
 ```
 
 ## Playground / Demo Environment
@@ -48,7 +52,6 @@ python3 -m ruff check --fix src/ tests/
 The `playground/` directory provides a full demo environment:
 
 ```bash
-# Bootstrap sample repos and run all 29 demo workflows
 python3 playground/scripts/run_demo.py --setup
 ```
 
@@ -58,58 +61,19 @@ See [`playground/README.md`](playground/README.md) for details.
 
 ### Reporting Bugs
 
-- Use the [Bug Report](https://github.com/polprog-tech/ReleasePilot/issues/new?template=bug_report.md) issue template
-- Include steps to reproduce, expected behavior, and actual behavior
-- Include your Python version and OS
-
-### Suggesting Features
-
-- Use the [Feature Request](https://github.com/polprog-tech/ReleasePilot/issues/new?template=feature_request.md) issue template
-- Describe the use case and expected behavior
+Include: expected vs actual behavior, `.releasepilot.json` (redacted), Python/OS version, steps to reproduce.
 
 ### Pull Requests
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feat/my-feature`)
-3. Make your changes
-4. Ensure tests pass (`python3 -m pytest tests/ -q`)
-5. Ensure lint is clean (`python3 -m ruff check src/ tests/`)
-6. Commit with a descriptive message using [Conventional Commits](https://www.conventionalcommits.org/)
-7. Push and open a Pull Request
+1. Branch from `main`
+2. Make changes + add tests
+3. Run `pytest` and `ruff check src/ tests/`
+4. Open PR with clear description
 
-### Commit Message Convention
+## Commit Convention
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat: add PDF export for executive briefs
-fix: correct Polish date formatting
-docs: update playground instructions
-perf: optimize commit grouping algorithm
-refactor: simplify rendering pipeline
-test: add translation coverage tests
-chore: upgrade reportlab dependency
-```
-
-## Project Structure
-
-```
-src/releasepilot/
-├── cli/           CLI commands (Click-based)
-├── core/          Pipeline: collect → classify → group → compose
-├── rendering/     Output renderers (Markdown, PDF, DOCX, JSON, plaintext)
-├── i18n/          Internationalization labels (10 languages)
-└── schema/        JSON schema for config/input validation
-```
-
-## Code Style
-
-- Python 3.12+
-- Type hints on all public functions
-- Docstrings for modules and public classes/functions
-- No commented-out code in commits
-- Ruff-clean before merging
+[Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
+See [LICENSE](LICENSE).

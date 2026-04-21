@@ -288,17 +288,17 @@ CATALOG_PL: dict[str, str] = {
     "ui.guide.cli_open": "Generuj i otwórz",
     "ui.guide.cli_wizard": "Interaktywny kreator CLI",
     "ui.guide.cli_help": "Wszystkie opcje",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Repozytoria",
     "ui.wizard.scope_step": "Zakres",
     "ui.wizard.review_step": "Przegląd",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Wybierz, gdzie znajduje się Twój kod źródłowy. To określa, jak ReleasePilot łączy się z repozytoriami.",
     "ui.wizard.local_repo_label": "Lokalne repozytorium",
     "ui.wizard.local_repo_desc": "Użyj repozytorium git na tym komputerze. Najlepsze dla lokalnych przepływów pracy.",
     "ui.wizard.remote_repo_label": "Zdalne repozytorium",
     "ui.wizard.remote_repo_desc": "Połącz się z repozytoriami GitHub lub GitLab przez URL. Idealne dla CI/CD i pracy zespołowej.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Wybierz repozytoria",
     "ui.wizard.select_repos_desc": "Wybierz repozytoria do uwzględnienia w tym wydaniu.",
     "ui.wizard.repo_mode_title": "Tryb repozytorium",
@@ -322,7 +322,7 @@ CATALOG_PL: dict[str, str] = {
     "ui.wizard.inspect_btn": "Sprawdź repozytorium",
     "ui.wizard.inspect_token_hint": "Zweryfikuj token, aby włączyć inspekcję.",
     "ui.wizard.add_repo_label": "Dodaj URL repozytorium",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Uwierzytelnianie",
     "ui.wizard.gitlab_url_label": "URL GitLab",
     "ui.wizard.gitlab_url_hint": "Bazowy URL instancji GitLab (np. https://gitlab.company.com)",
@@ -340,7 +340,7 @@ CATALOG_PL: dict[str, str] = {
     "ui.wizard.validating": "Weryfikowanie\u2026",
     "ui.wizard.inspecting": "Inspekcja\u2026",
     "ui.wizard.ssl_disabled": "Weryfikacja SSL wyłączona",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Zakres wydania",
     "ui.wizard.scope_desc": "Określ zakres czasowy lub zakres wersji dla tego wydania. Ten zakres dotyczy wszystkich wybranych repozytoriów.",
     "ui.wizard.scope_banner_multi": "Wspólny zakres \u2014 commity zostaną zebrane z <strong>{count}</strong> repozytoriów przy użyciu poniższego zakresu.",
@@ -351,7 +351,7 @@ CATALOG_PL: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "Końcowa referencja. Domyślnie HEAD (najnowszy commit).",
     "ui.wizard.scanning_dir": "Skanowanie katalogu\u2026",
     "ui.wizard.scan_found": "Znaleziono <strong>{count}</strong> repozytoriów git",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Przegląd i generowanie",
     "ui.wizard.review_desc": "Sprawdź konfigurację przed wygenerowaniem notatek wydania.",
     "ui.wizard.review_source": "Źródło",
@@ -366,11 +366,11 @@ CATALOG_PL: dict[str, str] = {
     "ui.wizard.review_on_branch": "na gałęzi",
     "ui.wizard.review_not_set": "(nie ustawiono)",
     "ui.wizard.generate_btn": "Generuj notatki wydania",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Potok przetwarzania",
     "ui.wizard.pipeline_desc": "Zbieranie commitów, klasyfikacja zmian i tworzenie notatek wydania\u2026",
     "ui.wizard.preview_export_btn": "Podgląd i eksport",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Wersja",
     "ui.wizard.meta_total_commits": "Łączna liczba commitów",
     "ui.wizard.meta_last_activity": "Ostatnia aktywność",
@@ -380,7 +380,7 @@ CATALOG_PL: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Domyślna gałąź",
     "ui.wizard.inspect_branches": "Gałęzie",
     "ui.wizard.inspect_tags": "Tagi",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Zweryfikuj token dostępu przed kontynuowaniem.",
     "ui.wizard.err_gitlab_url_required": "URL GitLab jest wymagany.",
     "ui.wizard.err_gitlab_url_missing": "Podaj URL instancji GitLab.",

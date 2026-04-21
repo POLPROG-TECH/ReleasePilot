@@ -9,8 +9,9 @@ from releasepilot.processing.dedup import deduplicate
 class TestExactDedup:
     """Scenarios for exact deduplication."""
 
+    """GIVEN two items with the same commit hash"""
+
     def test_duplicate_commit_hashes_removed(self):
-        """GIVEN two items with the same commit hash."""
         items = [
             ChangeItem(
                 id="d1",
@@ -26,14 +27,15 @@ class TestExactDedup:
             ),
         ]
 
-        """WHEN deduplicating."""
+        """WHEN deduplicating"""
         result = deduplicate(items)
 
-        """THEN only one remains."""
+        """THEN only one remains"""
         assert len(result) == 1
 
+    """GIVEN two items with different hashes"""
+
     def test_different_hashes_preserved(self):
-        """GIVEN two items with different hashes."""
         items = [
             ChangeItem(
                 id="d3",
@@ -49,18 +51,19 @@ class TestExactDedup:
             ),
         ]
 
-        """WHEN deduplicating."""
+        """WHEN deduplicating"""
         result = deduplicate(items)
 
-        """THEN both are preserved."""
+        """THEN both are preserved"""
         assert len(result) == 2
 
 
 class TestPRGrouping:
     """Scenarios for PR-based grouping."""
 
+    """GIVEN three commits all linked to PR #42"""
+
     def test_multiple_commits_same_pr_merged(self):
-        """GIVEN three commits all linked to PR #42."""
         items = [
             ChangeItem(
                 id="p1",
@@ -83,15 +86,16 @@ class TestPRGrouping:
             ),
         ]
 
-        """WHEN deduplicating."""
+        """WHEN deduplicating"""
         result = deduplicate(items)
 
-        """THEN only one item remains (the most informative)."""
+        """THEN only one item remains (the most informative)"""
         assert len(result) == 1
         assert result[0].description == "Detailed work on the feature"
 
+    """GIVEN commits from different PRs"""
+
     def test_different_prs_preserved(self):
-        """GIVEN commits from different PRs."""
         items = [
             ChangeItem(
                 id="q1",
@@ -107,18 +111,19 @@ class TestPRGrouping:
             ),
         ]
 
-        """WHEN deduplicating."""
+        """WHEN deduplicating"""
         result = deduplicate(items)
 
-        """THEN both are preserved."""
+        """THEN both are preserved"""
         assert len(result) == 2
 
 
 class TestNearDuplicateDetection:
     """Scenarios for near-duplicate detection."""
 
+    """GIVEN two items with nearly identical titles"""
+
     def test_near_duplicate_titles_removed(self):
-        """GIVEN two items with nearly identical titles."""
         items = [
             ChangeItem(
                 id="n1",
@@ -134,14 +139,15 @@ class TestNearDuplicateDetection:
             ),
         ]
 
-        """WHEN deduplicating."""
+        """WHEN deduplicating"""
         result = deduplicate(items)
 
-        """THEN only one remains."""
+        """THEN only one remains"""
         assert len(result) == 1
 
+    """GIVEN two items with completely different titles"""
+
     def test_distinct_titles_preserved(self):
-        """GIVEN two items with completely different titles."""
         items = [
             ChangeItem(
                 id="d1",
@@ -157,8 +163,8 @@ class TestNearDuplicateDetection:
             ),
         ]
 
-        """WHEN deduplicating."""
+        """WHEN deduplicating"""
         result = deduplicate(items)
 
-        """THEN both are preserved."""
+        """THEN both are preserved"""
         assert len(result) == 2

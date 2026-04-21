@@ -10,13 +10,13 @@ from releasepilot.domain.models import ReleaseNotes
 class TestTechnicalView:
     """Scenarios for technical audience view."""
 
-    def test_all_categories_included(self, sample_notes: ReleaseNotes):
-        """GIVEN full release notes."""
+    """GIVEN full release notes"""
 
-        """WHEN applying technical audience."""
+    def test_all_categories_included(self, sample_notes: ReleaseNotes):
+        """WHEN applying technical audience"""
         result = apply_audience(sample_notes, Audience.TECHNICAL)
 
-        """THEN all groups are preserved (including infra and refactor)."""
+        """THEN all groups are preserved (including infra and refactor)"""
         categories = {g.category for g in result.groups}
         assert ChangeCategory.INFRASTRUCTURE in categories
         assert ChangeCategory.REFACTOR in categories
@@ -25,58 +25,58 @@ class TestTechnicalView:
 class TestUserView:
     """Scenarios for user audience view."""
 
-    def test_internal_categories_hidden(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes with infra and refactor groups."""
+    """GIVEN release notes with infra and refactor groups"""
 
-        """WHEN applying user audience."""
+    def test_internal_categories_hidden(self, sample_notes: ReleaseNotes):
+        """WHEN applying user audience"""
         result = apply_audience(sample_notes, Audience.USER)
 
-        """THEN internal categories are hidden."""
+        """THEN internal categories are hidden"""
         categories = {g.category for g in result.groups}
         assert ChangeCategory.REFACTOR not in categories
         assert ChangeCategory.INFRASTRUCTURE not in categories
 
-    def test_user_facing_categories_preserved(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes with feature and bugfix groups."""
+    """GIVEN release notes with feature and bugfix groups"""
 
-        """WHEN applying user audience."""
+    def test_user_facing_categories_preserved(self, sample_notes: ReleaseNotes):
+        """WHEN applying user audience"""
         result = apply_audience(sample_notes, Audience.USER)
 
-        """THEN user-facing categories remain."""
+        """THEN user-facing categories remain"""
         categories = {g.category for g in result.groups}
         assert ChangeCategory.FEATURE in categories
         assert ChangeCategory.BUGFIX in categories
 
-    def test_total_changes_updated(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes with mixed categories."""
+    """GIVEN release notes with mixed categories"""
 
-        """WHEN applying user audience."""
+    def test_total_changes_updated(self, sample_notes: ReleaseNotes):
+        """WHEN applying user audience"""
         result = apply_audience(sample_notes, Audience.USER)
 
-        """THEN total_changes reflects the filtered count."""
+        """THEN total_changes reflects the filtered count"""
         assert result.total_changes < sample_notes.total_changes
 
 
 class TestSummaryView:
     """Scenarios for summary audience view."""
 
-    def test_max_items_per_group(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes."""
+    """GIVEN release notes"""
 
-        """WHEN applying summary audience."""
+    def test_max_items_per_group(self, sample_notes: ReleaseNotes):
+        """WHEN applying summary audience"""
         result = apply_audience(sample_notes, Audience.SUMMARY)
 
-        """THEN each group has at most 3 items."""
+        """THEN each group has at most 3 items"""
         for group in result.groups:
             assert len(group.items) <= 3
 
-    def test_internal_categories_hidden(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes."""
+    """GIVEN release notes"""
 
-        """WHEN applying summary audience."""
+    def test_internal_categories_hidden(self, sample_notes: ReleaseNotes):
+        """WHEN applying summary audience"""
         result = apply_audience(sample_notes, Audience.SUMMARY)
 
-        """THEN internal categories are excluded."""
+        """THEN internal categories are excluded"""
         categories = {g.category for g in result.groups}
         assert ChangeCategory.REFACTOR not in categories
 
@@ -84,22 +84,22 @@ class TestSummaryView:
 class TestChangelogView:
     """Scenarios for changelog audience view."""
 
-    def test_all_categories_included(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes."""
+    """GIVEN release notes"""
 
-        """WHEN applying changelog audience."""
+    def test_all_categories_included(self, sample_notes: ReleaseNotes):
+        """WHEN applying changelog audience"""
         result = apply_audience(sample_notes, Audience.CHANGELOG)
 
-        """THEN all groups are preserved."""
+        """THEN all groups are preserved"""
         assert len(result.groups) == len(sample_notes.groups)
 
-    def test_titles_polished(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes with lowercase-starting titles."""
+    """GIVEN release notes with lowercase-starting titles"""
 
-        """WHEN applying changelog audience."""
+    def test_titles_polished(self, sample_notes: ReleaseNotes):
+        """WHEN applying changelog audience"""
         result = apply_audience(sample_notes, Audience.CHANGELOG)
 
-        """THEN titles are capitalized (polished)."""
+        """THEN titles are capitalized (polished)"""
         for group in result.groups:
             for item in group.items:
                 if item.title:
@@ -109,16 +109,20 @@ class TestChangelogView:
 class TestChangelogVsTechnicalDifference:
     """Scenarios for changelog vs technical view differences."""
 
+    """GIVEN release notes"""
+
     def test_technical_keeps_raw_titles(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes."""
+        """WHEN the test exercises technical keeps raw titles"""
         tech = apply_audience(sample_notes, Audience.TECHNICAL)
 
-        """THEN technical view returns the exact original notes object."""
+        """THEN technical view returns the exact original notes object"""
         assert tech is sample_notes
 
+    """GIVEN release notes"""
+
     def test_changelog_polishes_titles(self, sample_notes: ReleaseNotes):
-        """GIVEN release notes."""
+        """WHEN the test exercises changelog polishes titles"""
         changelog = apply_audience(sample_notes, Audience.CHANGELOG)
 
-        """THEN changelog view returns a NEW object (not identity)."""
+        """THEN changelog view returns a NEW object (not identity)"""
         assert changelog is not sample_notes

@@ -1,4 +1,4 @@
-"""Dashboard use-case — builds DashboardData from the pipeline orchestrator."""
+"""Dashboard use-case - builds DashboardData from the pipeline orchestrator."""
 
 from __future__ import annotations
 

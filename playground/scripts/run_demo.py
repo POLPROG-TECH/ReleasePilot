@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ReleasePilot Playground — Demo Runner.
+"""ReleasePilot Playground - Demo Runner.
 
 Runs all major ReleasePilot workflows against the sample repositories
 and writes outputs to playground/output/.
@@ -55,7 +55,11 @@ class DemoRunner:
         display = f"  {'▸':} {name:50s}"
         try:
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=120, cwd=str(ROOT),
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=120,
+                cwd=str(ROOT),
             )
             if result.returncode == 0:
                 # Save stdout if there's output and an output_file
@@ -89,7 +93,11 @@ class DemoRunner:
         display = f"  {'▸':} {name:50s}"
         try:
             result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=120, cwd=str(ROOT),
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=120,
+                cwd=str(ROOT),
             )
             if result.returncode == 0 and out_path.exists():
                 size = out_path.stat().st_size
@@ -113,8 +121,10 @@ class DemoRunner:
     def summary(self) -> int:
         elapsed = time.monotonic() - self._start
         print(f"\n{'─' * 68}")
-        print(f"  Results: {len(self.passed)} passed, {len(self.failed)} failed, "
-              f"{len(self.skipped)} skipped  ({elapsed:.1f}s)")
+        print(
+            f"  Results: {len(self.passed)} passed, {len(self.failed)} failed, "
+            f"{len(self.skipped)} skipped  ({elapsed:.1f}s)"
+        )
 
         if self.failed:
             print("\n  Failed demos:")
@@ -128,55 +138,140 @@ class DemoRunner:
 
 # ── Demo groups ──────────────────────────────────────────────────────────────
 
+
 def demo_standard(r: DemoRunner) -> None:
-    """Standard changelog generation — all audiences."""
+    """Standard changelog generation - all audiences."""
     print("\n📋 Standard Changelog Generation")
     print("─" * 40)
 
     repo = str(REPOS / "acme-web")
 
     # Standard changelog (default audience)
-    r.run("acme-web: changelog (default)",
-          ["generate", "--repo", repo, "--since", _days_ago(60), "--branch", "main",
-           "--app-name", "Acme Web"],
-          "standard/acme-web-changelog.md")
+    r.run(
+        "acme-web: changelog (default)",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(60),
+            "--branch",
+            "main",
+            "--app-name",
+            "Acme Web",
+        ],
+        "standard/acme-web-changelog.md",
+    )
 
-    # Technical audience — show authors + hashes
-    r.run("pulse-cli: technical notes",
-          ["generate", "--repo", str(REPOS / "pulse-cli"), "--since", _days_ago(45),
-           "--branch", "main", "--audience", "technical",
-           "--app-name", "Pulse CLI", "--show-authors", "--show-hashes"],
-          "standard/pulse-cli-technical.md")
+    # Technical audience - show authors + hashes
+    r.run(
+        "pulse-cli: technical notes",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "pulse-cli"),
+            "--since",
+            _days_ago(45),
+            "--branch",
+            "main",
+            "--audience",
+            "technical",
+            "--app-name",
+            "Pulse CLI",
+            "--show-authors",
+            "--show-hashes",
+        ],
+        "standard/pulse-cli-technical.md",
+    )
 
     # User-facing / What's New
-    r.run("acme-web: user-facing / What's New",
-          ["generate", "--repo", repo, "--since", _days_ago(30), "--branch", "main",
-           "--audience", "user", "--app-name", "Acme Web"],
-          "standard/acme-web-user.md")
+    r.run(
+        "acme-web: user-facing / What's New",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(30),
+            "--branch",
+            "main",
+            "--audience",
+            "user",
+            "--app-name",
+            "Acme Web",
+        ],
+        "standard/acme-web-user.md",
+    )
 
     # Concise summary
-    r.run("nova-api: concise summary",
-          ["generate", "--repo", str(REPOS / "nova-api"), "--since", _days_ago(60),
-           "--branch", "main", "--audience", "summary", "--app-name", "Nova API"],
-          "standard/nova-api-summary.md")
+    r.run(
+        "nova-api: concise summary",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "nova-api"),
+            "--since",
+            _days_ago(60),
+            "--branch",
+            "main",
+            "--audience",
+            "summary",
+            "--app-name",
+            "Nova API",
+        ],
+        "standard/nova-api-summary.md",
+    )
 
-    # Customer-facing (use user audience — customer is guided-flow only)
-    r.run("spark-saas: customer-style (user audience)",
-          ["generate", "--repo", str(REPOS / "spark-saas"), "--since", _days_ago(60),
-           "--branch", "main", "--audience", "user", "--app-name", "Spark SaaS"],
-          "standard/spark-saas-customer.md")
+    # Customer-facing (use user audience - customer is guided-flow only)
+    r.run(
+        "spark-saas: customer-style (user audience)",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "spark-saas"),
+            "--since",
+            _days_ago(60),
+            "--branch",
+            "main",
+            "--audience",
+            "user",
+            "--app-name",
+            "Spark SaaS",
+        ],
+        "standard/spark-saas-customer.md",
+    )
 
-    # Existing changelog repo — commit-based generation
-    r.run("orbit-mobile: commit-based changelog",
-          ["generate", "--repo", str(REPOS / "orbit-mobile"), "--since", _days_ago(45),
-           "--branch", "main", "--app-name", "Orbit Mobile"],
-          "standard/orbit-mobile-changelog.md")
+    # Existing changelog repo - commit-based generation
+    r.run(
+        "orbit-mobile: commit-based changelog",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "orbit-mobile"),
+            "--since",
+            _days_ago(45),
+            "--branch",
+            "main",
+            "--app-name",
+            "Orbit Mobile",
+        ],
+        "standard/orbit-mobile-changelog.md",
+    )
 
     # JSON source file
-    r.run("sample: from JSON source file",
-          ["generate", "--source-file", str(ROOT / "examples" / "sample_changes.json"),
-           "--app-name", "SampleApp", "--version", "2.0.0"],
-          "standard/sample-from-json.md")
+    r.run(
+        "sample: from JSON source file",
+        [
+            "generate",
+            "--source-file",
+            str(ROOT / "examples" / "sample_changes.json"),
+            "--app-name",
+            "SampleApp",
+            "--version",
+            "2.0.0",
+        ],
+        "standard/sample-from-json.md",
+    )
 
 
 def demo_executive(r: DemoRunner) -> None:
@@ -187,32 +282,94 @@ def demo_executive(r: DemoRunner) -> None:
     repo = str(REPOS / "spark-saas")
 
     # Executive markdown
-    r.run("spark-saas: executive brief (markdown)",
-          ["generate", "--repo", repo, "--since", _days_ago(90), "--branch", "main",
-           "--audience", "executive", "--app-name", "Spark SaaS",
-           "--version", "3.0.0"],
-          "executive/spark-saas-brief.md")
+    r.run(
+        "spark-saas: executive brief (markdown)",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--audience",
+            "executive",
+            "--app-name",
+            "Spark SaaS",
+            "--version",
+            "3.0.0",
+        ],
+        "executive/spark-saas-brief.md",
+    )
 
     # Executive PDF
-    r.run_export("spark-saas: executive brief (PDF)",
-                 ["export", "--repo", repo, "--since", _days_ago(90), "--branch", "main",
-                  "--audience", "executive", "--format", "pdf",
-                  "--app-name", "Spark SaaS", "--version", "3.0.0"],
-                 "executive/spark-saas-brief.pdf")
+    r.run_export(
+        "spark-saas: executive brief (PDF)",
+        [
+            "export",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--audience",
+            "executive",
+            "--format",
+            "pdf",
+            "--app-name",
+            "Spark SaaS",
+            "--version",
+            "3.0.0",
+        ],
+        "executive/spark-saas-brief.pdf",
+    )
 
     # Executive DOCX
-    r.run_export("spark-saas: executive brief (DOCX)",
-                 ["export", "--repo", repo, "--since", _days_ago(90), "--branch", "main",
-                  "--audience", "executive", "--format", "docx",
-                  "--app-name", "Spark SaaS", "--version", "3.0.0"],
-                 "executive/spark-saas-brief.docx")
+    r.run_export(
+        "spark-saas: executive brief (DOCX)",
+        [
+            "export",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--audience",
+            "executive",
+            "--format",
+            "docx",
+            "--app-name",
+            "Spark SaaS",
+            "--version",
+            "3.0.0",
+        ],
+        "executive/spark-saas-brief.docx",
+    )
 
     # Executive JSON
-    r.run("spark-saas: executive brief (JSON)",
-          ["generate", "--repo", repo, "--since", _days_ago(90), "--branch", "main",
-           "--audience", "executive", "--format", "json",
-           "--app-name", "Spark SaaS", "--version", "3.0.0"],
-          "executive/spark-saas-brief.json")
+    r.run(
+        "spark-saas: executive brief (JSON)",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--audience",
+            "executive",
+            "--format",
+            "json",
+            "--app-name",
+            "Spark SaaS",
+            "--version",
+            "3.0.0",
+        ],
+        "executive/spark-saas-brief.json",
+    )
 
 
 def demo_translation(r: DemoRunner) -> None:
@@ -223,38 +380,115 @@ def demo_translation(r: DemoRunner) -> None:
     repo = str(REPOS / "spark-saas")
 
     # Polish executive PDF
-    r.run_export("spark-saas: executive PDF (Polish)",
-                 ["export", "--repo", repo, "--since", _days_ago(90), "--branch", "main",
-                  "--audience", "executive", "--format", "pdf", "--language", "pl",
-                  "--app-name", "Spark SaaS", "--version", "3.0.0"],
-                 "translation/spark-saas-brief-pl.pdf")
+    r.run_export(
+        "spark-saas: executive PDF (Polish)",
+        [
+            "export",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--audience",
+            "executive",
+            "--format",
+            "pdf",
+            "--language",
+            "pl",
+            "--app-name",
+            "Spark SaaS",
+            "--version",
+            "3.0.0",
+        ],
+        "translation/spark-saas-brief-pl.pdf",
+    )
 
     # German user-facing markdown
-    r.run("acme-web: user-facing (German)",
-          ["generate", "--repo", str(REPOS / "acme-web"), "--since", _days_ago(30),
-           "--branch", "main", "--audience", "user", "--language", "de",
-           "--app-name", "Acme Web"],
-          "translation/acme-web-user-de.md")
+    r.run(
+        "acme-web: user-facing (German)",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "acme-web"),
+            "--since",
+            _days_ago(30),
+            "--branch",
+            "main",
+            "--audience",
+            "user",
+            "--language",
+            "de",
+            "--app-name",
+            "Acme Web",
+        ],
+        "translation/acme-web-user-de.md",
+    )
 
     # French changelog
-    r.run("nova-api: changelog (French)",
-          ["generate", "--repo", str(REPOS / "nova-api"), "--since", _days_ago(60),
-           "--branch", "main", "--language", "fr", "--app-name", "Nova API"],
-          "translation/nova-api-changelog-fr.md")
+    r.run(
+        "nova-api: changelog (French)",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "nova-api"),
+            "--since",
+            _days_ago(60),
+            "--branch",
+            "main",
+            "--language",
+            "fr",
+            "--app-name",
+            "Nova API",
+        ],
+        "translation/nova-api-changelog-fr.md",
+    )
 
     # Polish DOCX executive
-    r.run_export("spark-saas: executive DOCX (Polish)",
-                 ["export", "--repo", repo, "--since", _days_ago(90), "--branch", "main",
-                  "--audience", "executive", "--format", "docx", "--language", "pl",
-                  "--app-name", "Spark SaaS", "--version", "3.0.0"],
-                 "translation/spark-saas-brief-pl.docx")
+    r.run_export(
+        "spark-saas: executive DOCX (Polish)",
+        [
+            "export",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--audience",
+            "executive",
+            "--format",
+            "docx",
+            "--language",
+            "pl",
+            "--app-name",
+            "Spark SaaS",
+            "--version",
+            "3.0.0",
+        ],
+        "translation/spark-saas-brief-pl.docx",
+    )
 
     # Czech summary
-    r.run("nova-api: summary (Czech)",
-          ["generate", "--repo", str(REPOS / "nova-api"), "--since", _days_ago(60),
-           "--branch", "main", "--audience", "summary", "--language", "cs",
-           "--app-name", "Nova API"],
-          "translation/nova-api-summary-cs.md")
+    r.run(
+        "nova-api: summary (Czech)",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "nova-api"),
+            "--since",
+            _days_ago(60),
+            "--branch",
+            "main",
+            "--audience",
+            "summary",
+            "--language",
+            "cs",
+            "--app-name",
+            "Nova API",
+        ],
+        "translation/nova-api-summary-cs.md",
+    )
 
 
 def demo_formats(r: DemoRunner) -> None:
@@ -263,33 +497,39 @@ def demo_formats(r: DemoRunner) -> None:
     print("─" * 40)
 
     repo = str(REPOS / "acme-web")
-    base = ["--repo", repo, "--since", _days_ago(60), "--branch", "main",
-            "--app-name", "Acme Web", "--version", "3.0.0"]
+    base = [
+        "--repo",
+        repo,
+        "--since",
+        _days_ago(60),
+        "--branch",
+        "main",
+        "--app-name",
+        "Acme Web",
+        "--version",
+        "3.0.0",
+    ]
 
     # Markdown (default)
-    r.run("acme-web: markdown",
-          ["generate"] + base,
-          "formats/acme-web.md")
+    r.run("acme-web: markdown", ["generate"] + base, "formats/acme-web.md")
 
     # Plaintext
-    r.run("acme-web: plaintext",
-          ["generate"] + base + ["--format", "plaintext"],
-          "formats/acme-web.txt")
+    r.run(
+        "acme-web: plaintext",
+        ["generate"] + base + ["--format", "plaintext"],
+        "formats/acme-web.txt",
+    )
 
     # JSON
-    r.run("acme-web: JSON",
-          ["generate"] + base + ["--format", "json"],
-          "formats/acme-web.json")
+    r.run("acme-web: JSON", ["generate"] + base + ["--format", "json"], "formats/acme-web.json")
 
     # PDF
-    r.run_export("acme-web: PDF",
-                 ["export"] + base + ["--format", "pdf"],
-                 "formats/acme-web.pdf")
+    r.run_export("acme-web: PDF", ["export"] + base + ["--format", "pdf"], "formats/acme-web.pdf")
 
     # DOCX
-    r.run_export("acme-web: DOCX",
-                 ["export"] + base + ["--format", "docx"],
-                 "formats/acme-web.docx")
+    r.run_export(
+        "acme-web: DOCX", ["export"] + base + ["--format", "docx"], "formats/acme-web.docx"
+    )
 
 
 def demo_multi(r: DemoRunner) -> None:
@@ -300,10 +540,11 @@ def demo_multi(r: DemoRunner) -> None:
     repo_a = str(REPOS / "atlas-multi-a")
     repo_b = str(REPOS / "atlas-multi-b")
 
-    r.run("atlas: multi-repo combined changelog",
-          ["multi", repo_a, repo_b,
-           "--since", _days_ago(30), "--branch", "main"],
-          "multi/atlas-combined.md")
+    r.run(
+        "atlas: multi-repo combined changelog",
+        ["multi", repo_a, repo_b, "--since", _days_ago(30), "--branch", "main"],
+        "multi/atlas-combined.md",
+    )
 
 
 def demo_daterange(r: DemoRunner) -> None:
@@ -314,28 +555,74 @@ def demo_daterange(r: DemoRunner) -> None:
     repo = str(REPOS / "acme-web")
 
     # Last 7 days
-    r.run("acme-web: last 7 days",
-          ["generate", "--repo", repo, "--since", _days_ago(7),
-           "--branch", "main", "--app-name", "Acme Web"],
-          "daterange/acme-web-7d.md")
+    r.run(
+        "acme-web: last 7 days",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(7),
+            "--branch",
+            "main",
+            "--app-name",
+            "Acme Web",
+        ],
+        "daterange/acme-web-7d.md",
+    )
 
     # Last 30 days
-    r.run("acme-web: last 30 days",
-          ["generate", "--repo", repo, "--since", _days_ago(30),
-           "--branch", "main", "--app-name", "Acme Web"],
-          "daterange/acme-web-30d.md")
+    r.run(
+        "acme-web: last 30 days",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(30),
+            "--branch",
+            "main",
+            "--app-name",
+            "Acme Web",
+        ],
+        "daterange/acme-web-30d.md",
+    )
 
     # Last 90 days (full history)
-    r.run("acme-web: last 90 days",
-          ["generate", "--repo", repo, "--since", _days_ago(90),
-           "--branch", "main", "--app-name", "Acme Web"],
-          "daterange/acme-web-90d.md")
+    r.run(
+        "acme-web: last 90 days",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--app-name",
+            "Acme Web",
+        ],
+        "daterange/acme-web-90d.md",
+    )
 
     # Tag-based range
-    r.run("acme-web: tag range v2.9.0..v2.10.0",
-          ["generate", "--repo", repo, "--from", "v2.9.0", "--to", "v2.10.0",
-           "--app-name", "Acme Web", "--version", "2.10.0"],
-          "daterange/acme-web-tag-range.md")
+    r.run(
+        "acme-web: tag range v2.9.0..v2.10.0",
+        [
+            "generate",
+            "--repo",
+            repo,
+            "--from",
+            "v2.9.0",
+            "--to",
+            "v2.10.0",
+            "--app-name",
+            "Acme Web",
+            "--version",
+            "2.10.0",
+        ],
+        "daterange/acme-web-tag-range.md",
+    )
 
 
 def demo_config(r: DemoRunner) -> None:
@@ -344,33 +631,72 @@ def demo_config(r: DemoRunner) -> None:
     print("─" * 40)
 
     # Executive English (matches executive-english.json settings)
-    r.run("config: executive-english.json",
-          ["generate", "--repo", str(REPOS / "spark-saas"),
-           "--since", _days_ago(90), "--branch", "main",
-           "--audience", "executive", "--app-name", "Spark SaaS"],
-          "config/executive-english.md")
+    r.run(
+        "config: executive-english.json",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "spark-saas"),
+            "--since",
+            _days_ago(90),
+            "--branch",
+            "main",
+            "--audience",
+            "executive",
+            "--app-name",
+            "Spark SaaS",
+        ],
+        "config/executive-english.md",
+    )
 
     # Technical detailed (matches technical-detailed.json settings)
-    r.run("config: technical-detailed.json",
-          ["generate", "--repo", str(REPOS / "pulse-cli"),
-           "--since", _days_ago(45), "--branch", "main",
-           "--audience", "technical", "--app-name", "Pulse CLI",
-           "--show-authors", "--show-hashes"],
-          "config/technical-detailed.md")
+    r.run(
+        "config: technical-detailed.json",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "pulse-cli"),
+            "--since",
+            _days_ago(45),
+            "--branch",
+            "main",
+            "--audience",
+            "technical",
+            "--app-name",
+            "Pulse CLI",
+            "--show-authors",
+            "--show-hashes",
+        ],
+        "config/technical-detailed.md",
+    )
 
-    # Customer-facing (uses user audience — closest match)
-    r.run("config: customer-facing.json",
-          ["generate", "--repo", str(REPOS / "spark-saas"),
-           "--since", _days_ago(60), "--branch", "main",
-           "--audience", "user", "--app-name", "Spark SaaS"],
-          "config/customer-facing.md")
+    # Customer-facing (uses user audience - closest match)
+    r.run(
+        "config: customer-facing.json",
+        [
+            "generate",
+            "--repo",
+            str(REPOS / "spark-saas"),
+            "--since",
+            _days_ago(60),
+            "--branch",
+            "main",
+            "--audience",
+            "user",
+            "--app-name",
+            "Spark SaaS",
+        ],
+        "config/customer-facing.md",
+    )
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+
 def _days_ago(n: int) -> str:
     """Return ISO date for N days ago."""
     from datetime import date, timedelta
+
     return (date.today() - timedelta(days=n)).isoformat()
 
 
@@ -397,17 +723,19 @@ GROUPS = {
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="ReleasePilot Playground Demo Runner")
-    parser.add_argument("--only", choices=list(GROUPS) + ["all"], default="all",
-                        help="Run only a specific demo group")
-    parser.add_argument("--setup", action="store_true",
-                        help="Run repo setup before demos")
+    parser.add_argument(
+        "--only",
+        choices=list(GROUPS) + ["all"],
+        default="all",
+        help="Run only a specific demo group",
+    )
+    parser.add_argument("--setup", action="store_true", help="Run repo setup before demos")
     args = parser.parse_args()
 
     # Check repos exist
     if args.setup or not REPOS.exists() or not list(REPOS.iterdir()):
         print("Setting up sample repositories first...\n")
-        subprocess.run([sys.executable, str(PLAYGROUND / "scripts" / "setup_repos.py")],
-                       check=True)
+        subprocess.run([sys.executable, str(PLAYGROUND / "scripts" / "setup_repos.py")], check=True)
         print()
 
     # Prepare output directory
@@ -415,7 +743,7 @@ def main() -> None:
         shutil.rmtree(OUTPUT)
     OUTPUT.mkdir(parents=True)
 
-    print("🎯 ReleasePilot Playground — Demo Runner")
+    print("🎯 ReleasePilot Playground - Demo Runner")
     print("=" * 68)
 
     runner = DemoRunner()

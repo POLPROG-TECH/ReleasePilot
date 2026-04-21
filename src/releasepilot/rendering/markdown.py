@@ -37,7 +37,7 @@ class MarkdownRenderer:
         parts: list[str] = []
         parts.append(_render_header(notes, lang))
 
-        # Stats block — provides transparency about the analysis
+        # Stats block - provides transparency about the analysis
         stats_block = _render_stats_block(notes, lang)
         if stats_block:
             parts.append(stats_block)
@@ -210,4 +210,4 @@ def _item_suffix(item: ChangeItem, config: RenderConfig) -> str:
 
     if not parts:
         return ""
-    return " — " + " ".join(parts)
+    return " - " + " ".join(parts)

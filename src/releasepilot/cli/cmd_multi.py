@@ -1,4 +1,4 @@
-"""CLI ``multi`` command — generate release notes from multiple repositories."""
+"""CLI ``multi`` command - generate release notes from multiple repositories."""
 
 from __future__ import annotations
 
@@ -159,7 +159,7 @@ def multi(
             console.print(f"  [red]Failed ({len(failed_repos)}):[/red] {', '.join(failed_repos)}")
         if skipped_repos:
             console.print(
-                f"  [yellow]Skipped — no changes ({len(skipped_repos)}):[/yellow] {', '.join(skipped_repos)}"
+                f"  [yellow]Skipped - no changes ({len(skipped_repos)}):[/yellow] {', '.join(skipped_repos)}"
             )
     if failed_repos:
         raise SystemExit(1)

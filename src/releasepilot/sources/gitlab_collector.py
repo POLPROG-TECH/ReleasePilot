@@ -1,4 +1,4 @@
-"""GitLab source collector — implements SourceCollector protocol.
+"""GitLab source collector - implements SourceCollector protocol.
 
 Collects change items from a remote GitLab repository via the API.
 Bridges the existing ``GitLabClient`` into the pipeline's source abstraction.

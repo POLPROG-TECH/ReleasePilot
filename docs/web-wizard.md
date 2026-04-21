@@ -1,10 +1,10 @@
-# Web Wizard — Release Note Generation
+# Web Wizard - Release Note Generation
 
 The ReleasePilot web wizard provides a guided, multi-step workflow for generating release notes. It supports both local and remote repositories, single and multi-repository modes, and includes built-in validation at every step.
 
 ## Wizard Flow
 
-The wizard uses progressive disclosure — each step asks one focused question:
+The wizard uses progressive disclosure - each step asks one focused question:
 
 | Step | Name | Purpose |
 |------|------|---------|
@@ -25,19 +25,19 @@ Uses the git repository in the current working directory by default. The wizard 
 
 **Repository Mode options (local):**
 
-- **Current Repository** — Use the single repository in the working directory (default)
-- **Scan Directory** — Enter a directory path to discover all git repositories inside it. The wizard scans immediate subdirectories for `.git` folders and lets you select which repositories to include.
+- **Current Repository** - Use the single repository in the working directory (default)
+- **Scan Directory** - Enter a directory path to discover all git repositories inside it. The wizard scans immediate subdirectories for `.git` folders and lets you select which repositories to include.
 
 ### Remote Repository
 
 Connects to GitHub or GitLab repositories via their API. Requires:
 
-- **Provider selection** — GitHub or GitLab
-- **Access token** — context-dependent:
+- **Provider selection** - GitHub or GitLab
+- **Access token** - context-dependent:
   - **GitHub:** Optional for public repositories, required for private repos. The wizard shows "Continue without token" for GitHub.
   - **GitLab:** Always required (personal or project access token with `read_api` scope)
-- **GitLab URL** (GitLab only) — The base URL of your GitLab instance
-- **Repository URL** — Enter the full URL to the repository
+- **GitLab URL** (GitLab only) - The base URL of your GitLab instance
+- **Repository URL** - Enter the full URL to the repository
 
 > **Note:** The repository URL input is always visible regardless of token validation state. You can enter repository URLs at any time. However, the "Inspect Repository" button requires a validated token. For GitHub public repos, you can skip token validation and proceed directly.
 
@@ -47,8 +47,8 @@ Connects to GitHub or GitLab repositories via their API. Requires:
 
 After configuring authentication, you can choose:
 
-- **Single Repository** — Generate release notes from one repository
-- **Multiple Repositories** — Aggregate commits from multiple repositories under a shared scope
+- **Single Repository** - Generate release notes from one repository
+- **Multiple Repositories** - Aggregate commits from multiple repositories under a shared scope
 
 In multi-repository mode:
 - Each repository is validated and added individually
@@ -71,14 +71,14 @@ The wizard enforces validation at every step. The **Next** button is disabled un
 
 ### Step-by-Step Validation Rules
 
-**Step 1 — Source:**
+**Step 1 - Source:**
 - Always valid (one option is always selected)
 
-**Step 2 — Repositories:**
+**Step 2 - Repositories:**
 
 *Remote mode:*
 - GitLab URL is required and must be a valid HTTP(S) URL
-- **GitHub:** Access token is optional for public repositories — the wizard provides a "Continue without token" button. Token is still recommended for higher API rate limits and inspection.
+- **GitHub:** Access token is optional for public repositories - the wizard provides a "Continue without token" button. Token is still recommended for higher API rate limits and inspection.
 - **GitLab:** Access token is always required and must be validated via the API
 - Repository URL must match the expected format:
   - GitHub: `https://github.com/owner/repo`
@@ -86,30 +86,30 @@ The wizard enforces validation at every step. The **Next** button is disabled un
 - Multi-repo mode requires at least one repository to be added
 - Duplicate repository URLs are rejected
 
-*Local mode — Current Repository:*
+*Local mode - Current Repository:*
 - The current directory must be a valid git repository
 
-*Local mode — Scan Directory:*
+*Local mode - Scan Directory:*
 - Directory path is required
 - Directory must be scanned (click "Scan")
 - At least one repository must be selected from the scan results
 
-**Step 3 — Scope:**
+**Step 3 - Scope:**
 - Date mode: a date must be selected and cannot be in the future
 - Ref mode: a starting reference (tag/branch/SHA) is required
 - A live preview shows commit count, date span, and breaking changes as you configure the scope
 - Changing the date, branch, or refs automatically refreshes the preview
 
-**Steps 4–5 — Audience & Format:**
+**Steps 4–5 - Audience & Format:**
 - Always valid (a default selection is always present)
 - The Format step shows a context badge indicating which audience is selected and how many formats are available
 
-**Step 6 — Review:**
+**Step 6 - Review:**
 - Displays a summary of all selections (source, repos, scope, audience, format)
 - Provides edit buttons to jump back to any previous step
 - Contains the "Generate Release Notes" button
 
-**Step 7 — Pipeline:**
+**Step 7 - Pipeline:**
 - Dedicated processing screen with progress spinner
 - Shows success/failure results after generation completes
 - On success, offers navigation to Preview & Export
@@ -169,8 +169,8 @@ Both `snake_case` and `kebab-case` keys are supported (`gitlab-ssl-verify`).
 
 - Supports personal access tokens (classic or fine-grained)
 - Token needs `repo` read access (or `contents:read` for fine-grained)
-- **Token is optional for public repositories** — if the repository is publicly accessible, ReleasePilot can collect commits without authentication
-- **Token is required for private repositories** — authentication is enforced when the target repository requires it
+- **Token is optional for public repositories** - if the repository is publicly accessible, ReleasePilot can collect commits without authentication
+- **Token is required for private repositories** - authentication is enforced when the target repository requires it
 - The wizard UI clearly indicates when a token is optional vs required based on the selected provider
 - Set via the wizard UI, `GITHUB_TOKEN` environment variable, or config file
 - Without a token, GitHub API rate limits are lower (60 requests/hour vs 5,000 authenticated)
@@ -179,7 +179,7 @@ Both `snake_case` and `kebab-case` keys are supported (`gitlab-ssl-verify`).
 
 ### GitLab
 
-- Requires a personal or project access token (always required — GitLab does not support unauthenticated API access for most endpoints)
+- Requires a personal or project access token (always required - GitLab does not support unauthenticated API access for most endpoints)
 - Token needs `read_api` scope
 - The GitLab instance URL must be provided for self-hosted instances
 - Set via the wizard UI, `RELEASEPILOT_GITLAB_TOKEN` env var, or config file
@@ -197,7 +197,7 @@ The wizard UI is fully localized. All labels, validation messages, button texts,
 
 - English (en), Polish (pl), German (de), French (fr), Spanish (es), Italian (it), Portuguese (pt), Dutch (nl), Ukrainian (uk), Czech (cs)
 
-The language can be changed via the Settings panel or during the Scope step of the wizard. All wizard screens — including validation error messages, scope banners, review summaries, and pipeline status — adapt to the selected language.
+The language can be changed via the Settings panel or during the Scope step of the wizard. All wizard screens - including validation error messages, scope banners, review summaries, and pipeline status - adapt to the selected language.
 
 ## API Endpoints
 

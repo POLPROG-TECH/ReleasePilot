@@ -15,21 +15,20 @@ STAGED_PY=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || tr
 if [ -n "$STAGED_PY" ]; then
   echo "🔧 Running ruff check on staged files..."
   echo "$STAGED_PY" | xargs ruff check --fix
-  echo "$STAGED_PY" | xargs git add
   echo "✅ Lint passed"
 
   echo ""
   echo "🎨 Checking ruff format on staged files..."
   if ! echo "$STAGED_PY" | xargs ruff format --check 2>/dev/null; then
     echo ""
-    echo "⚠️  Formatting issues found. Auto-formatting..."
+    echo "⚠️  Formatting issues found. Running auto-format..."
     echo "$STAGED_PY" | xargs ruff format
-    echo "$STAGED_PY" | xargs git add
-    echo "✅ Files reformatted and re-staged"
+    echo "📝 Files reformatted - please review and re-stage (git add) before committing."
+    exit 1
   fi
   echo "✅ Format OK"
 else
-  echo "ℹ️  No staged Python files — skipping lint & format."
+  echo "ℹ️  No staged Python files - skipping lint & format."
 fi
 
 echo ""
@@ -38,4 +37,4 @@ python3 -m pytest tests/ -q --tb=short
 echo "✅ Tests passed"
 
 echo ""
-echo "🚀 All checks passed — committing."
+echo "🚀 All checks passed - committing."

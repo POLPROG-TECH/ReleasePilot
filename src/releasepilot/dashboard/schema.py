@@ -1,4 +1,4 @@
-"""Dashboard data schema — frozen dataclasses for the ReleasePilot HTML dashboard."""
+"""Dashboard data schema - frozen dataclasses for the ReleasePilot HTML dashboard."""
 
 from __future__ import annotations
 

@@ -62,10 +62,10 @@
 
 ReleasePilot reads configuration from four sources, in descending priority:
 
-1. **CLI options** — always take precedence
-2. **Project config file** — `.releasepilot.json`, `.releasepilot.toml`, or `pyproject.toml [tool.releasepilot]`
-3. **User-level config file** — `~/.config/releasepilot/config.json`
-4. **Built-in defaults** — sensible out-of-the-box values
+1. **CLI options** - always take precedence
+2. **Project config file** - `.releasepilot.json`, `.releasepilot.toml`, or `pyproject.toml [tool.releasepilot]`
+3. **User-level config file** - `~/.config/releasepilot/config.json`
+4. **Built-in defaults** - sensible out-of-the-box values
 
 If no config file exists, the tool works normally using CLI options and defaults.
 
@@ -75,12 +75,12 @@ If no config file exists, the tool works normally using CLI options and defaults
 
 ReleasePilot searches for config files in this order (first match wins):
 
-1. `.releasepilot.json` — project directory (recommended)
-2. `releasepilot.json` — project directory
-3. `.releasepilot.toml` — project directory
-4. `releasepilot.toml` — project directory
-5. `pyproject.toml` — under `[tool.releasepilot]`
-6. `~/.config/releasepilot/config.json` — user-level defaults
+1. `.releasepilot.json` - project directory (recommended)
+2. `releasepilot.json` - project directory
+3. `.releasepilot.toml` - project directory
+4. `releasepilot.toml` - project directory
+5. `pyproject.toml` - under `[tool.releasepilot]`
+6. `~/.config/releasepilot/config.json` - user-level defaults
 
 JSON is the recommended format. A JSON Schema is provided at `schema/releasepilot.schema.json`.
 
@@ -144,7 +144,7 @@ CLI options override config file values. If a CLI option is left at its default,
 
 ### Validation
 
-Config files are validated on load. Invalid values produce warnings (printed to stderr) but do not prevent the tool from running — invalid enum values are ignored and built-in defaults are used instead.
+Config files are validated on load. Invalid values produce warnings (printed to stderr) but do not prevent the tool from running - invalid enum values are ignored and built-in defaults are used instead.
 
 For the complete config schema, allowed values, examples, and troubleshooting, see **[Config Schema Reference](config-schema.md)**.
 
@@ -157,13 +157,13 @@ For the complete config schema, allowed values, examples, and troubleshooting, s
 | `--repo`     | `.`     | Path to the git repository           |
 | `--from`     | auto    | Start ref (tag, commit, branch). Auto-detects latest tag if omitted |
 | `--to`       | `HEAD`  | End ref                              |
-| `--source-file` | —   | Path to a JSON file with structured changes. When provided, git is not used |
-| `--version`  | —       | Release version label (e.g. `1.2.0`) |
-| `--title`    | —       | Custom title phrase (e.g. "Monthly Release", "Q1 Summary") |
-| `--app-name` | —       | Application/product name (e.g. "Loudly"). Prepended to the title |
+| `--source-file` | -   | Path to a JSON file with structured changes. When provided, git is not used |
+| `--version`  | -       | Release version label (e.g. `1.2.0`) |
+| `--title`    | -       | Custom title phrase (e.g. "Monthly Release", "Q1 Summary") |
+| `--app-name` | -       | Application/product name (e.g. "Loudly"). Prepended to the title |
 | `--language` | `en`    | Output language code. Translates section headings and labels |
-| `--branch`   | —       | Branch to analyze. Used with `--since` for date-range mode |
-| `--since`    | —       | Collect commits since this date (`YYYY-MM-DD`). Enables date-range mode |
+| `--branch`   | -       | Branch to analyze. Used with `--since` for date-range mode |
+| `--since`    | -       | Collect commits since this date (`YYYY-MM-DD`). Enables date-range mode |
 | `--dry-run`  | off     | Show pipeline summary without rendering output |
 
 ### Output Options (generate / export)
@@ -226,7 +226,7 @@ When using `--source-file`, provide a JSON file:
 
 | Field          | Required | Type       | Default  | Description |
 |---------------|----------|------------|----------|-------------|
-| `title`       | ✅        | string     | —        | Short change description |
+| `title`       | ✅        | string     | -        | Short change description |
 | `description` | ❌        | string     | `""`     | Longer description |
 | `category`    | ❌        | string     | `"other"`| Change category |
 | `scope`       | ❌        | string     | `""`     | Component/area |
@@ -276,7 +276,7 @@ When `--since` is provided, ReleasePilot switches to date-range mode:
 
 - `--from` and `--to` are not required
 - Commits are collected from `--since` date to the present on the specified `--branch`
-- **Only commits reachable from the selected branch are analyzed** — commits on unrelated branches are excluded
+- **Only commits reachable from the selected branch are analyzed** - commits on unrelated branches are excluded
 - If `--branch` is omitted, defaults to `HEAD`
 - Combine with `--version` to label the release
 
@@ -325,13 +325,13 @@ It walks through:
 1. Repository resolution (local path or remote URL clone)
 2. Repository inspection and validation (with spinner)
 3. Changelog/release-notes file detection (with staleness warning)
-4. Branch selection with validation — invalid branches are rejected
+4. Branch selection with validation - invalid branches are rejected
 5. Time range selection (7/14/30/60/90 days, custom date `YYYY-MM-DD`, or number of days back e.g. `30`)
-6. Audience selection — default: **Executive / management brief**. Also supports: changelog, user-facing, technical, summary, customer-facing
+6. Audience selection - default: **Executive / management brief**. Also supports: changelog, user-facing, technical, summary, customer-facing
 7. Format selection (executive defaults to PDF)
 8. Custom subtitle (repository name is used automatically as the app name)
 9. Generation with preview and export (with spinner)
-10. Overwrite protection — asks before replacing existing files
+10. Overwrite protection - asks before replacing existing files
 11. Cleanup of cloned repos (if applicable)
 
 This is ideal for QA, testers, and non-developer users who may not know exact refs or tags. The guided workflow auto-detects branches, suggests sensible defaults, and explains each step.
@@ -371,8 +371,8 @@ Spinners are displayed during long-running operations (inspecting, cloning, gene
 
 Every menu in the guided workflow supports:
 
-- **Arrow-key navigation** — ↑/↓ to move, Enter to confirm (requires a real terminal)
-- **Numeric entry** — type the number and press Enter (works in all environments)
+- **Arrow-key navigation** - ↑/↓ to move, Enter to confirm (requires a real terminal)
+- **Numeric entry** - type the number and press Enter (works in all environments)
 
 Arrow-key mode is provided by [questionary](https://github.com/tmbo/questionary) and activates automatically when running in a terminal. In non-TTY environments (CI, piped input), validated numeric prompts are used.
 
@@ -423,10 +423,10 @@ ReleasePilot validates all inputs before executing the pipeline:
 | Export deps installed | When `--format pdf/docx` | "Missing dependency" with install command |
 
 All errors are displayed as structured panels with:
-- **Summary** — what went wrong
-- **Reason** — why it happened
-- **Suggestions** — what to try next
-- **Example** — corrected command
+- **Summary** - what went wrong
+- **Reason** - why it happened
+- **Suggestions** - what to try next
+- **Example** - corrected command
 
 ## Empty Release Detection
 
@@ -489,16 +489,16 @@ In the guided workflow (`releasepilot guide`), choosing "Executive / management 
 
 | Audience | Technical detail | Business language | Internal categories | Output structure |
 |----------|-----------------|-------------------|--------------------|--------------------|
-| `technical` | Full — raw data | No | Included | Standard changelog |
-| `changelog` | Full — polished titles | Capitalized | Included | Standard changelog |
-| `user` | Moderate — user-relevant | Polished titles | Hidden | Standard changelog |
-| `summary` | Minimal — top 3/group | No | Hidden | Standard changelog |
-| `executive` | None — business only | Yes | Hidden | Executive brief |
+| `technical` | Full - raw data | No | Included | Standard changelog |
+| `changelog` | Full - polished titles | Capitalized | Included | Standard changelog |
+| `user` | Moderate - user-relevant | Polished titles | Hidden | Standard changelog |
+| `summary` | Minimal - top 3/group | No | Hidden | Standard changelog |
+| `executive` | None - business only | Yes | Hidden | Executive brief |
 
 **Key differences:**
 - `technical` vs `changelog`: Both include all categories. `changelog` capitalizes and cleans titles; `technical` returns raw data unchanged.
 - `user` vs `summary`: Both hide internal categories. `user` shows all user-relevant items; `summary` limits to 3 per group for brevity.
-- `executive`: Completely different structure — business themes, impact analysis, risk sections, and next steps instead of a traditional changelog.
+- `executive`: Completely different structure - business themes, impact analysis, risk sections, and next steps instead of a traditional changelog.
 
 ### Date-range history bounds
 
@@ -519,19 +519,19 @@ ReleasePilot composes document titles from multiple inputs:
 | Version | `--version` | Version label (e.g. "2.0.0") |
 
 **Composition rules:**
-1. If `--app-name` is provided, it appears first, separated by " — "
+1. If `--app-name` is provided, it appears first, separated by " - "
 2. If `--title` is provided, it is used as the title phrase
 3. Otherwise, a fallback is generated (e.g. "Changes since 2025-01-01")
-4. If `--version` is provided and not already in the phrase, " — Version X.Y.Z" is appended
+4. If `--version` is provided and not already in the phrase, " - Version X.Y.Z" is appended
 
 **Examples:**
 
 ```
 --app-name "Loudly" --title "Q1 Summary" --version 3.1.0
-→ Loudly — Q1 Summary — Version 3.1.0
+→ Loudly - Q1 Summary - Version 3.1.0
 
 --app-name "Loudly" --since 2025-01-01
-→ Loudly — Changes since 2025-01-01
+→ Loudly - Changes since 2025-01-01
 
 --title "Board Update"
 → Board Update
@@ -556,9 +556,9 @@ Leave blank to use the repository name automatically.
 
 In PDF and DOCX documents, the title block is structured as:
 
-1. **App name** — centered, large (28pt), visually prominent
-2. **Title / subtitle** — left-aligned, smaller (22pt in PDF, 20pt in DOCX)
-3. **Metadata** — version, date, pipeline summary in smaller italic text
+1. **App name** - centered, large (28pt), visually prominent
+2. **Title / subtitle** - left-aligned, smaller (22pt in PDF, 20pt in DOCX)
+3. **Metadata** - version, date, pipeline summary in smaller italic text
 
 This creates a clear visual hierarchy where the application name is the most prominent element.
 
@@ -604,7 +604,7 @@ The translation system (`src/releasepilot/i18n/`) consists of:
 
 1. Add the language code to `SUPPORTED_LANGUAGES` in `labels.py`
 2. Add translations for each label key in the `_LABELS` dictionary
-3. No code changes are needed elsewhere — renderers use `get_label(key, lang)` automatically
+3. No code changes are needed elsewhere - renderers use `get_label(key, lang)` automatically
 
 ## Multi-Repository Generation
 
@@ -673,7 +673,7 @@ The pipeline summary also appears in rendered Markdown footers and PDF/DOCX subt
 When `--app-name` is not specified, ReleasePilot uses the repository directory name as the application name. For example, if the repo is at `/home/user/projects/Loudly`, the title becomes:
 
 ```
-Loudly — Changes since 2025-01-01
+Loudly - Changes since 2025-01-01
 ```
 
 ### Override
@@ -694,6 +694,6 @@ In PDF and DOCX exports, the application name appears prominently at the top (ce
 
 ```
                     Loudly                     ← large, centered
-    Changes since 2025-01-01 — Version 2.0    ← normal title
+    Changes since 2025-01-01 - Version 2.0    ← normal title
     Released 2025-06-01 · 12 changes           ← metadata
 ```

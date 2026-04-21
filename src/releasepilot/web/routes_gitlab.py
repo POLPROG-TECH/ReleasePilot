@@ -1,6 +1,6 @@
 """GitLab integration routes.
 
-Extracted from server.py — handles /api/gitlab/* endpoints.
+Extracted from server.py - handles /api/gitlab/* endpoints.
 """
 
 from __future__ import annotations

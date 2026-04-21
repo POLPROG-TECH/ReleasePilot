@@ -288,17 +288,17 @@ CATALOG_EN: dict[str, str] = {
     "ui.guide.cli_open": "Generate and open",
     "ui.guide.cli_wizard": "Interactive CLI wizard",
     "ui.guide.cli_help": "All options",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Repositories",
     "ui.wizard.scope_step": "Scope",
     "ui.wizard.review_step": "Review",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Choose where your source code lives. This determines how ReleasePilot connects to your repositories.",
     "ui.wizard.local_repo_label": "Local Repository",
     "ui.wizard.local_repo_desc": "Use a git repository on this machine. Best for local development workflows.",
     "ui.wizard.remote_repo_label": "Remote Repository",
     "ui.wizard.remote_repo_desc": "Connect to GitHub or GitLab repositories via URL. Ideal for CI/CD and team workflows.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Select Repositories",
     "ui.wizard.select_repos_desc": "Choose which repositories to include in this release.",
     "ui.wizard.repo_mode_title": "Repository Mode",
@@ -322,7 +322,7 @@ CATALOG_EN: dict[str, str] = {
     "ui.wizard.inspect_btn": "Inspect Repository",
     "ui.wizard.inspect_token_hint": "Validate your token to enable inspection.",
     "ui.wizard.add_repo_label": "Add Repository URL",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Authentication",
     "ui.wizard.gitlab_url_label": "GitLab URL",
     "ui.wizard.gitlab_url_hint": "Base URL of your GitLab instance (e.g. https://gitlab.company.com)",
@@ -336,11 +336,11 @@ CATALOG_EN: dict[str, str] = {
     "ui.wizard.skip_token_btn": "Continue without token",
     "ui.wizard.token_gated_hint": "Validate your access token to enable repository inspection.",
     "ui.wizard.token_authenticated": "Authenticated as",
-    "ui.wizard.token_skipped_status": "Continuing without token — public repository access only",
+    "ui.wizard.token_skipped_status": "Continuing without token - public repository access only",
     "ui.wizard.validating": "Validating\u2026",
     "ui.wizard.inspecting": "Inspecting\u2026",
     "ui.wizard.ssl_disabled": "SSL verification disabled",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Release Scope",
     "ui.wizard.scope_desc": "Define the time range or version range for this release. This scope applies to all selected repositories.",
     "ui.wizard.scope_banner_multi": "Shared scope \u2014 commits will be collected from <strong>{count}</strong> repositories using the range below.",
@@ -351,7 +351,7 @@ CATALOG_EN: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "Ending reference. Defaults to HEAD (latest commit).",
     "ui.wizard.scanning_dir": "Scanning directory\u2026",
     "ui.wizard.scan_found": "Found <strong>{count}</strong> git repositories",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Review & Generate",
     "ui.wizard.review_desc": "Review your configuration before generating release notes.",
     "ui.wizard.review_source": "Source",
@@ -366,11 +366,11 @@ CATALOG_EN: dict[str, str] = {
     "ui.wizard.review_on_branch": "on branch",
     "ui.wizard.review_not_set": "(not set)",
     "ui.wizard.generate_btn": "Generate Release Notes",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Processing Pipeline",
     "ui.wizard.pipeline_desc": "Collecting commits, classifying changes, and composing your release notes\u2026",
     "ui.wizard.preview_export_btn": "Preview & Export",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Version",
     "ui.wizard.meta_total_commits": "Total Commits",
     "ui.wizard.meta_last_activity": "Last Activity",
@@ -380,7 +380,7 @@ CATALOG_EN: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Default branch",
     "ui.wizard.inspect_branches": "Branches",
     "ui.wizard.inspect_tags": "Tags",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Validate your access token before proceeding.",
     "ui.wizard.err_gitlab_url_required": "GitLab URL is required.",
     "ui.wizard.err_gitlab_url_missing": "Enter your GitLab instance URL.",

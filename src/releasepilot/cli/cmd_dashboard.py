@@ -1,4 +1,4 @@
-"""CLI commands — ``dashboard``, ``guide``, ``serve``."""
+"""CLI commands - ``dashboard``, ``guide``, ``serve``."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def dashboard(output: Path | None, open_browser: bool, **kwargs):
     from releasepilot.dashboard.reporter import HtmlReporter
     from releasepilot.dashboard.use_case import DashboardUseCase
 
-    # Remove dry_run — dashboard always generates output
+    # Remove dry_run - dashboard always generates output
     kwargs.pop("dry_run", None)
     settings = _build_settings(**kwargs)
     console.print("[dim]Running pipeline…[/dim]")
@@ -181,7 +181,7 @@ def serve(
         config["branch"] = branch
     web_app = create_app(config)
 
-    console.print(f"\n[bold]ReleasePilot[/bold] v{__version__} — Web Dashboard")
+    console.print(f"\n[bold]ReleasePilot[/bold] v{__version__} - Web Dashboard")
     console.print(f"Repository: [cyan]{repo}[/cyan]")
     if since_date:
         console.print(f"Since: [cyan]{since_date}[/cyan]")

@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Manual Trigger Pipeline (GitLab CI)
+# ReleasePilot - Manual Trigger Pipeline (GitLab CI)
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Generates release notes on manual trigger from GitLab UI.

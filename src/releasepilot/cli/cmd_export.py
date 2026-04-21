@@ -1,4 +1,4 @@
-"""CLI ``export`` command — write release notes to a file."""
+"""CLI ``export`` command - write release notes to a file."""
 
 from __future__ import annotations
 

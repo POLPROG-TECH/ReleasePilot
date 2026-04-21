@@ -171,7 +171,7 @@ For the full config reference, see [Configuration](configuration.md) and [Config
 | **Tag push** (`v*`) | Versioned releases | ✅ **Best for most teams.** Generates notes for the exact release. |
 | **Manual dispatch** | Ad-hoc generation, testing | ✅ Good for flexibility. Use workflow inputs for parameters. |
 | **Schedule** (weekly/monthly) | Sprint reports, stakeholder updates | ✅ Good for recurring reports. Use `--since` with date-range mode. |
-| **Push to main** | Continuous delivery | ⚠️ Use with caution — can be noisy. Consider `--dry-run` first. |
+| **Push to main** | Continuous delivery | ⚠️ Use with caution - can be noisy. Consider `--dry-run` first. |
 | **Pull request** | Preview notes before merge | ⚠️ Use `preview` or `--dry-run`, not `export`. Avoid artifact spam. |
 
 ### Anti-patterns to avoid

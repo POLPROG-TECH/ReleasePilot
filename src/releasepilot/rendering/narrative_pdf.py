@@ -200,7 +200,7 @@ class NarrativePdfRenderer:
         story.append(Spacer(1, 18))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # OVERVIEW — highlighted panel
+        # OVERVIEW - highlighted panel
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.mode == "customer-narrative":
             overview_heading_text = get_label("narrative_overview_customer", lang)
@@ -229,7 +229,7 @@ class NarrativePdfRenderer:
         story.append(Spacer(1, 16))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # BODY PARAGRAPHS — continuous prose
+        # BODY PARAGRAPHS - continuous prose
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         for paragraph in brief.body_paragraphs:
             story.append(Paragraph(_esc(_translate(paragraph, lang)), s_body))
@@ -238,7 +238,7 @@ class NarrativePdfRenderer:
             story.append(Spacer(1, 8))
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # BREAKING CHANGES — amber warning panel
+        # BREAKING CHANGES - amber warning panel
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.breaking_notice:
             breaking_heading = Paragraph(

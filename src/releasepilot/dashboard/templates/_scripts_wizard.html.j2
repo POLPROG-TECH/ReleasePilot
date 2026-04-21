@@ -10,8 +10,8 @@ var _wizSourceState = {
   tokenUser: '',
   remoteRepos: [],        /* [{url, label, provider, owner, repo, inspected}] */
   inspectedData: null,    /* inspection result for single-repo mode */
-  localDirRepos: [],      /* [{name, path}] — repos found in directory scan */
-  selectedLocalRepos: []  /* [path] — user-selected repos from directory scan */
+  localDirRepos: [],      /* [{name, path}] - repos found in directory scan */
+  selectedLocalRepos: []  /* [path] - user-selected repos from directory scan */
 };
 
 /* Step indices:
@@ -85,7 +85,7 @@ function _wizValidateStep(n){
   var errors=[];
 
   if(n===WIZ_STEP_SOURCE){
-    /* Source step is always valid — local mode details are validated in repos step */
+    /* Source step is always valid - local mode details are validated in repos step */
   }
 
   else if(n===WIZ_STEP_REPOS){
@@ -95,7 +95,7 @@ function _wizValidateStep(n){
       var hasToken=!!($('#src-remote-token')?$('#src-remote-token').value.trim():'');
       var tokenOk=_wizSourceState.tokenValidated||_wizSourceState.tokenSkipped;
 
-      /* GitHub: auto-skip token if none entered — public repos work without it */
+      /* GitHub: auto-skip token if none entered - public repos work without it */
       if(_wizSourceState.provider==='github'&&!hasToken&&!tokenOk){
         _wizSourceState.tokenSkipped=true;
         tokenOk=true;
@@ -151,7 +151,7 @@ function _wizValidateStep(n){
     }else{
       /* Local mode */
       if(_wizSourceState.localMode==='directory'){
-        /* Directory scan mode — must have scanned and selected repos */
+        /* Directory scan mode - must have scanned and selected repos */
         var dirPath=$('#src-local-dir-path')?$('#src-local-dir-path').value.trim():'';
         if(!dirPath){
           _wizShowFieldError('#src-local-dir-path','#err-local-dir-path',_t('ui.wizard.err_dir_path_required'));
@@ -162,7 +162,7 @@ function _wizValidateStep(n){
           errors.push(_t('ui.wizard.err_select_repo'));
         }
       }else{
-        /* Current repo mode — check no fatal git errors */
+        /* Current repo mode - check no fatal git errors */
         if(_hasGitError()){
           errors.push(_t('ui.wizard.err_not_git_repo'));
         }
@@ -245,7 +245,7 @@ function wizGoStep(n){
   });
   /* Show the correct panel */
   $$('.wizard-panel').forEach(function(p,i){p.classList.toggle('active',i===n)});
-  /* Footer visibility — hide for review, pipeline, preview */
+  /* Footer visibility - hide for review, pipeline, preview */
   var footer=$('#wizard-footer');
   if(n>=WIZ_STEP_REVIEW){hideEl(footer)}else{showEl(footer)}
   var prevBtn=$('#wiz-prev-btn');
@@ -557,7 +557,7 @@ function wizSelectProvider(provider){
     if(tokenHint)tokenHint.textContent=_t('ui.wizard.token_hint_github');
     if(repoUrl)repoUrl.placeholder='https://github.com/owner/repo';
     if(multiRepoUrl)multiRepoUrl.placeholder='https://github.com/owner/repo';
-    /* GitHub: token optional for public repos — auto-skipped on next step */
+    /* GitHub: token optional for public repos - auto-skipped on next step */
     if(optionalHint)optionalHint.style.display='';
     if(requiredStar)requiredStar.style.display='none';
     if(skipBtn)skipBtn.style.display='none';
@@ -571,7 +571,7 @@ function wizSelectProvider(provider){
 }
 
 function _wizHideRepoInput(){
-  /* No longer hides #wiz-repo-input-section — it's always visible */
+  /* No longer hides #wiz-repo-input-section - it's always visible */
   /* Only clear inspection results when switching providers */
   var inspResult=$('#src-repo-inspect-result');if(inspResult)inspResult.innerHTML='';
 }
@@ -583,7 +583,7 @@ function _wizUpdateRemoteRepoVisibility(){
   var gatedHint=$('#wiz-token-gated-hint');
   var inspectBtn=$('#btn-inspect-repo');
   var inspectHint=$('#inspect-token-hint');
-  /* Repo input section is always visible — only toggle single/multi */
+  /* Repo input section is always visible - only toggle single/multi */
   if(isSingle){showEl(singleEl);hideEl(multiEl)}
   else{hideEl(singleEl);showEl(multiEl);wizRenderMultiRepoList()}
   /* Show/hide the gated hint and enable/disable inspect based on token */
@@ -591,7 +591,7 @@ function _wizUpdateRemoteRepoVisibility(){
   var skipped=_wizSourceState.tokenSkipped;
   var isGitHub=_wizSourceState.provider==='github';
   if(gatedHint){
-    /* For GitHub, hide the gate — token is optional and auto-skipped */
+    /* For GitHub, hide the gate - token is optional and auto-skipped */
     if(validated||skipped||isGitHub)hideEl(gatedHint);
     else showEl(gatedHint);
   }
@@ -1084,7 +1084,7 @@ function renderWizScopeStep(){
 
   $('#wiz-scope-content').innerHTML=h;
 
-  /* Auto-load preview — fires for both local and remote sources */
+  /* Auto-load preview - fires for both local and remote sources */
   if(_wizSourceState.sourceType==='local'&&!_hasGitError()){
     srcAutoReload();
   }else if(_wizSourceState.sourceType==='remote'){
@@ -1283,7 +1283,7 @@ function renderWizReview(){
 function renderWizPipeline(){
   var content=$('#wiz-pipeline-content');
   var result=$('#wiz-generate-result');
-  /* If generation already completed, show the result — not the spinner */
+  /* If generation already completed, show the result - not the spinner */
   if(S.wizard.generated && result && result.innerHTML.trim()){
     if(content)hideEl(content);
     showEl(result);
@@ -1307,7 +1307,7 @@ function wizRunGenerate(){
     return;
   }
 
-  /* Send full config directly to dashboard — the body overrides state.config,
+  /* Send full config directly to dashboard - the body overrides state.config,
      ensuring the selected remote repository (not the local CWD) is used. */
   fetch('/api/dashboard',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)})
     .then(function(r){return r.json()})
@@ -1371,7 +1371,7 @@ function wizStartNew(){
 
 /* Build a complete pipeline config from the wizard's client-side state.
    Ensures remote repos include github_owner/repo/token (or gitlab equiv)
-   so the pipeline uses the correct remote source — not the local CWD. */
+   so the pipeline uses the correct remote source - not the local CWD. */
 var _GH_OWNER_RE=/github\.com[:/]([^/]+)\/([^/.#?]+)/;
 function _wizBuildFullConfig(){
   var isRemote=_wizSourceState&&_wizSourceState.sourceType==='remote';

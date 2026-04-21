@@ -1,4 +1,4 @@
-"""ReleasePilot CLI — entry point.
+"""ReleasePilot CLI - entry point.
 
 Defines the Click group and registers all command submodules.
 """
@@ -53,7 +53,7 @@ def _install_signal_handlers() -> None:
 @click.version_option(__version__, prog_name="releasepilot")
 @click.option("--verbose", "-v", is_flag=True, default=False, help="Enable verbose/debug logging")
 def cli(verbose: bool):
-    """ReleasePilot — Generate polished release notes from your repository."""
+    """ReleasePilot - Generate polished release notes from your repository."""
     _install_signal_handlers()
     level = logging.DEBUG if verbose else logging.WARNING
     logging.basicConfig(

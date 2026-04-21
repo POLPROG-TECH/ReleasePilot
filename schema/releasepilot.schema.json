@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/polprog-tech/ReleasePilot/schema/releasepilot.schema.json",
   "title": "ReleasePilot Configuration",
-  "description": "Schema for .releasepilot.json configuration files. All fields are optional — CLI arguments always override config values.",
+  "description": "Schema for .releasepilot.json configuration files. All fields are optional - CLI arguments always override config values.",
   "type": "object",
   "properties": {
     "app_name": {

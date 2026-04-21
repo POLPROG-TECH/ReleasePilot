@@ -1,6 +1,6 @@
 """Narrative composition for the narrative pipeline.
 
-Assembles ``FactGroup`` lists into a ``NarrativeBrief`` — continuous
+Assembles ``FactGroup`` lists into a ``NarrativeBrief`` - continuous
 prose paragraphs suitable for stakeholder communication.
 """
 

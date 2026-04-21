@@ -119,7 +119,7 @@ CATALOG_UK: dict[str, str] = {
     "ui.wizard.regen_hint": "Цю панель згенеровано з наведеною вище конфігурацією. Щоб змінити діапазон дат, гілку або репозиторій, перегенеруйте за допомогою releasepilot dashboard або releasepilot guide.",
     "ui.wizard.recommended": "(рекомендовано)",
     "ui.wizard.binary_note": "(згенеровано через CLI)",
-    "ui.wizard.binary_preview_note": "— Попередній перегляд markdown (бінарний формат згенеровано через CLI)",
+    "ui.wizard.binary_preview_note": "- Попередній перегляд markdown (бінарний формат згенеровано через CLI)",
     "ui.wizard.binary_export_note": "Бінарний формат (PDF/DOCX) генерується через CLI. Вміст markdown показано нижче.",
     "ui.wizard.formats_available": "форматів доступно для цієї аудиторії",
     # Export modal
@@ -225,17 +225,17 @@ CATALOG_UK: dict[str, str] = {
     "ui.plural.breaking_one": "{count} breaking change detected in this release.",
     "ui.plural.breaking_few": "{count} breaking changes detected in this release.",
     "ui.plural.breaking_other": "{count} breaking changes detected in this release.",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Репозиторії",
     "ui.wizard.scope_step": "Область",
     "ui.wizard.review_step": "Перегляд",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Оберіть, де знаходиться ваш вихідний код. Це визначає, як ReleasePilot підключається до ваших репозиторіїв.",
     "ui.wizard.local_repo_label": "Локальний репозиторій",
     "ui.wizard.local_repo_desc": "Використовуйте git-репозиторій на цьому комп'ютері. Найкраще для локальних робочих процесів.",
     "ui.wizard.remote_repo_label": "Віддалений репозиторій",
     "ui.wizard.remote_repo_desc": "Підключіться до репозиторіїв GitHub або GitLab через URL. Ідеально для CI/CD та командної роботи.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Обрати репозиторії",
     "ui.wizard.select_repos_desc": "Оберіть репозиторії для включення в цей випуск.",
     "ui.wizard.repo_mode_title": "Режим репозиторію",
@@ -259,7 +259,7 @@ CATALOG_UK: dict[str, str] = {
     "ui.wizard.inspect_btn": "Перевірити репозиторій",
     "ui.wizard.inspect_token_hint": "Підтвердіть токен, щоб увімкнути перевірку.",
     "ui.wizard.add_repo_label": "Додати URL репозиторію",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Автентифікація",
     "ui.wizard.gitlab_url_label": "URL GitLab",
     "ui.wizard.gitlab_url_hint": "Базовий URL вашого екземпляра GitLab (напр. https://gitlab.company.com)",
@@ -277,7 +277,7 @@ CATALOG_UK: dict[str, str] = {
     "ui.wizard.validating": "Перевірка\u2026",
     "ui.wizard.inspecting": "Інспекція\u2026",
     "ui.wizard.ssl_disabled": "Перевірку SSL вимкнено",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Область випуску",
     "ui.wizard.scope_desc": "Визначте часовий діапазон або діапазон версій для цього випуску. Ця область застосовується до всіх обраних репозиторіїв.",
     "ui.wizard.scope_banner_multi": "Спільна область \u2014 коміти будуть зібрані з <strong>{count}</strong> репозиторіїв за допомогою діапазону нижче.",
@@ -288,7 +288,7 @@ CATALOG_UK: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "Кінцева референція. За замовчуванням HEAD (останній коміт).",
     "ui.wizard.scanning_dir": "Сканування каталогу\u2026",
     "ui.wizard.scan_found": "Знайдено <strong>{count}</strong> git-репозиторіїв",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Перегляд і генерація",
     "ui.wizard.review_desc": "Перевірте конфігурацію перед генерацією приміток до випуску.",
     "ui.wizard.review_source": "Джерело",
@@ -303,11 +303,11 @@ CATALOG_UK: dict[str, str] = {
     "ui.wizard.review_on_branch": "на гілці",
     "ui.wizard.review_not_set": "(не встановлено)",
     "ui.wizard.generate_btn": "Згенерувати примітки до випуску",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Конвеєр обробки",
     "ui.wizard.pipeline_desc": "Збирання комітів, класифікація змін та створення приміток до випуску\u2026",
     "ui.wizard.preview_export_btn": "Попередній перегляд та експорт",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Версія",
     "ui.wizard.meta_total_commits": "Загальна кількість комітів",
     "ui.wizard.meta_last_activity": "Остання активність",
@@ -317,7 +317,7 @@ CATALOG_UK: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Гілка за замовчуванням",
     "ui.wizard.inspect_branches": "Гілки",
     "ui.wizard.inspect_tags": "Теги",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Підтвердіть токен доступу перед продовженням.",
     "ui.wizard.err_gitlab_url_required": "URL GitLab є обов'язковим.",
     "ui.wizard.err_gitlab_url_missing": "Введіть URL вашого екземпляра GitLab.",

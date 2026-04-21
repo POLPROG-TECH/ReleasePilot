@@ -119,7 +119,7 @@ CATALOG_NL: dict[str, str] = {
     "ui.wizard.regen_hint": "Dit dashboard is gegenereerd met bovenstaande configuratie. Om datumbereik, branch of repository te wijzigen, genereer opnieuw met releasepilot dashboard of releasepilot guide.",
     "ui.wizard.recommended": "(aanbevolen)",
     "ui.wizard.binary_note": "(gegenereerd via CLI)",
-    "ui.wizard.binary_preview_note": "— Markdown-voorbeeld (binair formaat gegenereerd via CLI)",
+    "ui.wizard.binary_preview_note": "- Markdown-voorbeeld (binair formaat gegenereerd via CLI)",
     "ui.wizard.binary_export_note": "Binair formaat (PDF/DOCX) wordt gegenereerd via CLI. Markdown-inhoud hieronder weergegeven.",
     "ui.wizard.formats_available": "formaten beschikbaar voor deze doelgroep",
     # Export modal
@@ -225,17 +225,17 @@ CATALOG_NL: dict[str, str] = {
     "ui.plural.breaking_one": "{count} breaking change detected in this release.",
     "ui.plural.breaking_few": "{count} breaking changes detected in this release.",
     "ui.plural.breaking_other": "{count} breaking changes detected in this release.",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Repository's",
     "ui.wizard.scope_step": "Bereik",
     "ui.wizard.review_step": "Controle",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Kies waar uw broncode zich bevindt. Dit bepaalt hoe ReleasePilot verbinding maakt met uw repository's.",
     "ui.wizard.local_repo_label": "Lokale repository",
     "ui.wizard.local_repo_desc": "Gebruik een git-repository op deze machine. Ideaal voor lokale ontwikkelworkflows.",
     "ui.wizard.remote_repo_label": "Remote repository",
     "ui.wizard.remote_repo_desc": "Maak verbinding met GitHub- of GitLab-repository's via URL. Ideaal voor CI/CD en teamworkflows.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Repository's selecteren",
     "ui.wizard.select_repos_desc": "Kies welke repository's u wilt opnemen in deze release.",
     "ui.wizard.repo_mode_title": "Repositorymodus",
@@ -259,7 +259,7 @@ CATALOG_NL: dict[str, str] = {
     "ui.wizard.inspect_btn": "Repository inspecteren",
     "ui.wizard.inspect_token_hint": "Valideer uw token om inspectie in te schakelen.",
     "ui.wizard.add_repo_label": "Repository-URL toevoegen",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Authenticatie",
     "ui.wizard.gitlab_url_label": "GitLab-URL",
     "ui.wizard.gitlab_url_hint": "Basis-URL van uw GitLab-instantie (bijv. https://gitlab.company.com)",
@@ -277,7 +277,7 @@ CATALOG_NL: dict[str, str] = {
     "ui.wizard.validating": "Valideren\u2026",
     "ui.wizard.inspecting": "Inspecteren\u2026",
     "ui.wizard.ssl_disabled": "SSL-verificatie uitgeschakeld",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Releasebereik",
     "ui.wizard.scope_desc": "Definieer het tijdsbereik of versiebereik voor deze release. Dit bereik geldt voor alle geselecteerde repository's.",
     "ui.wizard.scope_banner_multi": "Gedeeld bereik \u2014 commits worden verzameld uit <strong>{count}</strong> repository's met het onderstaande bereik.",
@@ -288,7 +288,7 @@ CATALOG_NL: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "Eindreferentie. Standaard HEAD (laatste commit).",
     "ui.wizard.scanning_dir": "Map wordt gescand\u2026",
     "ui.wizard.scan_found": "<strong>{count}</strong> git-repository's gevonden",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Controleren en genereren",
     "ui.wizard.review_desc": "Controleer uw configuratie voordat u de release-notes genereert.",
     "ui.wizard.review_source": "Bron",
@@ -303,11 +303,11 @@ CATALOG_NL: dict[str, str] = {
     "ui.wizard.review_on_branch": "op branch",
     "ui.wizard.review_not_set": "(niet ingesteld)",
     "ui.wizard.generate_btn": "Release-notes genereren",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Verwerkingspipeline",
     "ui.wizard.pipeline_desc": "Commits verzamelen, wijzigingen classificeren en release-notes samenstellen\u2026",
     "ui.wizard.preview_export_btn": "Voorbeeld en exporteren",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Versie",
     "ui.wizard.meta_total_commits": "Totaal commits",
     "ui.wizard.meta_last_activity": "Laatste activiteit",
@@ -317,7 +317,7 @@ CATALOG_NL: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Standaardbranch",
     "ui.wizard.inspect_branches": "Branches",
     "ui.wizard.inspect_tags": "Tags",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Valideer uw toegangstoken voordat u doorgaat.",
     "ui.wizard.err_gitlab_url_required": "GitLab-URL is vereist.",
     "ui.wizard.err_gitlab_url_missing": "Voer de URL van uw GitLab-instantie in.",

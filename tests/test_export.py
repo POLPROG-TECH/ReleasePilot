@@ -90,134 +90,145 @@ def sample_notes() -> ReleaseNotes:
 class TestPdfRenderer:
     """Scenarios for PDF rendering of release notes."""
 
+    """GIVEN a PDF renderer with sample notes"""
+
     def test_produces_valid_pdf(self, sample_notes: ReleaseNotes):
-        """GIVEN a PDF renderer with sample notes."""
         renderer = PdfRenderer()
         config = RenderConfig()
 
-        """WHEN rendering to bytes."""
+        """WHEN rendering to bytes"""
         data = renderer.render_bytes(sample_notes, config)
 
-        """THEN it produces valid PDF bytes."""
+        """THEN it produces valid PDF bytes"""
         assert isinstance(data, bytes)
         assert len(data) > 100
         assert data[:5] == b"%PDF-"
 
+    """GIVEN a PDF renderer"""
+
     def test_render_returns_empty_string(self, sample_notes: ReleaseNotes):
-        """GIVEN a PDF renderer."""
         renderer = PdfRenderer()
 
-        """WHEN calling the string render method."""
+        """WHEN calling the string render method"""
         with pytest.raises(NotImplementedError, match="render_bytes"):
             renderer.render(sample_notes, RenderConfig())
 
-        """THEN it raises NotImplementedError guiding users to render_bytes()."""
+        """THEN it raises NotImplementedError guiding users to render_bytes()"""
+
+    """GIVEN a PDF renderer"""
 
     def test_pdf_is_nontrivial(self, sample_notes: ReleaseNotes):
-        """GIVEN a PDF renderer."""
         renderer = PdfRenderer()
 
-        """WHEN rendering to bytes."""
+        """WHEN rendering to bytes"""
         data = renderer.render_bytes(sample_notes, RenderConfig())
 
-        """THEN the PDF has non-trivial size."""
+        """THEN the PDF has non-trivial size"""
         assert len(data) > 500
         assert data[:5] == b"%PDF-"
 
+    """GIVEN a PDF renderer with authors enabled"""
+
     def test_pdf_with_authors(self, sample_notes: ReleaseNotes):
-        """GIVEN a PDF renderer with authors enabled."""
         renderer = PdfRenderer()
         config = RenderConfig(show_authors=True)
 
-        """WHEN rendering to bytes."""
+        """WHEN rendering to bytes"""
         data = renderer.render_bytes(sample_notes, config)
 
-        """THEN it produces a valid PDF."""
+        """THEN it produces a valid PDF"""
         assert data[:5] == b"%PDF-"
 
+    """GIVEN a PDF renderer with commit hashes enabled"""
+
     def test_pdf_with_hashes(self, sample_notes: ReleaseNotes):
-        """GIVEN a PDF renderer with commit hashes enabled."""
         renderer = PdfRenderer()
         config = RenderConfig(show_commit_hashes=True)
 
-        """WHEN rendering to bytes."""
+        """WHEN rendering to bytes"""
         data = renderer.render_bytes(sample_notes, config)
 
-        """THEN it produces a valid PDF."""
+        """THEN it produces a valid PDF"""
         assert data[:5] == b"%PDF-"
 
 
 class TestDocxRenderer:
     """Scenarios for DOCX rendering of release notes."""
 
+    """GIVEN a DOCX renderer with sample notes"""
+
     def test_produces_valid_docx(self, sample_notes: ReleaseNotes):
-        """GIVEN a DOCX renderer with sample notes."""
         renderer = DocxRenderer()
         config = RenderConfig()
 
-        """WHEN rendering to bytes."""
+        """WHEN rendering to bytes"""
         data = renderer.render_bytes(sample_notes, config)
 
-        """THEN it produces valid DOCX bytes."""
+        """THEN it produces valid DOCX bytes"""
         assert isinstance(data, bytes)
         assert len(data) > 100
         assert data[:2] == b"PK"  # ZIP magic bytes
 
+    """GIVEN a DOCX renderer"""
+
     def test_render_returns_empty_string(self, sample_notes: ReleaseNotes):
-        """GIVEN a DOCX renderer."""
         renderer = DocxRenderer()
 
-        """WHEN calling the string render method."""
+        """WHEN calling the string render method"""
         with pytest.raises(NotImplementedError, match="render_bytes"):
             renderer.render(sample_notes, RenderConfig())
 
-        """THEN it raises NotImplementedError guiding users to render_bytes()."""
+        """THEN it raises NotImplementedError guiding users to render_bytes()"""
+
+    """GIVEN a rendered DOCX file written to disk"""
 
     def test_docx_can_be_opened(self, sample_notes: ReleaseNotes, tmp_path: Path):
-        """GIVEN a rendered DOCX file written to disk."""
         renderer = DocxRenderer()
         data = renderer.render_bytes(sample_notes, RenderConfig())
         out = tmp_path / "test.docx"
         out.write_bytes(data)
 
-        """WHEN opening with python-docx."""
+        """WHEN opening with python-docx"""
         from docx import Document
 
         doc = Document(str(out))
 
-        """THEN it has content including the version number."""
+        """THEN it has content including the version number"""
         paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
         assert len(paragraphs) > 0
         assert any("2.0.0" in p for p in paragraphs)
 
+    """GIVEN a DOCX renderer with authors enabled"""
+
     def test_docx_with_authors(self, sample_notes: ReleaseNotes):
-        """GIVEN a DOCX renderer with authors enabled."""
         renderer = DocxRenderer()
         config = RenderConfig(show_authors=True)
 
-        """WHEN rendering to bytes."""
+        """WHEN rendering to bytes"""
         data = renderer.render_bytes(sample_notes, config)
 
-        """THEN it produces valid DOCX bytes."""
+        """THEN it produces valid DOCX bytes"""
         assert data[:2] == b"PK"
 
+    """GIVEN a DOCX renderer with commit hashes enabled"""
+
     def test_docx_with_hashes(self, sample_notes: ReleaseNotes):
-        """GIVEN a DOCX renderer with commit hashes enabled."""
         renderer = DocxRenderer()
         config = RenderConfig(show_commit_hashes=True)
 
-        """WHEN rendering to bytes."""
+        """WHEN rendering to bytes"""
         data = renderer.render_bytes(sample_notes, config)
 
-        """THEN it produces valid DOCX bytes."""
+        """THEN it produces valid DOCX bytes"""
         assert data[:2] == b"PK"
 
 
 class TestCLIPdfDocxExport:
     """Scenarios for PDF and DOCX export via CLI."""
 
+    """GIVEN the CLI and a temporary output path"""
+
     def test_export_pdf(self, tmp_path: Path):
-        """GIVEN the CLI and a temporary output path."""
         from click.testing import CliRunner
 
         from releasepilot.cli.app import cli
@@ -225,7 +236,7 @@ class TestCLIPdfDocxExport:
         runner = CliRunner()
         out = str(tmp_path / "notes.pdf")
 
-        """WHEN exporting to PDF."""
+        """WHEN exporting to PDF"""
         result = runner.invoke(
             cli,
             [
@@ -241,13 +252,14 @@ class TestCLIPdfDocxExport:
             ],
         )
 
-        """THEN a valid PDF file is created."""
+        """THEN a valid PDF file is created"""
         assert result.exit_code == 0
         assert Path(out).exists()
         assert Path(out).read_bytes()[:5] == b"%PDF-"
 
+    """GIVEN the CLI and a temporary output path"""
+
     def test_export_docx(self, tmp_path: Path):
-        """GIVEN the CLI and a temporary output path."""
         from click.testing import CliRunner
 
         from releasepilot.cli.app import cli
@@ -255,7 +267,7 @@ class TestCLIPdfDocxExport:
         runner = CliRunner()
         out = str(tmp_path / "notes.docx")
 
-        """WHEN exporting to DOCX."""
+        """WHEN exporting to DOCX"""
         result = runner.invoke(
             cli,
             [
@@ -271,13 +283,15 @@ class TestCLIPdfDocxExport:
             ],
         )
 
-        """THEN a valid DOCX file is created."""
+        """THEN a valid DOCX file is created"""
         assert result.exit_code == 0
         assert Path(out).exists()
         assert Path(out).read_bytes()[:2] == b"PK"
 
+    """GIVEN the CLI running in a temporary directory"""
+
     def test_generate_pdf_creates_file(self, tmp_path: Path):
-        """GIVEN the CLI running in a temporary directory."""
+        """WHEN the test exercises generate pdf creates file"""
         import os
 
         from click.testing import CliRunner
@@ -315,14 +329,15 @@ class TestCLIPdfDocxExport:
 class TestPdfStyles:
     """Scenarios for PDF paragraph style configuration (alignment, sizes)."""
 
+    """GIVEN the sample stylesheet and custom paragraph styles"""
+
     def test_app_name_centered_title_left(self):
-        """GIVEN the sample stylesheet and custom paragraph styles."""
         from reportlab.lib import colors
         from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 
         styles = getSampleStyleSheet()
 
-        """WHEN AppName and ReleaseTitle styles are created."""
+        """WHEN AppName and ReleaseTitle styles are created"""
         app_name_style = ParagraphStyle(
             "AppName",
             parent=styles["Title"],
@@ -338,17 +353,18 @@ class TestPdfStyles:
             textColor=colors.HexColor("#1a1a2e"),
         )
 
-        """THEN app_name is centered and title is left-aligned."""
+        """THEN app_name is centered and title is left-aligned"""
         assert app_name_style.alignment == 1  # CENTER
         assert title_style.alignment == 0  # LEFT
 
+    """GIVEN the sample stylesheet"""
+
     def test_footer_style_small(self):
-        """GIVEN the sample stylesheet."""
         from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 
         styles = getSampleStyleSheet()
 
-        """WHEN a Footer style is created with fontSize 7."""
+        """WHEN a Footer style is created with fontSize 7"""
         footer_style = ParagraphStyle(
             "Footer",
             parent=styles["Normal"],
@@ -356,5 +372,5 @@ class TestPdfStyles:
             alignment=1,
         )
 
-        """THEN the font size is 7pt."""
+        """THEN the font size is 7pt"""
         assert footer_style.fontSize == 7

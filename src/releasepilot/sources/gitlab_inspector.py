@@ -1,7 +1,7 @@
 """Remote GitLab repository inspector.
 
 Provides authenticated remote repository inspection analogous to the local
-``inspector.py`` — but works over the GitLab API instead of local git commands.
+``inspector.py`` - but works over the GitLab API instead of local git commands.
 
 Authentication is applied from the FIRST request. There are no unauthenticated
 probes. Every lookup uses the same authenticated session.
@@ -93,9 +93,9 @@ class GitLabInspector:
         """Create an inspector from environment variables.
 
         Reads:
-        - ``RELEASEPILOT_GITLAB_URL`` — GitLab instance URL
-        - ``RELEASEPILOT_GITLAB_TOKEN`` — Private token or personal access token
-        - ``RELEASEPILOT_GITLAB_SSL_VERIFY`` — Set to "0" or "false" to skip SSL
+        - ``RELEASEPILOT_GITLAB_URL`` - GitLab instance URL
+        - ``RELEASEPILOT_GITLAB_TOKEN`` - Private token or personal access token
+        - ``RELEASEPILOT_GITLAB_SSL_VERIFY`` - Set to "0" or "false" to skip SSL
         """
         base_url = os.environ.get("RELEASEPILOT_GITLAB_URL", "")
         token = os.environ.get("RELEASEPILOT_GITLAB_TOKEN", "")
@@ -147,7 +147,7 @@ class GitLabInspector:
         3. Lists branches and tags
         4. Returns a structured result
 
-        Never raises — all errors are captured in the result.
+        Never raises - all errors are captured in the result.
         """
         diagnostics: list[str] = []
 

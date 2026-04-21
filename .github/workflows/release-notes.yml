@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Tag-Triggered Release Notes (GitHub Actions)
+# ReleasePilot - Tag-Triggered Release Notes (GitHub Actions)
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Automatically generates release notes when a version tag is pushed.

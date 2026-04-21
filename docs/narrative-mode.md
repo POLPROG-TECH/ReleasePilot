@@ -4,8 +4,8 @@
 ## Table of Contents
 
 - [Two Narrative Audiences](#two-narrative-audiences)
-  - [`narrative` — Fact-Based Narrative Summary](#narrative-fact-based-narrative-summary)
-  - [`customer-narrative` — Client-Facing Narrative](#customer-narrative-client-facing-narrative)
+  - [`narrative` - Fact-Based Narrative Summary](#narrative-fact-based-narrative-summary)
+  - [`customer-narrative` - Client-Facing Narrative](#customer-narrative-client-facing-narrative)
 - [How It Differs From Other Modes](#how-it-differs-from-other-modes)
 - [Factual Grounding](#factual-grounding)
   - [What the system uses](#what-the-system-uses)
@@ -18,11 +18,11 @@
   - [Inspecting the fact layer](#inspecting-the-fact-layer)
 - [Examples](#examples)
   - [Narrative mode output](#narrative-mode-output)
-- [Release Summary — v2.1.0](#release-summary-v210)
+- [Release Summary - v2.1.0](#release-summary-v210)
 - [Overview](#overview)
 - [⚠️ Important Changes](#important-changes)
   - [Customer narrative mode output](#customer-narrative-mode-output)
-- [Product Update — v2.1.0](#product-update-v210)
+- [Product Update - v2.1.0](#product-update-v210)
 - [What's Changed](#whats-changed)
 - [⚠️ Important Changes](#important-changes)
 - [Configuration](#configuration)
@@ -40,7 +40,7 @@ This mode produces readable, paragraph-based text suitable for:
 
 ## Two Narrative Audiences
 
-### `narrative` — Fact-Based Narrative Summary
+### `narrative` - Fact-Based Narrative Summary
 
 Produces a full narrative covering all change categories. Suitable for internal stakeholders, team leads, and product managers who need a readable overview of everything that shipped.
 
@@ -49,7 +49,7 @@ releasepilot generate --audience narrative
 releasepilot generate --audience narrative --format json
 ```
 
-### `customer-narrative` — Client-Facing Narrative
+### `customer-narrative` - Client-Facing Narrative
 
 Produces a polished, non-technical narrative that hides internal categories (refactoring, infrastructure, documentation) and focuses on user-visible changes. Suitable for customer emails, product update pages, and client communications.
 
@@ -102,10 +102,10 @@ The narrative is generated exclusively from:
 ### Claim Validation
 
 The narrative pipeline includes a built-in validator that checks the generated text against:
-1. **Forbidden language patterns** — marketing, speculative, and exaggerated terms
-2. **Numeric claim verification** — numbers in the text must match the fact layer
-3. **Category reference checking** — text must not reference categories absent from the data
-4. **Fact count consistency** — total facts must match the sum of fact group counts
+1. **Forbidden language patterns** - marketing, speculative, and exaggerated terms
+2. **Numeric claim verification** - numbers in the text must match the fact layer
+3. **Category reference checking** - text must not reference categories absent from the data
+4. **Fact count consistency** - total facts must match the sum of fact group counts
 
 ## Architecture
 
@@ -120,13 +120,13 @@ Narrative pipeline:  ReleaseNotes → FactLayer → NarrativeBrief → Narrative
 
 ### Pipeline stages
 
-1. **Source collection** — same as standard pipeline (git log, structured JSON)
-2. **Processing** — same classify → filter → deduplicate stages
-3. **Audience transform** — applies category filtering appropriate for the mode
-4. **Fact extraction** — converts ChangeItems into inspectable FactItems
-5. **Narrative composition** — generates prose from the fact layer
-6. **Validation** — checks the narrative against grounding rules
-7. **Rendering** — outputs Markdown, plaintext, or JSON
+1. **Source collection** - same as standard pipeline (git log, structured JSON)
+2. **Processing** - same classify → filter → deduplicate stages
+3. **Audience transform** - applies category filtering appropriate for the mode
+4. **Fact extraction** - converts ChangeItems into inspectable FactItems
+5. **Narrative composition** - generates prose from the fact layer
+6. **Validation** - checks the narrative against grounding rules
+7. **Rendering** - outputs Markdown, plaintext, or JSON
 
 ### Module structure
 
@@ -147,9 +147,9 @@ src/releasepilot/
 
 The `NarrativeBrief` model exposes its underlying facts for auditability:
 
-- `brief.fact_groups` — the grouped facts used to generate the narrative
-- `brief.source_item_ids` — all ChangeItem IDs referenced
-- `brief.total_facts` — total number of facts in the narrative
+- `brief.fact_groups` - the grouped facts used to generate the narrative
+- `brief.source_item_ids` - all ChangeItem IDs referenced
+- `brief.total_facts` - total number of facts in the narrative
 
 In JSON output, the full fact layer is included:
 
@@ -189,7 +189,7 @@ releasepilot generate --audience narrative --format json
 ```markdown
 # MyApp
 
-## Release Summary — v2.1.0
+## Release Summary - v2.1.0
 
 *June 15, 2025*
 *Version 2.1.0*
@@ -231,7 +231,7 @@ Remove legacy API endpoints: The v1 endpoints have been removed.
 ```markdown
 # MyApp
 
-## Product Update — v2.1.0
+## Product Update - v2.1.0
 
 *June 15, 2025*
 *Version 2.1.0*

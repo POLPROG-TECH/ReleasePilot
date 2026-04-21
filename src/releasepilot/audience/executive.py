@@ -54,9 +54,9 @@ class ExecutiveBrief:
     def report_title(self) -> str:
         rr = self.release_range
         if rr.version:
-            return f"Release Brief — v{rr.version}"
+            return f"Release Brief - v{rr.version}"
         if rr.title:
-            return f"Release Brief — {rr.title}"
+            return f"Release Brief - {rr.title}"
         return "Release Brief"
 
     def localized_title(self, lang: str = "en") -> str:
@@ -66,9 +66,9 @@ class ExecutiveBrief:
         brief_label = get_label("release_brief", lang)
         rr = self.release_range
         if rr.version:
-            return f"{brief_label} — v{rr.version}"
+            return f"{brief_label} - v{rr.version}"
         if rr.title:
-            return f"{brief_label} — {rr.title}"
+            return f"{brief_label} - {rr.title}"
         return brief_label
 
     @property
@@ -429,7 +429,7 @@ def _extract_achievements(notes: ReleaseNotes) -> list[str]:
         if item.description:
             short_desc = item.description.split(".")[0].strip()
             if short_desc and len(short_desc) < 120:
-                achievements.append(f"{title} — {short_desc}")
+                achievements.append(f"{title} - {short_desc}")
                 continue
         achievements.append(title)
 
@@ -486,7 +486,7 @@ def _extract_risks(notes: ReleaseNotes) -> list[str]:
         if item.description:
             short_desc = item.description.split(".")[0].strip()
             if short_desc and len(short_desc) < 150:
-                risks.append(f"{title} — {short_desc}")
+                risks.append(f"{title} - {short_desc}")
                 continue
         risks.append(title)
 

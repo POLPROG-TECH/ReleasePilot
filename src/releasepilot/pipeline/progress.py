@@ -1,7 +1,7 @@
 """Pipeline progress reporting.
 
 Provides a callback-based progress system for reporting pipeline stages
-to the UI layer. The pipeline itself remains UI-agnostic — callers supply
+to the UI layer. The pipeline itself remains UI-agnostic - callers supply
 a callback to receive progress updates.
 """
 

@@ -1,6 +1,6 @@
 """GitHub integration routes.
 
-Extracted from server.py — handles /api/github/* endpoints.
+Extracted from server.py - handles /api/github/* endpoints.
 """
 
 from __future__ import annotations

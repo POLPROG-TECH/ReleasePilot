@@ -1,6 +1,6 @@
 """Fact-grounded narrative pipeline for ReleasePilot.
 
-Transforms ``ReleaseNotes`` into a ``NarrativeBrief`` — a continuous prose
+Transforms ``ReleaseNotes`` into a ``NarrativeBrief`` - a continuous prose
 summary of release changes suitable for stakeholder communication,
 client-facing updates, and management briefs.
 
@@ -25,16 +25,16 @@ can verify that no unsupported claims have been introduced.
 
 Stages
 ======
-1. **Fact extraction** — ``ChangeItem`` → ``FactItem`` / ``FactGroup``
-2. **Narrative composition** — ``FactGroup`` list → ``NarrativeBrief``
-3. **Claim validation** — checks the brief against grounding rules
+1. **Fact extraction** - ``ChangeItem`` → ``FactItem`` / ``FactGroup``
+2. **Narrative composition** - ``FactGroup`` list → ``NarrativeBrief``
+3. **Claim validation** - checks the brief against grounding rules
 
 Implementation is split across focused sub-modules:
 
-- ``narrative_models`` — domain dataclasses
-- ``narrative_facts`` — fact extraction
-- ``narrative_compose`` — prose generation
-- ``narrative_validate`` — claim validation
+- ``narrative_models`` - domain dataclasses
+- ``narrative_facts`` - fact extraction
+- ``narrative_compose`` - prose generation
+- ``narrative_validate`` - claim validation
 
 This file re-exports the full public API for backwards compatibility.
 """

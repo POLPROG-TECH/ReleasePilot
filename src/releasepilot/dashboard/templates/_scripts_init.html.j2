@@ -258,7 +258,7 @@ function init(){
   S.wizard.format=D.output_format||'markdown';
   if(D.is_empty){
     showEl(panel);showEl(tabNav);
-    /* Only remove .active — do NOT add .hidden (it would block switchTab) */
+    /* Only remove .active - do NOT add .hidden (it would block switchTab) */
     $$('.tab-panel').forEach(function(p){p.classList.remove('active')});
     /* diagnostics */
     if(D.diagnostics&&D.diagnostics.length>0){

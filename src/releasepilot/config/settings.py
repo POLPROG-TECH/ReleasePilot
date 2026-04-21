@@ -1,7 +1,7 @@
 """Configuration system for ReleasePilot.
 
 Supports CLI options with sensible defaults.
-Configuration is a frozen dataclass — immutable once constructed.
+Configuration is a frozen dataclass - immutable once constructed.
 """
 
 from __future__ import annotations

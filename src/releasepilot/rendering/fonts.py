@@ -24,12 +24,12 @@ _init_lock = threading.Lock()
 
 # Common paths for Unicode-capable TTF files (normal, bold)
 _CANDIDATES: list[tuple[str, str | None]] = [
-    # Linux — DejaVu with bold variant
+    # Linux - DejaVu with bold variant
     (
         "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
     ),
-    # macOS — Arial Unicode (single weight only)
+    # macOS - Arial Unicode (single weight only)
     ("/Library/Fonts/Arial Unicode.ttf", None),
     ("/System/Library/Fonts/Supplemental/Arial Unicode.ttf", None),
     # Windows
@@ -63,7 +63,7 @@ def register_unicode_font() -> str:
 
         result = _find_ttf()
         if result is None:
-            _log.debug("No Unicode TTF font found — using Helvetica fallback")
+            _log.debug("No Unicode TTF font found - using Helvetica fallback")
             return "Helvetica"
 
         normal_path, bold_path = result
@@ -74,7 +74,7 @@ def register_unicode_font() -> str:
 
             pdfmetrics.registerFont(TTFont("UnicodeSans", normal_path))
 
-            # Register bold — use dedicated bold file if available, else reuse normal
+            # Register bold - use dedicated bold file if available, else reuse normal
             bold_src = bold_path or normal_path
             pdfmetrics.registerFont(TTFont("UnicodeSans-Bold", bold_src))
 

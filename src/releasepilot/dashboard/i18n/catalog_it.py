@@ -117,7 +117,7 @@ CATALOG_IT: dict[str, str] = {
     "ui.wizard.regen_hint": "Questa dashboard è stata generata con la configurazione sopra. Per modificare intervallo date, branch o repository, rigenera con releasepilot dashboard o releasepilot guide.",
     "ui.wizard.recommended": "(consigliato)",
     "ui.wizard.binary_note": "(generato via CLI)",
-    "ui.wizard.binary_preview_note": "— Anteprima markdown (formato binario generato via CLI)",
+    "ui.wizard.binary_preview_note": "- Anteprima markdown (formato binario generato via CLI)",
     "ui.wizard.binary_export_note": "Il formato binario (PDF/DOCX) è generato via CLI. Contenuto markdown mostrato sotto.",
     "ui.wizard.formats_available": "formati disponibili per questa audience",
     # Export modal
@@ -223,17 +223,17 @@ CATALOG_IT: dict[str, str] = {
     "ui.plural.breaking_one": "{count} breaking change detected in this release.",
     "ui.plural.breaking_few": "{count} breaking changes detected in this release.",
     "ui.plural.breaking_other": "{count} breaking changes detected in this release.",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Repository",
     "ui.wizard.scope_step": "Ambito",
     "ui.wizard.review_step": "Revisione",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Scegli dove si trova il tuo codice sorgente. Questo determina come ReleasePilot si connette ai tuoi repository.",
     "ui.wizard.local_repo_label": "Repository locale",
     "ui.wizard.local_repo_desc": "Usa un repository git su questa macchina. Ideale per flussi di lavoro di sviluppo locale.",
     "ui.wizard.remote_repo_label": "Repository remoto",
     "ui.wizard.remote_repo_desc": "Connettiti a repository GitHub o GitLab tramite URL. Ideale per CI/CD e lavoro di squadra.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Seleziona repository",
     "ui.wizard.select_repos_desc": "Scegli quali repository includere in questo rilascio.",
     "ui.wizard.repo_mode_title": "Modalità repository",
@@ -257,7 +257,7 @@ CATALOG_IT: dict[str, str] = {
     "ui.wizard.inspect_btn": "Ispeziona repository",
     "ui.wizard.inspect_token_hint": "Valida il tuo token per abilitare l'ispezione.",
     "ui.wizard.add_repo_label": "Aggiungi URL del repository",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Autenticazione",
     "ui.wizard.gitlab_url_label": "URL GitLab",
     "ui.wizard.gitlab_url_hint": "URL base della tua istanza GitLab (es. https://gitlab.company.com)",
@@ -275,7 +275,7 @@ CATALOG_IT: dict[str, str] = {
     "ui.wizard.validating": "Validazione\u2026",
     "ui.wizard.inspecting": "Ispezione\u2026",
     "ui.wizard.ssl_disabled": "Verifica SSL disattivata",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Ambito del rilascio",
     "ui.wizard.scope_desc": "Definisci l'intervallo di tempo o di versioni per questo rilascio. Questo ambito si applica a tutti i repository selezionati.",
     "ui.wizard.scope_banner_multi": "Ambito condiviso \u2014 i commit verranno raccolti da <strong>{count}</strong> repository usando l'intervallo sottostante.",
@@ -286,7 +286,7 @@ CATALOG_IT: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "Riferimento finale. Per impostazione predefinita HEAD (ultimo commit).",
     "ui.wizard.scanning_dir": "Scansione directory\u2026",
     "ui.wizard.scan_found": "Trovati <strong>{count}</strong> repository git",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Revisione e generazione",
     "ui.wizard.review_desc": "Rivedi la configurazione prima di generare le note di rilascio.",
     "ui.wizard.review_source": "Sorgente",
@@ -301,11 +301,11 @@ CATALOG_IT: dict[str, str] = {
     "ui.wizard.review_on_branch": "su branch",
     "ui.wizard.review_not_set": "(non impostato)",
     "ui.wizard.generate_btn": "Genera note di rilascio",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Pipeline di elaborazione",
     "ui.wizard.pipeline_desc": "Raccolta commit, classificazione modifiche e composizione delle note di rilascio\u2026",
     "ui.wizard.preview_export_btn": "Anteprima ed esportazione",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Versione",
     "ui.wizard.meta_total_commits": "Commit totali",
     "ui.wizard.meta_last_activity": "Ultima attività",
@@ -315,7 +315,7 @@ CATALOG_IT: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Branch predefinito",
     "ui.wizard.inspect_branches": "Branch",
     "ui.wizard.inspect_tags": "Tag",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Valida il tuo token di accesso prima di procedere.",
     "ui.wizard.err_gitlab_url_required": "L'URL di GitLab è obbligatorio.",
     "ui.wizard.err_gitlab_url_missing": "Inserisci l'URL della tua istanza GitLab.",

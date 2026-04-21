@@ -1,13 +1,13 @@
-<p align="center">
-  <img src="assets/banner.svg" alt="ReleasePilot — Polished, audience-aware release notes from your repository" width="100%">
-</p>
+<div align="center">
+  <img alt="ReleasePilot" src="assets/logo-full.svg" width="520">
+</div>
 
 <p align="center">
-  <a href="https://github.com/polprog-tech/ReleasePilot/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/polprog-tech/ReleasePilot/ci.yml?branch=main&style=flat-square&label=CI&logo=github" alt="CI"></a>
-  <a href="https://github.com/polprog-tech/ReleasePilot/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square" alt="License: AGPL-3.0"></a>
-  <img src="https://img.shields.io/badge/python-3.12%2B-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python 3.12+">
-  <img src="https://img.shields.io/badge/languages-10-6366f1?style=flat-square" alt="10 Languages">
-  <img src="https://img.shields.io/badge/formats-PDF%20·%20DOCX%20·%20MD%20·%20JSON-334155?style=flat-square" alt="Formats">
+  <a href="https://github.com/POLPROG-TECH/ReleasePilot/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/POLPROG-TECH/ReleasePilot/ci.yml?branch=main&style=flat-square&label=CI&logo=github" alt="CI"></a>
+  <img src="https://img.shields.io/badge/tests-922%20passed-22c55e?style=flat-square&logo=pytest&logoColor=white" alt="Tests: 922 passed">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-6366f1?style=flat-square" alt="License: AGPL-3.0"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.12%2B-3776ab?style=flat-square&logo=python&logoColor=white" alt="Python 3.12+"></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI"></a>
 </p>
 
 <p align="center">
@@ -16,21 +16,25 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#screenshots">Screenshots</a> •
-  <a href="#web-server-mode">Web Server</a> •
-  <a href="#api-reference">API Reference</a> •
-  <a href="#cli-mode">CLI Mode</a> •
-  <a href="#features">Features</a> •
-  <a href="#configuration">Configuration</a> •
+  <a href="#what-is-releasepilot">About</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#web-server-mode">Web Server</a> ·
+  <a href="#cli-mode">CLI Mode</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#configuration">Configuration</a> ·
   <a href="#opsportal-integration">OpsPortal</a>
+</p>
+
+<p align="center">
+  <a href="https://buymeacoffee.com/polprog"><img src="https://img.shields.io/badge/Support%20this%20project-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Support this project"></a>
 </p>
 
 ---
 
 ## What is ReleasePilot?
 
-ReleasePilot turns source changes — git commits, tags, pull requests — into polished release notes tailored for different audiences. It is **not** a raw changelog dump. It classifies, filters, deduplicates, and groups changes to produce release communication that reads naturally.
+ReleasePilot turns source changes - git commits, tags, pull requests - into polished release notes tailored for different audiences. It is **not** a raw changelog dump. It classifies, filters, deduplicates, and groups changes to produce release communication that reads naturally.
 
 The **primary mode** is an interactive web dashboard powered by FastAPI and Jinja2 SSR, with real-time generation progress via Server-Sent Events. A full CLI is also available for scripting and CI/CD pipelines.
 
@@ -40,18 +44,18 @@ The **primary mode** is an interactive web dashboard powered by FastAPI and Jinj
 
 ### Interactive Guide
 
-The Guide tab explains how ReleasePilot works — the pipeline stages, all 8 audience modes, output formats, best practices, and CLI reference.
+The Guide tab explains how ReleasePilot works - the pipeline stages, all 8 audience modes, output formats, best practices, and CLI reference.
 
 <p align="center">
-  <img src="docs/assets/screenshots/guide-overview.png" alt="ReleasePilot — interactive guide with pipeline, audiences, and formats" width="800">
+  <img src="docs/assets/screenshots/guide-overview.png" alt="ReleasePilot - interactive guide with pipeline, audiences, and formats" width="800">
 </p>
 
 ### Source Configuration Wizard
 
-The wizard guides you through a multi-step flow: source selection (local or remote), repository configuration (single or multi-repo), release scope, audience, and format — with built-in validation at every step. Supports GitHub and GitLab repositories via URL. Access tokens are context-aware: optional for public GitHub repositories, required for private repos and GitLab. See [Web Wizard Documentation](docs/web-wizard.md) for full details.
+The wizard guides you through a multi-step flow: source selection (local or remote), repository configuration (single or multi-repo), release scope, audience, and format - with built-in validation at every step. Supports GitHub and GitLab repositories via URL. Access tokens are context-aware: optional for public GitHub repositories, required for private repos and GitLab. See [Web Wizard Documentation](docs/web-wizard.md) for full details.
 
 <p align="center">
-  <img src="docs/assets/screenshots/wizard-source-config.png" alt="ReleasePilot — source configuration wizard with date range presets" width="800">
+  <img src="docs/assets/screenshots/wizard-source-config.png" alt="ReleasePilot - source configuration wizard with date range presets" width="800">
 </p>
 
 ### Generation Complete
@@ -59,7 +63,7 @@ The wizard guides you through a multi-step flow: source selection (local or remo
 After the pipeline processes your commits, you see a summary of changes and output size before previewing and exporting.
 
 <p align="center">
-  <img src="docs/assets/screenshots/wizard-generation-complete.png" alt="ReleasePilot — generation complete with change stats" width="800">
+  <img src="docs/assets/screenshots/wizard-generation-complete.png" alt="ReleasePilot - generation complete with change stats" width="800">
 </p>
 
 ---
@@ -145,15 +149,15 @@ app = create_app(config, root_path="")
 ReleasePilot exposes 12 HTTP routes covering health monitoring, generation control, dashboard rendering, and configuration.
 
 **Health & Status**
-- `GET /health/live` — liveness probe
-- `GET /health/ready` — readiness probe
-- `GET /api/status` — version, uptime, and generation progress
+- `GET /health/live` - liveness probe
+- `GET /health/ready` - readiness probe
+- `GET /api/status` - version, uptime, and generation progress
 
-**Generation** — trigger async release-notes generation, stream real-time progress via SSE, and retrieve results.
+**Generation** - trigger async release-notes generation, stream real-time progress via SSE, and retrieve results.
 
-**Dashboard** — interactive HTML dashboard at `/`, raw HTML export via `/api/dashboard/html`.
+**Dashboard** - interactive HTML dashboard at `/`, raw HTML export via `/api/dashboard/html`.
 
-**Configuration** — view and update generation settings at runtime via `GET/PUT /api/config`.
+**Configuration** - view and update generation settings at runtime via `GET/PUT /api/config`.
 
 ### Server-Sent Events
 
@@ -253,18 +257,18 @@ ReleasePilot removes redundant entries using multiple strategies:
 
 - **Exact hash** matching
 - **PR merge** detection and grouping
-- **Token overlap** — 80% similarity threshold for near-duplicate detection
+- **Token overlap** - 80% similarity threshold for near-duplicate detection
 
 ### Additional Capabilities
 
-- **Noise filtering** — merge commits, WIP, fixups, and trivial changes are filtered out
-- **10 languages** — all structural labels are translated
-- **Pipeline transparency** — shows collected → filtered → deduplicated counts
-- **Deterministic output** — same input always produces the same result
+- **Noise filtering** - merge commits, WIP, fixups, and trivial changes are filtered out
+- **10 languages** - all structural labels are translated
+- **Pipeline transparency** - shows collected → filtered → deduplicated counts
+- **Deterministic output** - same input always produces the same result
 - **Multi-repository** support
-- **Structured input** — JSON files for CI pipelines or manual supplementation
-- **Branch validation** — invalid branches rejected with suggestions
-- **Overwrite protection** — warns before overwriting existing files
+- **Structured input** - JSON files for CI pipelines or manual supplementation
+- **Branch validation** - invalid branches rejected with suggestions
+- **Overwrite protection** - warns before overwriting existing files
 
 ---
 
@@ -326,7 +330,7 @@ Verify the installation:
 releasepilot --version
 ```
 
-> **Note:** ReleasePilot works with **any** git repository — Python, JavaScript, Rust, Go, or any other language. The target repository does not need to be a Python project.
+> **Note:** ReleasePilot works with **any** git repository - Python, JavaScript, Rust, Go, or any other language. The target repository does not need to be a Python project.
 
 > **Corporate network (Zscaler / VPN)?** If `pip install` fails with SSL errors, see [Corporate Network setup](#corporate-network-zscaler--vpn--proxy) below.
 
@@ -418,10 +422,10 @@ src/releasepilot/
 
 **Key design principles:**
 
-- **Pipeline architecture** — commits flow through collect → filter → classify → deduplicate → render stages
-- **Audience-driven output** — audience mode controls tone, detail, and structure throughout the pipeline
-- **Format-agnostic rendering** — the same pipeline feeds multiple exporters (MD, JSON, PDF, DOCX)
-- **Deterministic output** — same input always produces the same result
+- **Pipeline architecture** - commits flow through collect → filter → classify → deduplicate → render stages
+- **Audience-driven output** - audience mode controls tone, detail, and structure throughout the pipeline
+- **Format-agnostic rendering** - the same pipeline feeds multiple exporters (MD, JSON, PDF, DOCX)
+- **Deterministic output** - same input always produces the same result
 
 See the source code for detailed implementation.
 
@@ -437,32 +441,9 @@ ReleasePilot integrates with [OpsPortal](../OpsPortal) as a **subprocess web too
 - Embedded in the OpsPortal UI via iframe
 - `RELEASEPILOT_ALLOW_FRAMING=true` is set automatically by OpsPortal
 
-No manual configuration is needed — OpsPortal manages the lifecycle automatically.
+No manual configuration is needed - OpsPortal manages the lifecycle automatically.
 
 ---
-
-## Development
-
-### Running Tests
-
-```bash
-# Run the full test suite
-pytest
-
-# With coverage
-pytest --cov=releasepilot --cov-report=term-missing
-```
-
-### Linting
-
-```bash
-# Install dev dependencies
-pip install -e ".[dev]"
-
-# Run linters
-ruff check src/ tests/
-ruff format --check src/ tests/
-```
 
 ## Troubleshooting
 
@@ -470,14 +451,49 @@ For detailed solutions to common issues, see [docs/troubleshooting.md](docs/trou
 
 | Problem | Quick Fix |
 |---------|-----------|
-| **SSL certificate errors** during `pip install` or GitLab access | Export corporate CA bundle: `export SSL_CERT_FILE=~/combined-ca-bundle.pem` — see [Corporate Network setup](#corporate-network-zscaler--vpn--proxy) |
+| **SSL certificate errors** during `pip install` or GitLab access | Export corporate CA bundle: `export SSL_CERT_FILE=~/combined-ca-bundle.pem` - see [Corporate Network setup](#corporate-network-zscaler--vpn--proxy) |
 | **GitLab repos return 404** | Set `RELEASEPILOT_GITLAB_TOKEN` via env var or config file |
 | **Wrong GitLab hostname** | Check with `git remote -v` in a local clone |
-| **Transient 502/503/504** | Automatic retry with back-off — no action needed |
+| **Transient 502/503/504** | Automatic retry with back-off - no action needed |
 | **Port already in use** | `lsof -i :8082 -t \| xargs kill -9` or use `--port 9082` |
 
 ---
 
+## Development
+
+```bash
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest tests/ -v
+
+# Lint
+ruff check src/ tests/
+
+# Format
+ruff format src/ tests/
+```
+
+---
+
+## Author
+
+Created and maintained by **[POLPROG](https://polprog.pl/)** ([@polprog-tech](https://github.com/polprog-tech)).
+
+- **Report issues:** [GitHub Issues](https://github.com/polprog-tech/ReleasePilot/issues)
+- **Feature requests:** [GitHub Discussions](https://github.com/polprog-tech/ReleasePilot/discussions)
+- **Documentation:** [docs/architecture.md](docs/architecture.md)
+
+---
+
+## Contributing & Community
+
+- [Contributing Guide](CONTRIBUTING.md) - development setup, code style, PR guidance
+- [Code of Conduct](CODE_OF_CONDUCT.md) - expected behavior for contributors and maintainers
+- [Security Policy](SECURITY.md) - how to privately report security vulnerabilities
+- [Changelog](CHANGELOG.md) - release history and notable changes
+
 ## License
 
-AGPL-3.0 — see [LICENSE](LICENSE).
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE).

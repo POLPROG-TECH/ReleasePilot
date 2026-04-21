@@ -4,7 +4,7 @@ Aggregates commits from multiple ``SourceCollector`` instances into a single
 combined list. Each item retains provenance via ``metadata["app_label"]`` so
 renderers can group output by repository.
 
-The release range / scope is shared — all repositories use the same range
+The release range / scope is shared - all repositories use the same range
 definition, comparison window, and scope.
 """
 

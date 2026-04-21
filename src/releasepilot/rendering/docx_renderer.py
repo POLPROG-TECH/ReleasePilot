@@ -53,7 +53,7 @@ class DocxRenderer:
     """Renders ReleaseNotes as a professional Word document."""
 
     def render(self, notes: ReleaseNotes, config: RenderConfig) -> str:
-        """DOCX is binary — use render_bytes() instead.
+        """DOCX is binary - use render_bytes() instead.
 
         Raises NotImplementedError to prevent silent empty-string returns.
         """
@@ -89,7 +89,7 @@ class DocxRenderer:
         rr = notes.release_range
         lang = config.language
 
-        # ── Title block — app name centered on its own, subtitle below ──
+        # ── Title block - app name centered on its own, subtitle below ──
         if rr.app_name:
             app_para = doc.add_heading(rr.app_name, level=0)
             app_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -147,7 +147,7 @@ class DocxRenderer:
                 run = para.add_run(item.title)
                 run.bold = True
                 if item.description:
-                    para.add_run(f" — {item.description[:200]}")
+                    para.add_run(f" - {item.description[:200]}")
 
         # ── Breaking Changes ──
         if notes.breaking_changes:
@@ -301,5 +301,5 @@ def _item_suffix_text(item: ChangeItem, config: RenderConfig) -> str:
     if config.show_commit_hashes and item.source.short_hash:
         parts.append(item.source.short_hash)
     if parts:
-        return " — " + " ".join(parts)
+        return " - " + " ".join(parts)
     return ""

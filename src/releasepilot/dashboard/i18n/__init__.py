@@ -1,4 +1,4 @@
-"""Dashboard UI i18n package — modular translation catalog for all supported languages.
+"""Dashboard UI i18n package - modular translation catalog for all supported languages.
 
 Usage::
 

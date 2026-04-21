@@ -1,4 +1,4 @@
-"""Shared CLI helpers — options, settings builder, error handling, pipeline runners."""
+"""Shared CLI helpers - options, settings builder, error handling, pipeline runners."""
 
 from __future__ import annotations
 
@@ -106,7 +106,7 @@ def _make_cli_progress():
     def _cb(stage: str, detail: str = "", current: int = 0, total: int = 0) -> None:
         msg = f"  [dim]⟳ {stage}[/dim]"
         if detail:
-            msg += f" [dim]— {detail}[/dim]"
+            msg += f" [dim]- {detail}[/dim]"
         console.print(msg, highlight=False)
 
     return _cb
@@ -281,7 +281,7 @@ def _run_dry(settings: Settings) -> str:
         return ""
 
     console.print()
-    console.print("[bold]🔍 Dry Run — Pipeline Summary[/bold]")
+    console.print("[bold]🔍 Dry Run - Pipeline Summary[/bold]")
     console.print()
     console.print(f"  Range:          {release_range.from_ref}..{release_range.to_ref}")
     console.print(f"  Title:          {release_range.display_title}")

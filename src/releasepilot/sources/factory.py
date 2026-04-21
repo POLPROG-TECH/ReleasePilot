@@ -1,7 +1,7 @@
 """Source collector factory.
 
 Creates the appropriate ``SourceCollector`` instances based on configuration.
-This is the single dispatch point for the pipeline — it decides whether to use
+This is the single dispatch point for the pipeline - it decides whether to use
 local git, remote GitLab, remote GitHub, structured file, or multi-repo collection.
 """
 
@@ -23,7 +23,7 @@ logger = logging.getLogger("releasepilot.source_factory")
 class RepoSource:
     """Defines a single repository source for the pipeline.
 
-    This is the normalised internal representation — created from user input
+    This is the normalised internal representation - created from user input
     (URL, local path, config) by ``parse_repo_source()``.
     """
 
@@ -61,7 +61,7 @@ _GITHUB_URL_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Patterns that indicate an org/user page — NOT a repository
+# Patterns that indicate an org/user page - NOT a repository
 _GITHUB_ORG_PATTERNS = re.compile(
     r"^https?://(?:www\.)?github\.com/"
     r"(?:orgs/[^/]+(?:/.*)?$"  # /orgs/NAME or /orgs/NAME/anything
@@ -120,7 +120,7 @@ def parse_repo_source(
         if match:
             owner, repo = match.group(1), match.group(2)
         else:
-            # URL didn't match owner/repo pattern — don't guess
+            # URL didn't match owner/repo pattern - don't guess
             owner, repo = "", ""
             logger.warning("GitHub URL did not match owner/repo pattern: %s", url_or_path)
         return RepoSource(
@@ -137,7 +137,7 @@ def parse_repo_source(
         # Extract project path from URL
         project_path = ""
         if "://" in url_or_path:
-            # Full URL — extract path after the domain
+            # Full URL - extract path after the domain
             parts = url_or_path.split("://", 1)[1].split("/", 1)
             if len(parts) == 2:
                 project_path = parts[1].rstrip("/").removesuffix(".git")
@@ -161,7 +161,7 @@ def parse_repo_source(
             # Infer gitlab base URL from the full URL
         )
 
-    # Unknown provider — treat as gitlab-ish remote
+    # Unknown provider - treat as gitlab-ish remote
     return RepoSource(
         source_type=provider or "unknown",
         url=url_or_path,
@@ -286,7 +286,7 @@ def validate_repo_source(
     - Provider detection
     - Token requirements
 
-    Returns a structured result — never raises.
+    Returns a structured result - never raises.
     """
     url_or_path = url_or_path.strip()
 
@@ -314,7 +314,7 @@ def validate_repo_source(
     if detected_provider == "gitlab":
         return _validate_gitlab_url(url_or_path, token=token, app_label=app_label)
 
-    # Unknown provider — try to parse as generic remote
+    # Unknown provider - try to parse as generic remote
     return SourceValidationResult(
         valid=False,
         provider="unknown",

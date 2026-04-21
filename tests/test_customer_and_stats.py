@@ -43,14 +43,16 @@ def _make_notes(**kw) -> ReleaseNotes:
 class TestCustomerAudience:
     """Scenarios for customer audience in the Audience enum."""
 
-    def test_customer_in_enum(self):
-        """GIVEN the Audience enum."""
+    """GIVEN the Audience enum"""
 
-        """THEN CUSTOMER has the value 'customer'."""
+    def test_customer_in_enum(self):
+        """THEN CUSTOMER has the value 'customer'"""
+        """WHEN the test exercises customer in enum"""
         assert Audience.CUSTOMER == "customer"
 
+    """GIVEN release notes with FEATURE, REFACTOR, and INFRASTRUCTURE groups"""
+
     def test_customer_view_hides_refactor(self):
-        """GIVEN release notes with FEATURE, REFACTOR, and INFRASTRUCTURE groups."""
         from releasepilot.audience.views import apply_audience
 
         notes = _make_notes(
@@ -71,17 +73,18 @@ class TestCustomerAudience:
             total_changes=3,
         )
 
-        """WHEN apply_audience is called with CUSTOMER audience."""
+        """WHEN apply_audience is called with CUSTOMER audience"""
         result = apply_audience(notes, Audience.CUSTOMER)
 
-        """THEN only FEATURE groups remain, REFACTOR and INFRASTRUCTURE are hidden."""
+        """THEN only FEATURE groups remain, REFACTOR and INFRASTRUCTURE are hidden"""
         cats = {g.category for g in result.groups}
         assert ChangeCategory.FEATURE in cats
         assert ChangeCategory.REFACTOR not in cats
         assert ChangeCategory.INFRASTRUCTURE not in cats
 
+    """GIVEN release notes with 10 feature items"""
+
     def test_customer_view_limits_items(self):
-        """GIVEN release notes with 10 feature items."""
         from releasepilot.audience.views import apply_audience
 
         items = tuple(_make_item(f"Feature {i}") for i in range(10))
@@ -90,21 +93,23 @@ class TestCustomerAudience:
             total_changes=10,
         )
 
-        """WHEN apply_audience is called with CUSTOMER audience."""
+        """WHEN apply_audience is called with CUSTOMER audience"""
         result = apply_audience(notes, Audience.CUSTOMER)
 
-        """THEN items are limited to 5 per group."""
+        """THEN items are limited to 5 per group"""
         assert len(result.groups[0].items) == 5  # max_per_group = 5
 
+    """GIVEN a filename map for each audience type"""
+
     def test_customer_filename_default(self):
-        """GIVEN a filename map for each audience type."""
+        """WHEN the test exercises customer filename default"""
         name_map = {
             Audience.TECHNICAL: "TECHNICAL_NOTES",
             Audience.USER: "WHATS_NEW",
             Audience.CUSTOMER: "CUSTOMER_UPDATE",
         }
 
-        """THEN CUSTOMER maps to 'CUSTOMER_UPDATE'."""
+        """THEN CUSTOMER maps to 'CUSTOMER_UPDATE'"""
         assert name_map[Audience.CUSTOMER] == "CUSTOMER_UPDATE"
 
 
@@ -114,20 +119,23 @@ class TestCustomerAudience:
 class TestEnhancedStats:
     """Scenarios for enhanced PipelineStats fields."""
 
+    """GIVEN a fresh PipelineStats instance"""
+
     def test_new_fields_exist(self):
-        """GIVEN a fresh PipelineStats instance."""
+        """WHEN the test exercises new fields exist"""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         s = PipelineStats()
 
-        """THEN it has first_commit_date, last_commit_date, effective_branch, and effective_date_range fields."""
+        """THEN it has first_commit_date, last_commit_date, effective_branch, and effective_date_range fields"""
         assert hasattr(s, "first_commit_date")
         assert hasattr(s, "last_commit_date")
         assert hasattr(s, "effective_branch")
         assert hasattr(s, "effective_date_range")
 
+    """GIVEN a PipelineStats instance with branch and date fields populated"""
+
     def test_detailed_summary_includes_branch(self):
-        """GIVEN a PipelineStats instance with branch and date fields populated."""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         s = PipelineStats()
@@ -140,17 +148,18 @@ class TestEnhancedStats:
         s.first_commit_date = "2026-01-05"
         s.last_commit_date = "2026-03-10"
 
-        """WHEN detailed_summary is called."""
+        """WHEN detailed_summary is called"""
         summary = s.detailed_summary()
 
-        """THEN the summary includes branch, date range, and commit dates."""
+        """THEN the summary includes branch, date range, and commit dates"""
         assert "Branch: main" in summary
         assert "since 2026-01-01" in summary
         assert "First commit: 2026-01-05" in summary
         assert "Last commit: 2026-03-10" in summary
 
+    """GIVEN PipelineStats with commit dates and branch, and a settings/release range"""
+
     def test_stats_metadata_includes_new_fields(self):
-        """GIVEN PipelineStats with commit dates and branch, and a settings/release range."""
         from releasepilot.pipeline.orchestrator import PipelineStats, compose
 
         s = PipelineStats()
@@ -166,10 +175,10 @@ class TestEnhancedStats:
         rr = ReleaseRange(from_ref="v1", to_ref="v2")
         items = [_make_item("Test")] * 3
 
-        """WHEN compose builds the release notes."""
+        """WHEN compose builds the release notes"""
         notes = compose(settings, items, rr, s)
 
-        """THEN the notes metadata includes the new stats fields."""
+        """THEN the notes metadata includes the new stats fields"""
         assert notes.metadata.get("first_commit_date") == "2026-01-01"
         assert notes.metadata.get("last_commit_date") == "2026-03-15"
         assert notes.metadata.get("effective_branch") == "develop"
@@ -181,8 +190,9 @@ class TestEnhancedStats:
 class TestMarkdownStatsBlock:
     """Scenarios for Markdown stats block rendering."""
 
+    """GIVEN release notes with pipeline metadata populated"""
+
     def test_stats_block_rendered_when_metadata_present(self):
-        """GIVEN release notes with pipeline metadata populated."""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes(
@@ -197,24 +207,25 @@ class TestMarkdownStatsBlock:
             },
         )
 
-        """WHEN the MarkdownRenderer renders the notes."""
+        """WHEN the MarkdownRenderer renders the notes"""
         output = MarkdownRenderer().render(notes, RenderConfig())
 
-        """THEN the output includes a stats block with commit dates."""
+        """THEN the output includes a stats block with commit dates"""
         assert "Release Metrics" in output or "📊" in output
         assert "2026-01-01" in output
         assert "2026-03-15" in output
 
+    """GIVEN release notes with empty metadata"""
+
     def test_stats_block_absent_without_metadata(self):
-        """GIVEN release notes with empty metadata."""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes(metadata={})
 
-        """WHEN the MarkdownRenderer renders the notes."""
+        """WHEN the MarkdownRenderer renders the notes"""
         output = MarkdownRenderer().render(notes, RenderConfig())
 
-        """THEN no stats block appears in the output."""
+        """THEN no stats block appears in the output"""
         assert "📊" not in output
 
 
@@ -224,8 +235,9 @@ class TestMarkdownStatsBlock:
 class TestExecutiveMetricsPosition:
     """Scenarios for executive metrics positioning."""
 
+    """GIVEN an ExecutiveBrief with metrics and achievements"""
+
     def test_metrics_before_achievements(self):
-        """GIVEN an ExecutiveBrief with metrics and achievements."""
         from releasepilot.audience.executive import ExecutiveBrief, ImpactArea
         from releasepilot.rendering.executive_md import ExecutiveMarkdownRenderer
 
@@ -241,10 +253,10 @@ class TestExecutiveMetricsPosition:
             metrics={"total_changes": 5, "features": 3},
         )
 
-        """WHEN the ExecutiveMarkdownRenderer renders the brief."""
+        """WHEN the ExecutiveMarkdownRenderer renders the brief"""
         output = ExecutiveMarkdownRenderer().render(brief)
 
-        """THEN Release Metrics appears before Key Achievements."""
+        """THEN Release Metrics appears before Key Achievements"""
         metrics_pos = output.index("Release Metrics")
         achievements_pos = output.index("Key Achievements")
         assert metrics_pos < achievements_pos
@@ -256,8 +268,10 @@ class TestExecutiveMetricsPosition:
 class TestDaysInput:
     """Scenarios for days input in _prompt_valid_date."""
 
+    """GIVEN a user entering '30' as days input"""
+
     def test_numeric_days_accepted(self):
-        """GIVEN a user entering '30' as days input."""
+        """WHEN the test exercises numeric days accepted"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         with (
@@ -267,12 +281,14 @@ class TestDaysInput:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the date 30 days ago is returned."""
+        """THEN the date 30 days ago is returned"""
         expected = (date.today() - timedelta(days=30)).isoformat()
         assert result == expected
 
+    """GIVEN a user entering '0' then a valid date"""
+
     def test_zero_days_rejected_then_valid(self):
-        """GIVEN a user entering '0' then a valid date."""
+        """WHEN the test exercises zero days rejected then valid"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         valid = (date.today() - timedelta(days=1)).isoformat()
@@ -284,11 +300,13 @@ class TestDaysInput:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the valid date is returned after rejecting zero."""
+        """THEN the valid date is returned after rejecting zero"""
         assert result == valid
 
+    """GIVEN a user entering '9999' then a valid date"""
+
     def test_large_days_rejected_then_valid(self):
-        """GIVEN a user entering '9999' then a valid date."""
+        """WHEN the test exercises large days rejected then valid"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         valid = (date.today() - timedelta(days=1)).isoformat()
@@ -300,11 +318,13 @@ class TestDaysInput:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the valid date is returned after rejecting the large value."""
+        """THEN the valid date is returned after rejecting the large value"""
         assert result == valid
 
+    """GIVEN a user entering yesterday's date as an ISO string"""
+
     def test_date_still_accepted(self):
-        """GIVEN a user entering yesterday's date as an ISO string."""
+        """WHEN the test exercises date still accepted"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         yesterday = (date.today() - timedelta(days=1)).isoformat()
@@ -312,11 +332,13 @@ class TestDaysInput:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the ISO date is accepted and returned."""
+        """THEN the ISO date is accepted and returned"""
         assert result == yesterday
 
+    """GIVEN a user entering 'abc' then a valid date"""
+
     def test_non_numeric_non_date_rejected(self):
-        """GIVEN a user entering 'abc' then a valid date."""
+        """WHEN the test exercises non numeric non date rejected"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         valid = (date.today() - timedelta(days=1)).isoformat()
@@ -328,7 +350,7 @@ class TestDaysInput:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the valid date is returned after rejecting non-numeric input."""
+        """THEN the valid date is returned after rejecting non-numeric input"""
         assert result == valid
 
 
@@ -338,16 +360,20 @@ class TestDaysInput:
 class TestAudienceDefault:
     """Scenarios for default audience selection."""
 
+    """GIVEN the _AUDIENCE_CHOICES list"""
+
     def test_executive_is_default_audience(self):
-        """GIVEN the _AUDIENCE_CHOICES list."""
+        """WHEN the test exercises executive is default audience"""
         from releasepilot.cli.guide import _AUDIENCE_CHOICES
 
-        """THEN Executive is at index 5 (last item)."""
+        """THEN Executive is at index 5 (last item)"""
         # Executive should be at index 5 (last item)
         assert _AUDIENCE_CHOICES[5][1] == Audience.EXECUTIVE
 
+    """GIVEN _step_audience with no stored preference"""
+
     def test_step_audience_default_index(self):
-        """GIVEN _step_audience with no stored preference."""
+        """WHEN the test exercises step audience default index"""
         from releasepilot.cli.guide import _step_audience
 
         with patch(
@@ -357,7 +383,7 @@ class TestAudienceDefault:
             """WHEN _step_audience is called."""
             result = _step_audience(lambda *a: None)
 
-        """THEN it uses index 0 (Standard changelog) as the default."""
+        """THEN it uses index 0 (Standard changelog) as the default"""
         assert result == Audience.EXECUTIVE
         _, kwargs = mock_sel.call_args
         assert kwargs.get("default_index") == 0
@@ -369,15 +395,19 @@ class TestAudienceDefault:
 class TestTranslationIntegration:
     """Scenarios for translation integration."""
 
+    """GIVEN the _translate helper and English language"""
+
     def test_translate_helper_skips_english(self):
-        """GIVEN the _translate helper and English language."""
+        """WHEN the test exercises translate helper skips english"""
         from releasepilot.rendering.markdown import _translate
 
-        """THEN the text is returned unchanged."""
+        """THEN the text is returned unchanged"""
         assert _translate("Hello world", "en") == "Hello world"
 
+    """GIVEN the _translate helper with translate_text mocked for French"""
+
     def test_translate_helper_calls_translate_text(self):
-        """GIVEN the _translate helper with translate_text mocked for French."""
+        """WHEN the test exercises translate helper calls translate text"""
         from releasepilot.rendering.markdown import _translate
 
         with patch(
@@ -387,12 +417,14 @@ class TestTranslationIntegration:
             """WHEN _translate is called with 'fr'."""
             result = _translate("Hello world", "fr")
 
-        """THEN it returns the translated text and calls translate_text."""
+        """THEN it returns the translated text and calls translate_text"""
         assert result == "Bonjour le monde"
         mock_t.assert_called_once_with("Hello world", target_lang="fr")
 
+    """GIVEN release notes and _translate mocked to prefix non-English text with [PL]"""
+
     def test_markdown_renderer_translates_items(self):
-        """GIVEN release notes and _translate mocked to prefix non-English text with [PL]."""
+        """WHEN the test exercises markdown renderer translates items"""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes()
@@ -403,14 +435,16 @@ class TestTranslationIntegration:
             """WHEN the renderer renders with language 'pl'."""
             output = MarkdownRenderer().render(notes, RenderConfig(language="pl"))
 
-        """THEN commit titles remain untranslated but group labels are translated."""
+        """THEN commit titles remain untranslated but group labels are translated"""
         # Commit titles must remain untranslated
         assert "Add dashboard" in output
         # Group labels should be translated
         assert "[PL]" in output
 
+    """GIVEN release notes and _translate wrapped to pass through text"""
+
     def test_markdown_renderer_no_translate_english(self):
-        """GIVEN release notes and _translate wrapped to pass through text."""
+        """WHEN the test exercises markdown renderer no translate english"""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes()
@@ -421,29 +455,31 @@ class TestTranslationIntegration:
             """WHEN the renderer renders with language 'en'."""
             MarkdownRenderer().render(notes, RenderConfig(language="en"))
 
-        """THEN all _translate calls receive 'en' as the language."""
+        """THEN all _translate calls receive 'en' as the language"""
         # _translate should be called but return original for english
         for call_args in mock.call_args_list:
             assert call_args[0][1] == "en"
 
+    """GIVEN the translate_text function with source and target both English"""
+
     def test_translate_text_function_exists(self):
-        """GIVEN the translate_text function with source and target both English."""
+        """WHEN the test exercises translate text function exists"""
         from releasepilot.i18n import translate_text
 
-        """THEN the original text is returned unchanged."""
+        """THEN the original text is returned unchanged"""
         # Should return original when same language
         result = translate_text("Hello", target_lang="en", source_lang="en")
         assert result == "Hello"
 
+    """GIVEN a text containing version and date placeholders"""
+
     def test_translate_text_placeholder_protection(self):
-        """GIVEN a text containing version and date placeholders."""
         from releasepilot.i18n.translator import translate_text
 
-        """WHEN translate_text is called targeting Polish."""
-        # When deep-translator is not installed, returns original
+        """WHEN translate_text is called targeting Polish"""
         result = translate_text("Update v1.2.0 on 2026-01-15", "pl")
 
-        """THEN placeholders are preserved in the result."""
+        """THEN placeholders are preserved in the result"""
         # Should at minimum return original (fallback) or translated with preserved placeholders
         assert "v1.2.0" in result
         assert "2026-01-15" in result
@@ -455,27 +491,33 @@ class TestTranslationIntegration:
 class TestNewI18nLabels:
     """Scenarios for new i18n labels."""
 
+    """GIVEN the i18n get_label function"""
+
     def test_customer_update_label_exists(self):
-        """GIVEN the i18n get_label function."""
+        """WHEN the test exercises customer update label exists"""
         from releasepilot.i18n import get_label
 
-        """THEN 'customer_update' returns correct labels for English and Polish."""
+        """THEN 'customer_update' returns correct labels for English and Polish"""
         assert get_label("customer_update", "en") == "Product Update"
         assert get_label("customer_update", "pl") == "Aktualizacja produktu"
 
+    """GIVEN the i18n get_label function"""
+
     def test_whats_new_label_exists(self):
-        """GIVEN the i18n get_label function."""
+        """WHEN the test exercises whats new label exists"""
         from releasepilot.i18n import get_label
 
-        """THEN 'whats_new' returns correct labels for English and French."""
+        """THEN 'whats_new' returns correct labels for English and French"""
         assert get_label("whats_new", "en") == "What's New"
         assert get_label("whats_new", "fr") == "Nouveautés"
 
+    """GIVEN the i18n get_label function"""
+
     def test_bug_fixes_label_exists(self):
-        """GIVEN the i18n get_label function."""
+        """WHEN the test exercises bug fixes label exists"""
         from releasepilot.i18n import get_label
 
-        """THEN 'bug_fixes' returns correct labels for English and German."""
+        """THEN 'bug_fixes' returns correct labels for English and German"""
         assert get_label("bug_fixes", "en") == "Bug Fixes"
         assert get_label("bug_fixes", "de") == "Fehlerbehebungen"
 
@@ -486,15 +528,17 @@ class TestNewI18nLabels:
 class TestSchemaCustomer:
     """Scenarios for customer audience in schema."""
 
+    """GIVEN the releasepilot JSON schema"""
+
     def test_schema_includes_customer(self):
-        """GIVEN the releasepilot JSON schema."""
+        """WHEN the test exercises schema includes customer"""
         import json
         from pathlib import Path
 
         schema_path = Path(__file__).parent.parent / "schema" / "releasepilot.schema.json"
         schema = json.loads(schema_path.read_text())
 
-        """THEN the audience enum includes 'customer'."""
+        """THEN the audience enum includes 'customer'"""
         audience_enum = schema["properties"]["audience"]["enum"]
         assert "customer" in audience_enum
 
@@ -505,8 +549,10 @@ class TestSchemaCustomer:
 class TestCustomerRenderConfig:
     """Scenarios for customer RenderConfig in guided mode."""
 
+    """GIVEN a RenderConfig with all technical display options disabled"""
+
     def test_customer_render_config_hides_technical_details(self):
-        """GIVEN a RenderConfig with all technical display options disabled."""
+        """WHEN the test exercises customer render config hides technical details"""
         cfg = RenderConfig(
             show_authors=False,
             show_commit_hashes=False,
@@ -514,7 +560,7 @@ class TestCustomerRenderConfig:
             show_pr_links=False,
         )
 
-        """THEN no technical metadata is shown."""
+        """THEN no technical metadata is shown"""
         assert not cfg.show_authors
         assert not cfg.show_commit_hashes
         assert not cfg.show_scope

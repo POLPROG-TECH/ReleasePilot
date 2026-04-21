@@ -1,4 +1,4 @@
-"""GitHub source collector — implements SourceCollector protocol.
+"""GitHub source collector - implements SourceCollector protocol.
 
 Collects change items from a remote GitHub repository via the REST API.
 Bridges the ``GitHubClient`` into the pipeline's source abstraction.

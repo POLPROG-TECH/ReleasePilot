@@ -3,7 +3,7 @@
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Copy this file to .github/workflows/release-notes.yml in your repository.
-# This is the simplest possible setup — generates Markdown release notes on tag push.
+# This is the simplest possible setup - generates Markdown release notes on tag push.
 #
 # For more options, see: docs/github-integration.md
 # ──────────────────────────────────────────────────────────────────────────────

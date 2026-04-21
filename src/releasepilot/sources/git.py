@@ -22,12 +22,12 @@ class GitCollectionError(Exception):
     """Raised when git commands fail."""
 
 
-_FIELD_SEP = "\x1f"  # ASCII Unit Separator — cannot appear in git output
-_RECORD_SEP = "\x1e"  # ASCII Record Separator — cannot appear in git output
+_FIELD_SEP = "\x1f"  # ASCII Unit Separator - cannot appear in git output
+_RECORD_SEP = "\x1e"  # ASCII Record Separator - cannot appear in git output
 
 _GIT_LOG_FORMAT = _FIELD_SEP.join(["%H", "%an", "%aI", "%s", "%b"]) + _RECORD_SEP
 
-# Allowed characters in git refs — prevents shell injection via crafted refs.
+# Allowed characters in git refs - prevents shell injection via crafted refs.
 _SAFE_REF_RE = re.compile(r"^[a-zA-Z0-9._/~^{}\-@:]+$")
 
 # Transient git errors that are worth retrying.
@@ -196,7 +196,7 @@ class GitSourceCollector:
             if result.returncode == 0:
                 return result.stdout
 
-            # Check if transient — retry if so.
+            # Check if transient - retry if so.
             stderr = result.stderr.strip()
             if attempt < _MAX_RETRIES and any(p in stderr for p in _TRANSIENT_PATTERNS):
                 logger.debug("Transient git error (attempt %d): %s", attempt + 1, stderr)

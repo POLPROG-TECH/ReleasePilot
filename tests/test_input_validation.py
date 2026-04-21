@@ -13,8 +13,10 @@ from releasepilot.domain.models import ReleaseRange
 class TestDateValidation:
     """Scenarios for _prompt_valid_date rejecting invalid dates and looping until valid."""
 
+    """GIVEN a user entering a valid date string"""
+
     def test_valid_date_accepted(self):
-        """GIVEN a user entering a valid date string."""
+        """WHEN the test exercises valid date accepted"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         yesterday = (date.today() - timedelta(days=1)).isoformat()
@@ -22,11 +24,13 @@ class TestDateValidation:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the valid date is returned."""
+        """THEN the valid date is returned"""
         assert result == yesterday
 
+    """GIVEN a user entering invalid formats then a valid date"""
+
     def test_invalid_format_rejected_then_valid(self):
-        """GIVEN a user entering invalid formats then a valid date."""
+        """WHEN the test exercises invalid format rejected then valid"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         valid = (date.today() - timedelta(days=7)).isoformat()
@@ -38,11 +42,13 @@ class TestDateValidation:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the valid date is returned."""
+        """THEN the valid date is returned"""
         assert result == valid
 
+    """GIVEN a user entering a future date then a valid past date"""
+
     def test_future_date_rejected(self):
-        """GIVEN a user entering a future date then a valid past date."""
+        """WHEN the test exercises future date rejected"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         future = (date.today() + timedelta(days=30)).isoformat()
@@ -55,11 +61,13 @@ class TestDateValidation:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the valid past date is returned."""
+        """THEN the valid past date is returned"""
         assert result == valid
 
+    """GIVEN a user entering a date with surrounding whitespace"""
+
     def test_whitespace_trimmed(self):
-        """GIVEN a user entering a date with surrounding whitespace."""
+        """WHEN the test exercises whitespace trimmed"""
         from releasepilot.cli.guide import _prompt_valid_date
 
         yesterday = (date.today() - timedelta(days=1)).isoformat()
@@ -67,7 +75,7 @@ class TestDateValidation:
             """WHEN _prompt_valid_date is called."""
             result = _prompt_valid_date()
 
-        """THEN the trimmed date is returned."""
+        """THEN the trimmed date is returned"""
         assert result == yesterday
 
 
@@ -77,8 +85,10 @@ class TestDateValidation:
 class TestSubtitleValidation:
     """Scenarios for _step_custom_title trimming whitespace and capping length."""
 
+    """GIVEN a user entering a subtitle with surrounding whitespace"""
+
     def test_whitespace_trimmed(self):
-        """GIVEN a user entering a subtitle with surrounding whitespace."""
+        """WHEN the test exercises whitespace trimmed"""
         from releasepilot.cli.guide import _step_custom_title
 
         with (
@@ -88,11 +98,13 @@ class TestSubtitleValidation:
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyApp")
 
-        """THEN the trimmed subtitle is returned."""
+        """THEN the trimmed subtitle is returned"""
         assert result == "Monthly Release"
 
+    """GIVEN a user entering an empty subtitle"""
+
     def test_empty_allowed(self):
-        """GIVEN a user entering an empty subtitle."""
+        """WHEN the test exercises empty allowed"""
         from releasepilot.cli.guide import _step_custom_title
 
         with (
@@ -102,11 +114,13 @@ class TestSubtitleValidation:
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyApp")
 
-        """THEN an empty string is returned."""
+        """THEN an empty string is returned"""
         assert result == ""
 
+    """GIVEN a user entering a subtitle longer than 200 characters"""
+
     def test_long_subtitle_trimmed(self):
-        """GIVEN a user entering a subtitle longer than 200 characters."""
+        """WHEN the test exercises long subtitle trimmed"""
         from releasepilot.cli.guide import _step_custom_title
 
         long_text = "A" * 250
@@ -117,7 +131,7 @@ class TestSubtitleValidation:
             """WHEN _step_custom_title is called."""
             result = _step_custom_title("MyApp")
 
-        """THEN the subtitle is trimmed to 200 characters."""
+        """THEN the subtitle is trimmed to 200 characters"""
         assert len(result) == 200
 
 
@@ -127,19 +141,23 @@ class TestSubtitleValidation:
 class TestBranchValidationPresent:
     """Scenarios for _prompt_valid_branch rejecting invalid branches."""
 
+    """GIVEN a user entering a valid branch name"""
+
     def test_valid_branch_accepted(self):
-        """GIVEN a user entering a valid branch name."""
+        """WHEN the test exercises valid branch accepted"""
         from releasepilot.cli.guide import _prompt_valid_branch
 
         with patch("releasepilot.cli.guide_steps.text_prompt", return_value="main"):
             """WHEN _prompt_valid_branch is called."""
             result = _prompt_valid_branch(["main", "develop"])
 
-        """THEN the valid branch is returned."""
+        """THEN the valid branch is returned"""
         assert result == "main"
 
+    """GIVEN a user entering an invalid branch then a valid one"""
+
     def test_invalid_then_valid(self):
-        """GIVEN a user entering an invalid branch then a valid one."""
+        """WHEN the test exercises invalid then valid"""
         from releasepilot.cli.guide import _prompt_valid_branch
 
         calls = iter(["nope", "main"])
@@ -150,7 +168,7 @@ class TestBranchValidationPresent:
             """WHEN _prompt_valid_branch is called."""
             result = _prompt_valid_branch(["main", "develop"])
 
-        """THEN the valid branch is returned."""
+        """THEN the valid branch is returned"""
         assert result == "main"
 
 
@@ -160,8 +178,10 @@ class TestBranchValidationPresent:
 class TestTitleStructure:
     """Scenarios for ReleaseRange storing app_name separately from subtitle."""
 
+    """GIVEN a ReleaseRange with app_name and title"""
+
     def test_display_title_with_app_name(self):
-        """GIVEN a ReleaseRange with app_name and title."""
+        """WHEN the test exercises display title with app name"""
         rr = ReleaseRange(
             from_ref="v1",
             to_ref="v2",
@@ -169,15 +189,17 @@ class TestTitleStructure:
             title="Release Brief",
         )
 
-        """THEN display_title includes app_name and subtitle excludes it."""
-        assert rr.display_title == "LoopIt — Release Brief"
+        """THEN display_title includes app_name and subtitle excludes it"""
+        assert rr.display_title == "LoopIt - Release Brief"
         assert rr.subtitle == "Release Brief"
 
+    """GIVEN a ReleaseRange without app_name"""
+
     def test_display_title_without_app_name(self):
-        """GIVEN a ReleaseRange without app_name."""
+        """WHEN the test exercises display title without app name"""
         rr = ReleaseRange(from_ref="v1", to_ref="v2", title="Notes")
 
-        """THEN display_title equals title and app_name is empty."""
+        """THEN display_title equals title and app_name is empty"""
         assert rr.display_title == "Notes"
         assert rr.app_name == ""
 
@@ -188,15 +210,17 @@ class TestTitleStructure:
 class TestOverwriteDefault:
     """Scenarios for overwrite being the default option."""
 
+    """GIVEN the source code of _confirm_overwrite_or_rename"""
+
     def test_default_index_is_zero(self):
-        """GIVEN the source code of _confirm_overwrite_or_rename."""
+        """WHEN the test exercises default index is zero"""
         import inspect
 
         from releasepilot.cli.guide import _confirm_overwrite_or_rename
 
         source = inspect.getsource(_confirm_overwrite_or_rename)
 
-        """THEN default_index=0 is present in the source."""
+        """THEN default_index=0 is present in the source"""
         assert "default_index=0" in source
 
 
@@ -206,21 +230,22 @@ class TestOverwriteDefault:
 class TestGitArgOrdering:
     """Scenarios for git options appearing before positional branch argument."""
 
+    """GIVEN the source code of collect_by_date"""
+
     def test_collect_by_date_branch_last(self):
-        """GIVEN the source code of collect_by_date."""
         import inspect
 
         from releasepilot.sources.git import GitSourceCollector
 
         source = inspect.getsource(GitSourceCollector.collect_by_date)
 
-        """WHEN line positions of --since and branch are compared."""
+        """WHEN line positions of --since and branch are compared"""
         # The branch param should be after --since and --pretty lines
         lines = source.split("\n")
         since_line = next(i for i, ln in enumerate(lines) if "--since=" in ln)
         branch_line = next(i for i, ln in enumerate(lines) if "branch," in ln)
 
-        """THEN branch argument appears after --since."""
+        """THEN branch argument appears after --since"""
         assert branch_line > since_line
 
 
@@ -230,24 +255,28 @@ class TestGitArgOrdering:
 class TestJsonSchemaExists:
     """Scenarios for JSON schema config validation file."""
 
+    """GIVEN the expected schema file path"""
+
     def test_schema_file_present(self):
-        """GIVEN the expected schema file path."""
+        """WHEN the test exercises schema file present"""
         from pathlib import Path
 
         schema = Path(__file__).parent.parent / "schema" / "releasepilot.schema.json"
 
-        """THEN the file exists."""
+        """THEN the file exists"""
         assert schema.is_file()
 
+    """GIVEN the schema file loaded as JSON"""
+
     def test_schema_valid_json(self):
-        """GIVEN the schema file loaded as JSON."""
+        """WHEN the test exercises schema valid json"""
         import json
         from pathlib import Path
 
         schema = Path(__file__).parent.parent / "schema" / "releasepilot.schema.json"
         data = json.loads(schema.read_text())
 
-        """THEN it has the expected type and properties."""
+        """THEN it has the expected type and properties"""
         assert data["type"] == "object"
         assert "branch" in data["properties"]
 
@@ -258,13 +287,15 @@ class TestJsonSchemaExists:
 class TestPipelineStatsFields:
     """Scenarios for PipelineStats having all required fields."""
 
+    """GIVEN a default PipelineStats instance"""
+
     def test_stats_fields(self):
-        """GIVEN a default PipelineStats instance."""
+        """WHEN the test exercises stats fields"""
         from releasepilot.pipeline.orchestrator import PipelineStats
 
         stats = PipelineStats()
 
-        """THEN all required fields are present."""
+        """THEN all required fields are present"""
         assert hasattr(stats, "raw")
         assert hasattr(stats, "after_filter")
         assert hasattr(stats, "after_dedup")

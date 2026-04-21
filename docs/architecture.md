@@ -88,12 +88,12 @@ ReleasePilot uses a **pipeline architecture** where data flows through clearly s
 
 This design was chosen as the best balance between:
 
-- **Extensibility** — New stages can be inserted at any point without modifying existing ones
-- **Correctness** — Each stage is a pure function (input → output) except Source Collection, making them deterministic and easy to test
-- **Output quality** — Dedicated filtering, dedup, and audience stages ensure polished results
-- **Maintainability** — Each module has exactly one responsibility
-- **Deterministic behavior** — Explicit sort keys at every boundary guarantee stable output
-- **Future integration** — Protocol-based extension points support new sources, formats, and audience views
+- **Extensibility** - New stages can be inserted at any point without modifying existing ones
+- **Correctness** - Each stage is a pure function (input → output) except Source Collection, making them deterministic and easy to test
+- **Output quality** - Dedicated filtering, dedup, and audience stages ensure polished results
+- **Maintainability** - Each module has exactly one responsibility
+- **Deterministic behavior** - Explicit sort keys at every boundary guarantee stable output
+- **Future integration** - Protocol-based extension points support new sources, formats, and audience views
 
 ## Package Structure
 
@@ -141,8 +141,8 @@ src/releasepilot/
 
 The directory layout mirrors the architecture diagram above:
 
-- **audience/** contains composition logic — transforming `ReleaseNotes` into audience-specific models (`ExecutiveBrief`, `NarrativeBrief`) or filtered views
-- **rendering/** contains all output formatting — converting composed models into Markdown, PDF, DOCX, JSON, or plaintext
+- **audience/** contains composition logic - transforming `ReleaseNotes` into audience-specific models (`ExecutiveBrief`, `NarrativeBrief`) or filtered views
+- **rendering/** contains all output formatting - converting composed models into Markdown, PDF, DOCX, JSON, or plaintext
 
 ## Domain Model
 
@@ -227,18 +227,18 @@ The narrative pipeline (`audience/narrative.py` + `rendering/narrative_*.py`) pr
 | **Composition** | `audience/executive.py` | `audience/narrative.py` |
 | **Model** | `ExecutiveBrief` | `NarrativeBrief` |
 | **Renderers** | `rendering/executive_*.py` | `rendering/narrative_*.py` |
-| **Intermediate layer** | — | `FactItem` / `FactGroup` (inspectable) |
-| **Validation** | — | Claim validation against fact layer |
+| **Intermediate layer** | - | `FactItem` / `FactGroup` (inspectable) |
+| **Validation** | - | Claim validation against fact layer |
 
 ### Pipeline stages
 
-1. **Fact extraction** — converts `ChangeItem` instances into inspectable `FactItem` / `FactGroup` models
-2. **Narrative composition** — generates prose paragraphs from the fact layer (deterministic, no LLM)
-3. **Claim validation** — checks generated text for forbidden language, numeric inconsistencies, and phantom categories
-4. **Rendering** — formats the `NarrativeBrief` as Markdown, plaintext, or JSON
+1. **Fact extraction** - converts `ChangeItem` instances into inspectable `FactItem` / `FactGroup` models
+2. **Narrative composition** - generates prose paragraphs from the fact layer (deterministic, no LLM)
+3. **Claim validation** - checks generated text for forbidden language, numeric inconsistencies, and phantom categories
+4. **Rendering** - formats the `NarrativeBrief` as Markdown, plaintext, or JSON
 
 ### Why this placement
 
-The narrative composition logic lives in `audience/` (not in a separate top-level module) because it follows the same pattern as the executive pipeline: it transforms `ReleaseNotes` into an audience-specific model. The renderers live in `rendering/` because they are output formatters. This keeps the architecture layered and consistent — composition in one place, formatting in another.
+The narrative composition logic lives in `audience/` (not in a separate top-level module) because it follows the same pattern as the executive pipeline: it transforms `ReleaseNotes` into an audience-specific model. The renderers live in `rendering/` because they are output formatters. This keeps the architecture layered and consistent - composition in one place, formatting in another.
 
 See [docs/narrative-mode.md](narrative-mode.md) for usage documentation, grounding rules, and output examples.

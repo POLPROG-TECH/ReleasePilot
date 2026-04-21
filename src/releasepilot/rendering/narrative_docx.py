@@ -124,7 +124,7 @@ class NarrativeDocxRenderer:
         _add_accent_rule(doc, qn, _accent_hex, thickness="18")
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # OVERVIEW — highlighted panel
+        # OVERVIEW - highlighted panel
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.mode == "customer-narrative":
             overview_heading_text = get_label("narrative_overview_customer", lang)
@@ -157,7 +157,7 @@ class NarrativeDocxRenderer:
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # BODY PARAGRAPHS — continuous prose
+        # BODY PARAGRAPHS - continuous prose
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         for paragraph in brief.body_paragraphs:
             para = doc.add_paragraph()
@@ -169,7 +169,7 @@ class NarrativeDocxRenderer:
             run.font.color.rgb = _rgb(_CHARCOAL)
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # BREAKING CHANGES — amber warning panel
+        # BREAKING CHANGES - amber warning panel
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.breaking_notice:
             warn_table = doc.add_table(rows=2, cols=1)

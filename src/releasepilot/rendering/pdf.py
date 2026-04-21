@@ -53,7 +53,7 @@ class PdfRenderer:
     """Renders ReleaseNotes as a professional PDF document."""
 
     def render(self, notes: ReleaseNotes, config: RenderConfig) -> str:
-        """PDF is binary — use render_bytes() instead.
+        """PDF is binary - use render_bytes() instead.
 
         Raises NotImplementedError to prevent silent empty-string returns.
         """
@@ -109,7 +109,7 @@ class PdfRenderer:
             fontName=font_bold,
             fontSize=22,
             spaceAfter=4,
-            alignment=0,  # left — only app name is centered
+            alignment=0,  # left - only app name is centered
             textColor=colors.HexColor("#1a1a2e"),
         )
         subtitle_style = ParagraphStyle(
@@ -167,7 +167,7 @@ class PdfRenderer:
         rr = notes.release_range
         lang = config.language
 
-        # ── Title block — app name centered on its own, subtitle below ──
+        # ── Title block - app name centered on its own, subtitle below ──
         if rr.app_name:
             story.append(Paragraph(_esc(rr.app_name), app_name_style))
             story.append(Spacer(1, 6))
@@ -294,7 +294,7 @@ def _item_suffix(item: ChangeItem, config: RenderConfig) -> str:
     if config.show_commit_hashes and item.source.short_hash:
         parts.append(f"<font size='7' color='#999999'>{item.source.short_hash}</font>")
     if parts:
-        return " — " + " ".join(parts)
+        return " - " + " ".join(parts)
     return ""
 
 

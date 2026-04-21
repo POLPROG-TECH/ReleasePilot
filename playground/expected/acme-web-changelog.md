@@ -24,21 +24,21 @@
 
 ## ✨ New Features
 
-- Add rate limiting middleware — `api`
-- Add PDF export for reports — `export`
-- Add push notification support — `notifications`
-- Add full-text search with Elasticsearch — `search`
-- Add team management and role-based access — `teams`
+- Add rate limiting middleware - `api`
+- Add PDF export for reports - `export`
+- Add push notification support - `notifications`
+- Add full-text search with Elasticsearch - `search`
+- Add team management and role-based access - `teams`
 
 ## 🐛 Bug Fixes
 
-- Correct Polish date formatting — `i18n`
-- Handle expired card retry logic — `payments`
-- Handle large file uploads gracefully — `upload`
+- Correct Polish date formatting - `i18n`
+- Handle expired card retry logic - `payments`
+- Handle large file uploads gracefully - `upload`
 
 ## ⚡ Performance
 
-- Implement Redis caching layer — `cache`
+- Implement Redis caching layer - `cache`
 
 ## 📝 Documentation
 
@@ -46,11 +46,11 @@
 
 ## ♻️ Refactoring
 
-- Migrate from REST to GraphQL endpoints — `api`
+- Migrate from REST to GraphQL endpoints - `api`
 
 ## 📋 Other Changes
 
-- Streamline onboarding wizard flow — `ux`
+- Streamline onboarding wizard flow - `ux`
 
 ---
 *13 changes in this release*

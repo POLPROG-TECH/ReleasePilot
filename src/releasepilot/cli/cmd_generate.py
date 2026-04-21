@@ -1,4 +1,4 @@
-"""CLI ``generate`` command — full release-notes generation pipeline."""
+"""CLI ``generate`` command - full release-notes generation pipeline."""
 
 from __future__ import annotations
 

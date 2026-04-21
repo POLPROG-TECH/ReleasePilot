@@ -1,1 +1,1 @@
-"""Shared utilities used across ReleasePilot — logging, networking."""
+"""Shared utilities used across ReleasePilot - logging, networking."""

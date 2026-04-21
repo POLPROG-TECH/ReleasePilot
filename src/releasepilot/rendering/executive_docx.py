@@ -135,7 +135,7 @@ class ExecutiveDocxRenderer:
         _add_accent_rule(doc, qn, _accent_hex, thickness="18")
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # EXECUTIVE SUMMARY — highlighted panel
+        # EXECUTIVE SUMMARY - highlighted panel
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         summary_table = doc.add_table(rows=2, cols=1)
         summary_table.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -263,7 +263,7 @@ class ExecutiveDocxRenderer:
             doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        # RISKS — distinct visual treatment
+        # RISKS - distinct visual treatment
         # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if brief.risks:
             risk_table = doc.add_table(rows=1 + len(brief.risks), cols=1)

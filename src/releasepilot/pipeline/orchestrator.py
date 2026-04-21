@@ -58,7 +58,7 @@ def _compose_title(settings: Settings, fallback: str) -> str:
     # Append version suffix if present and not already included
     if settings.version and settings.version not in result:
         version_part = f"Version {settings.version}"
-        result = f"{result} — {version_part}" if result else version_part
+        result = f"{result} - {version_part}" if result else version_part
 
     return result
 
@@ -115,7 +115,7 @@ def build_release_range(
         if settings.title:
             fallback = settings.title
         elif settings.version:
-            fallback = f"Release {settings.version} — since {settings.since_date}"
+            fallback = f"Release {settings.version} - since {settings.since_date}"
         else:
             fallback = f"Changes since {settings.since_date}"
         title = _compose_title(settings, fallback)
@@ -130,7 +130,7 @@ def build_release_range(
 
     if not from_ref and not settings.is_file_source:
         if settings.is_remote_source or settings.is_multi_repo:
-            # Remote sources cannot resolve tags locally — require explicit range
+            # Remote sources cannot resolve tags locally - require explicit range
             raise PipelineError(
                 "No --from ref specified for remote repository source. "
                 "Remote repositories require explicit --from and --to refs, "
@@ -183,7 +183,7 @@ def collect(
         collector = StructuredFileCollector(settings.source_file)
         return collector.collect(release_range)
 
-    # Remote or multi-repo sources — use the factory
+    # Remote or multi-repo sources - use the factory
     if settings.is_multi_repo or settings.is_remote_source:
         from releasepilot.sources.factory import create_collector_from_settings
 

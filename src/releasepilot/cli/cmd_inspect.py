@@ -1,4 +1,4 @@
-"""CLI inspection commands — ``preview``, ``collect``, ``analyze``."""
+"""CLI inspection commands - ``preview``, ``collect``, ``analyze``."""
 
 from __future__ import annotations
 

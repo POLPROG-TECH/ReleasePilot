@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Scheduled Pipeline (GitLab CI)
+# ReleasePilot - Scheduled Pipeline (GitLab CI)
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Generates release notes on a schedule (e.g. weekly sprint reports).

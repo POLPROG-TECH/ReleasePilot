@@ -117,7 +117,7 @@ CATALOG_FR: dict[str, str] = {
     "ui.wizard.regen_hint": "Ce tableau de bord a été généré avec la configuration ci-dessus. Pour modifier la plage de dates, la branche ou le dépôt, régénérez avec releasepilot dashboard ou releasepilot guide.",
     "ui.wizard.recommended": "(recommandé)",
     "ui.wizard.binary_note": "(généré via CLI)",
-    "ui.wizard.binary_preview_note": "— Aperçu markdown (format binaire généré via CLI)",
+    "ui.wizard.binary_preview_note": "- Aperçu markdown (format binaire généré via CLI)",
     "ui.wizard.binary_export_note": "Le format binaire (PDF/DOCX) est généré via CLI. Contenu markdown affiché ci-dessous.",
     "ui.wizard.formats_available": "formats disponibles pour cette audience",
     # Export modal
@@ -223,17 +223,17 @@ CATALOG_FR: dict[str, str] = {
     "ui.plural.breaking_one": "{count} breaking change detected in this release.",
     "ui.plural.breaking_few": "{count} breaking changes detected in this release.",
     "ui.plural.breaking_other": "{count} breaking changes detected in this release.",
-    # Wizard — step labels
+    # Wizard - step labels
     "ui.wizard.repositories_step": "Dépôts",
     "ui.wizard.scope_step": "Portée",
     "ui.wizard.review_step": "Vérification",
-    # Wizard — source type
+    # Wizard - source type
     "ui.wizard.source_type_desc": "Choisissez où se trouve votre code source. Cela détermine comment ReleasePilot se connecte à vos dépôts.",
     "ui.wizard.local_repo_label": "Dépôt local",
     "ui.wizard.local_repo_desc": "Utilisez un dépôt git sur cette machine. Idéal pour les flux de développement locaux.",
     "ui.wizard.remote_repo_label": "Dépôt distant",
     "ui.wizard.remote_repo_desc": "Connectez-vous aux dépôts GitHub ou GitLab via URL. Idéal pour le CI/CD et le travail en équipe.",
-    # Wizard — repositories
+    # Wizard - repositories
     "ui.wizard.select_repos_title": "Sélectionner les dépôts",
     "ui.wizard.select_repos_desc": "Choisissez les dépôts à inclure dans cette version.",
     "ui.wizard.repo_mode_title": "Mode de dépôt",
@@ -257,7 +257,7 @@ CATALOG_FR: dict[str, str] = {
     "ui.wizard.inspect_btn": "Inspecter le dépôt",
     "ui.wizard.inspect_token_hint": "Validez votre jeton pour activer l'inspection.",
     "ui.wizard.add_repo_label": "Ajouter l'URL du dépôt",
-    # Wizard — authentication
+    # Wizard - authentication
     "ui.wizard.auth_title": "Authentification",
     "ui.wizard.gitlab_url_label": "URL GitLab",
     "ui.wizard.gitlab_url_hint": "URL de base de votre instance GitLab (ex. https://gitlab.company.com)",
@@ -275,7 +275,7 @@ CATALOG_FR: dict[str, str] = {
     "ui.wizard.validating": "Validation\u2026",
     "ui.wizard.inspecting": "Inspection\u2026",
     "ui.wizard.ssl_disabled": "Vérification SSL désactivée",
-    # Wizard — scope
+    # Wizard - scope
     "ui.wizard.scope_title": "Portée de la version",
     "ui.wizard.scope_desc": "Définissez la plage de temps ou de versions pour cette version. Cette portée s'applique à tous les dépôts sélectionnés.",
     "ui.wizard.scope_banner_multi": "Portée partagée \u2014 les commits seront collectés à partir de <strong>{count}</strong> dépôts en utilisant la plage ci-dessous.",
@@ -286,7 +286,7 @@ CATALOG_FR: dict[str, str] = {
     "ui.wizard.scope_to_ref_hint": "Référence de fin. Par défaut HEAD (dernier commit).",
     "ui.wizard.scanning_dir": "Scan du répertoire\u2026",
     "ui.wizard.scan_found": "<strong>{count}</strong> dépôts git trouvés",
-    # Wizard — review
+    # Wizard - review
     "ui.wizard.review_title": "Vérifier et générer",
     "ui.wizard.review_desc": "Vérifiez votre configuration avant de générer les notes de version.",
     "ui.wizard.review_source": "Source",
@@ -301,11 +301,11 @@ CATALOG_FR: dict[str, str] = {
     "ui.wizard.review_on_branch": "sur la branche",
     "ui.wizard.review_not_set": "(non défini)",
     "ui.wizard.generate_btn": "Générer les notes de version",
-    # Wizard — pipeline
+    # Wizard - pipeline
     "ui.wizard.pipeline_title": "Pipeline de traitement",
     "ui.wizard.pipeline_desc": "Collecte des commits, classification des modifications et composition des notes de version\u2026",
     "ui.wizard.preview_export_btn": "Aperçu et export",
-    # Wizard — repo metadata
+    # Wizard - repo metadata
     "ui.wizard.meta_version": "Version",
     "ui.wizard.meta_total_commits": "Commits totaux",
     "ui.wizard.meta_last_activity": "Dernière activité",
@@ -315,7 +315,7 @@ CATALOG_FR: dict[str, str] = {
     "ui.wizard.inspect_default_branch": "Branche par défaut",
     "ui.wizard.inspect_branches": "Branches",
     "ui.wizard.inspect_tags": "Tags",
-    # Wizard — validation errors
+    # Wizard - validation errors
     "ui.wizard.err_validate_token": "Validez votre jeton d'accès avant de continuer.",
     "ui.wizard.err_gitlab_url_required": "L'URL GitLab est requise.",
     "ui.wizard.err_gitlab_url_missing": "Entrez l'URL de votre instance GitLab.",

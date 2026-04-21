@@ -176,18 +176,18 @@ All templates use `RP_*` prefixed variables for configuration. Override them in 
 | `RP_VERSION` | Version label | Auto-detect from `CI_COMMIT_TAG` |
 | `RP_FROM_REF` | Start ref | Auto-detect (latest tag) |
 | `RP_TO_REF` | End ref | `HEAD` |
-| `RP_SINCE` | Since date (YYYY-MM-DD) | — |
-| `RP_BRANCH` | Branch (date-range mode) | — |
+| `RP_SINCE` | Since date (YYYY-MM-DD) | - |
+| `RP_BRANCH` | Branch (date-range mode) | - |
 | `RP_SHOW_AUTHORS` | Include author names | `false` |
 | `RP_SHOW_HASHES` | Include commit hashes | `false` |
 | `RP_OUTPUT_DIR` | Output directory | `release-notes` |
-| `RP_SOURCE_FILE` | Structured JSON input file | — |
+| `RP_SOURCE_FILE` | Structured JSON input file | - |
 | `RP_INSTALL_SPEC` | Pip install specifier | ReleasePilot from GitHub |
 | `RP_PYTHON_VERSION` | Python Docker image version | `3.12` |
 
 ### Repository-level configuration (.releasepilot.json)
 
-Same as GitHub — add a `.releasepilot.json` to your repository root for shared defaults. Pipeline variables override config file values.
+Same as GitHub - add a `.releasepilot.json` to your repository root for shared defaults. Pipeline variables override config file values.
 
 ## Including Templates
 
@@ -343,7 +343,7 @@ variables:
 **Check:**
 - The `artifacts:` section lists the correct path
 - `expire_in` is set to a reasonable duration
-- The job completed successfully (artifacts are not uploaded on failure by default — add `when: always` to `artifacts:` if needed)
+- The job completed successfully (artifacts are not uploaded on failure by default - add `when: always` to `artifacts:` if needed)
 
 ### Pipeline schedule not working
 

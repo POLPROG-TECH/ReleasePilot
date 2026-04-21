@@ -77,8 +77,10 @@ def _make_notes(
 class TestMarkdownFooterPipelineSummary:
     """Verify that pipeline_summary metadata renders without syntax errors."""
 
+    """GIVEN The footer must render pipeline_summary text from metadata"""
+
     def test_footer_with_pipeline_summary(self):
-        """The footer must render pipeline_summary text from metadata."""
+        """WHEN the test exercises footer with pipeline summary"""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes(
@@ -90,17 +92,21 @@ class TestMarkdownFooterPipelineSummary:
         config = RenderConfig()
         output = MarkdownRenderer().render(notes, config)
 
+        """THEN the expected behavior for footer with pipeline summary is observed"""
         assert "Pipeline:" in output
         assert "50 collected" in output
 
+    """GIVEN Rendering must not crash when pipeline_summary is absent"""
+
     def test_footer_without_pipeline_summary(self):
-        """Rendering must not crash when pipeline_summary is absent."""
+        """WHEN the test exercises footer without pipeline summary"""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes(metadata={})
         config = RenderConfig()
         output = MarkdownRenderer().render(notes, config)
 
+        """THEN the expected behavior for footer without pipeline summary is observed"""
         assert "Pipeline:" not in output
 
 
@@ -112,24 +118,32 @@ class TestMarkdownFooterPipelineSummary:
 class TestAtomicWriteDoubleClose:
     """Verify atomic write helpers don't double-close file descriptors."""
 
+    """GIVEN Normal write should produce correct file content"""
+
     def test_atomic_write_text_success(self, tmp_path: Path):
-        """Normal write should produce correct file content."""
+        """WHEN the test exercises atomic write text success"""
         from releasepilot.cli.helpers import _atomic_write_text
 
         target = tmp_path / "out.txt"
         _atomic_write_text(str(target), "hello world")
+        """THEN the expected behavior for atomic write text success is observed"""
         assert target.read_text() == "hello world"
 
+    """GIVEN Normal write of bytes should produce correct file content"""
+
     def test_atomic_write_bytes_success(self, tmp_path: Path):
-        """Normal write of bytes should produce correct file content."""
+        """WHEN the test exercises atomic write bytes success"""
         from releasepilot.cli.helpers import _atomic_write_bytes
 
         target = tmp_path / "out.bin"
         _atomic_write_bytes(str(target), b"\x00\x01\x02")
+        """THEN the expected behavior for atomic write bytes success is observed"""
         assert target.read_bytes() == b"\x00\x01\x02"
 
+    """GIVEN When os.replace fails, the fd should be safely closed once"""
+
     def test_atomic_write_text_replace_failure_no_double_close(self, tmp_path: Path):
-        """When os.replace fails, the fd should be safely closed once."""
+        """WHEN the test exercises atomic write text replace failure no double close"""
         from releasepilot.cli.helpers import _atomic_write_text
 
         target = tmp_path / "out.txt"
@@ -140,15 +154,19 @@ class TestAtomicWriteDoubleClose:
 
         # Verify no temp files left behind
         remaining = list(tmp_path.glob("*.tmp"))
+        """THEN the expected behavior for atomic write text replace failure no double close is observed"""
         assert len(remaining) == 0
 
+    """GIVEN Atomic write should atomically overwrite existing files"""
+
     def test_atomic_write_bytes_overwrites_existing(self, tmp_path: Path):
-        """Atomic write should atomically overwrite existing files."""
+        """WHEN the test exercises atomic write bytes overwrites existing"""
         from releasepilot.cli.helpers import _atomic_write_bytes
 
         target = tmp_path / "out.bin"
         target.write_bytes(b"old data")
         _atomic_write_bytes(str(target), b"new data")
+        """THEN the expected behavior for atomic write bytes overwrites existing is observed"""
         assert target.read_bytes() == b"new data"
 
 
@@ -160,20 +178,25 @@ class TestAtomicWriteDoubleClose:
 class TestWebServerXSS:
     """Verify that error pages escape HTML special characters."""
 
+    """GIVEN HTML special chars in error messages must be escaped"""
+
     def test_error_message_is_escaped(self):
-        """HTML special chars in error messages must be escaped."""
+        """WHEN the test exercises error message is escaped"""
         from html import escape
 
         malicious = '<script>alert("xss")</script>'
         escaped = escape(malicious)
 
         # Verify the escape function works as expected
+        """THEN the expected behavior for error message is escaped is observed"""
         assert "<script>" not in escaped
         assert "&lt;script&gt;" in escaped
 
+    """GIVEN The dashboard page error handler should escape exception text"""
+
     @pytest.mark.asyncio
     async def test_dashboard_error_escapes_exception(self):
-        """The dashboard page error handler should escape exception text."""
+        """WHEN the test exercises dashboard error escapes exception"""
         from fastapi.testclient import TestClient
 
         from releasepilot.web.server import create_app
@@ -200,14 +223,17 @@ class TestWebServerXSS:
 class TestGenerateRaceCondition:
     """Verify that concurrent generation requests are properly serialized."""
 
+    """GIVEN A second generate request should get 409 while first is running"""
+
     def test_generate_rejects_while_running(self):
-        """A second generate request should get 409 while first is running."""
+        """WHEN the test exercises generate rejects while running"""
         from releasepilot.web.state import AnalysisPhase, AnalysisProgress, AppState
 
         # The check-and-set is now atomic inside the lock
         # We verify by checking the state object directly
         state = AppState()
         state.analysis_progress = AnalysisProgress(phase=AnalysisPhase.RUNNING)
+        """THEN the expected behavior for generate rejects while running is observed"""
         assert state.analysis_progress.phase == AnalysisPhase.RUNNING
 
 
@@ -219,8 +245,10 @@ class TestGenerateRaceCondition:
 class TestFontRegistrationThreadSafety:
     """Verify font registration is thread-safe."""
 
+    """GIVEN Multiple threads calling register_unicode_font must not crash"""
+
     def test_concurrent_registration_no_crash(self):
-        """Multiple threads calling register_unicode_font must not crash."""
+        """WHEN the test exercises concurrent registration no crash"""
         import releasepilot.rendering.fonts as fonts_mod
 
         # Reset module state for the test
@@ -243,13 +271,16 @@ class TestFontRegistrationThreadSafety:
         for t in threads:
             t.join(timeout=5)
 
+        """THEN the expected behavior for concurrent registration no crash is observed"""
         assert not errors, f"Thread errors: {errors}"
         assert len(results) == 10
         # All threads should get the same result
         assert len(set(results)) == 1
 
+    """GIVEN Calling register_unicode_font twice returns same result"""
+
     def test_registration_idempotent(self):
-        """Calling register_unicode_font twice returns same result."""
+        """WHEN the test exercises registration idempotent"""
         import releasepilot.rendering.fonts as fonts_mod
 
         fonts_mod._init_done = False
@@ -257,6 +288,7 @@ class TestFontRegistrationThreadSafety:
 
         r1 = fonts_mod.register_unicode_font()
         r2 = fonts_mod.register_unicode_font()
+        """THEN the expected behavior for registration idempotent is observed"""
         assert r1 == r2
 
 
@@ -268,8 +300,10 @@ class TestFontRegistrationThreadSafety:
 class TestDashboardDryRunKwarg:
     """Verify dashboard command properly handles dry_run kwarg."""
 
+    """GIVEN _build_settings must not crash when dry_run is absent"""
+
     def test_build_settings_accepts_no_dry_run(self):
-        """_build_settings must not crash when dry_run is absent."""
+        """WHEN the test exercises build settings accepts no dry run"""
         from releasepilot.cli.helpers import _build_settings
 
         # This should not raise TypeError about unexpected 'dry_run'
@@ -281,12 +315,16 @@ class TestDashboardDryRunKwarg:
             version_str="",
             title="",
         )
+        """THEN the expected behavior for build settings accepts no dry run is observed"""
         assert settings.repo_path == "."
 
+    """GIVEN _build_settings should not accept dry_run as a parameter"""
+
     def test_build_settings_rejects_dry_run(self):
-        """_build_settings should not accept dry_run as a parameter."""
+        """WHEN the test exercises build settings rejects dry run"""
         from releasepilot.cli.helpers import _build_settings
 
+        """THEN the expected behavior for build settings rejects dry run is observed"""
         with pytest.raises(TypeError):
             _build_settings(
                 repo=".",
@@ -307,8 +345,10 @@ class TestDashboardDryRunKwarg:
 class TestEmptyReleaseDetectionJSON:
     """Verify empty release detection works for JSON output."""
 
+    """GIVEN JSON with total_changes=0 should be detected as empty"""
+
     def test_empty_json_detected(self):
-        """JSON with total_changes=0 should be detected as empty."""
+        """WHEN the test exercises empty json detected"""
         from releasepilot.cli.helpers import _is_empty_release
 
         json_output = json.dumps(
@@ -318,10 +358,13 @@ class TestEmptyReleaseDetectionJSON:
                 "groups": [],
             }
         )
+        """THEN the expected behavior for empty json detected is observed"""
         assert _is_empty_release(json_output) is True
 
+    """GIVEN JSON with changes should not be detected as empty"""
+
     def test_non_empty_json_not_detected(self):
-        """JSON with changes should not be detected as empty."""
+        """WHEN the test exercises non empty json not detected"""
         from releasepilot.cli.helpers import _is_empty_release
 
         json_output = json.dumps(
@@ -331,19 +374,26 @@ class TestEmptyReleaseDetectionJSON:
                 "groups": [{"category": "feature", "items": []}],
             }
         )
+        """THEN the expected behavior for non empty json not detected is observed"""
         assert _is_empty_release(json_output) is False
 
+    """GIVEN Empty string should be detected as empty release"""
+
     def test_empty_string_detected(self):
-        """Empty string should be detected as empty release."""
+        """WHEN the test exercises empty string detected"""
         from releasepilot.cli.helpers import _is_empty_release
 
+        """THEN the expected behavior for empty string detected is observed"""
         assert _is_empty_release("") is True
         assert _is_empty_release("   ") is True
 
+    """GIVEN Malformed JSON starting with { should not crash"""
+
     def test_invalid_json_not_crash(self):
-        """Malformed JSON starting with { should not crash."""
+        """WHEN the test exercises invalid json not crash"""
         from releasepilot.cli.helpers import _is_empty_release
 
+        """THEN the expected behavior for invalid json not crash is observed"""
         assert _is_empty_release("{invalid json") is False
 
 
@@ -355,8 +405,10 @@ class TestEmptyReleaseDetectionJSON:
 class TestWebConfigValidation:
     """Verify config update endpoint validates enum fields."""
 
+    """GIVEN PUT /api/config with invalid audience should return 400"""
+
     def test_invalid_audience_rejected(self):
-        """PUT /api/config with invalid audience should return 400."""
+        """WHEN the test exercises invalid audience rejected"""
         from fastapi.testclient import TestClient
 
         from releasepilot.web.server import create_app
@@ -365,11 +417,14 @@ class TestWebConfigValidation:
         client = TestClient(app)
 
         resp = client.put("/api/config", json={"audience": "invalid_audience"})
+        """THEN the expected behavior for invalid audience rejected is observed"""
         assert resp.status_code == 400
         assert "Invalid audience" in resp.json()["error"]
 
+    """GIVEN PUT /api/config with valid audience should return 200"""
+
     def test_valid_audience_accepted(self):
-        """PUT /api/config with valid audience should return 200."""
+        """WHEN the test exercises valid audience accepted"""
         from fastapi.testclient import TestClient
 
         from releasepilot.web.server import create_app
@@ -378,11 +433,14 @@ class TestWebConfigValidation:
         client = TestClient(app)
 
         resp = client.put("/api/config", json={"audience": "executive"})
+        """THEN the expected behavior for valid audience accepted is observed"""
         assert resp.status_code == 200
         assert resp.json()["ok"] is True
 
+    """GIVEN PUT /api/config with invalid format should return 400"""
+
     def test_invalid_format_rejected(self):
-        """PUT /api/config with invalid format should return 400."""
+        """WHEN the test exercises invalid format rejected"""
         from fastapi.testclient import TestClient
 
         from releasepilot.web.server import create_app
@@ -391,10 +449,13 @@ class TestWebConfigValidation:
         client = TestClient(app)
 
         resp = client.put("/api/config", json={"format": "html"})
+        """THEN the expected behavior for invalid format rejected is observed"""
         assert resp.status_code == 400
 
+    """GIVEN PUT /api/config with invalid language should return 400"""
+
     def test_invalid_language_rejected(self):
-        """PUT /api/config with invalid language should return 400."""
+        """WHEN the test exercises invalid language rejected"""
         from fastapi.testclient import TestClient
 
         from releasepilot.web.server import create_app
@@ -403,10 +464,13 @@ class TestWebConfigValidation:
         client = TestClient(app)
 
         resp = client.put("/api/config", json={"language": "xx"})
+        """THEN the expected behavior for invalid language rejected is observed"""
         assert resp.status_code == 400
 
+    """GIVEN PUT /api/config with non-dict JSON should return 400"""
+
     def test_non_dict_body_rejected(self):
-        """PUT /api/config with non-dict JSON should return 400."""
+        """WHEN the test exercises non dict body rejected"""
         from fastapi.testclient import TestClient
 
         from releasepilot.web.server import create_app
@@ -417,6 +481,7 @@ class TestWebConfigValidation:
         resp = client.put(
             "/api/config", content='"just a string"', headers={"content-type": "application/json"}
         )
+        """THEN the expected behavior for non dict body rejected is observed"""
         assert resp.status_code == 400
 
 
@@ -428,8 +493,10 @@ class TestWebConfigValidation:
 class TestMarkdownStatsBlock:
     """Verify the stats block renders correctly with various metadata states."""
 
+    """GIVEN Stats table should include all populated metadata fields"""
+
     def test_stats_block_with_full_metadata(self):
-        """Stats table should include all populated metadata fields."""
+        """WHEN the test exercises stats block with full metadata"""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes(
@@ -445,16 +512,20 @@ class TestMarkdownStatsBlock:
         config = RenderConfig()
         output = MarkdownRenderer().render(notes, config)
 
+        """THEN the expected behavior for stats block with full metadata is observed"""
         assert "📊" in output
         assert "100" in output
         assert "auth, api, ui" in output
 
+    """GIVEN Stats table should not appear when raw_count is absent"""
+
     def test_stats_block_absent_when_no_raw_count(self):
-        """Stats table should not appear when raw_count is absent."""
+        """WHEN the test exercises stats block absent when no raw count"""
         from releasepilot.rendering.markdown import MarkdownRenderer
 
         notes = _make_notes(metadata={})
         config = RenderConfig()
         output = MarkdownRenderer().render(notes, config)
 
+        """THEN the expected behavior for stats block absent when no raw count is observed"""
         assert "📊" not in output

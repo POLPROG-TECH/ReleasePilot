@@ -342,7 +342,7 @@ def _step_format(get_pref) -> OutputFormat:
 
 
 def _step_format_executive(_get_pref) -> str:
-    """Guide executive user through format selection — PDF/DOCX preferred.
+    """Guide executive user through format selection - PDF/DOCX preferred.
 
     Always defaults to PDF (index 0) since executive outputs are
     typically shared as polished documents.
@@ -356,7 +356,7 @@ def _step_format_executive(_get_pref) -> str:
 
 
 def _step_format_narrative(_get_pref) -> str:
-    """Guide narrative user through format selection — PDF/DOCX available."""
+    """Guide narrative user through format selection - PDF/DOCX available."""
     return select_one(
         "📝 Output format",
         _FORMAT_CHOICES_NARRATIVE,

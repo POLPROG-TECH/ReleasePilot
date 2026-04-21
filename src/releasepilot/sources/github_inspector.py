@@ -1,7 +1,7 @@
 """Remote GitHub repository inspector.
 
 Provides authenticated remote repository inspection analogous to the local
-``inspector.py`` — but works over the GitHub API instead of local git commands.
+``inspector.py`` - but works over the GitHub API instead of local git commands.
 
 Authentication is applied from the FIRST request. There are no unauthenticated
 probes. Every lookup uses the same authenticated session.
@@ -93,8 +93,8 @@ class GitHubInspector:
         """Create an inspector from environment variables.
 
         Reads:
-        - ``RELEASEPILOT_GITHUB_TOKEN`` — Personal access token or fine-grained token
-        - ``RELEASEPILOT_GITHUB_URL`` — API URL (defaults to https://api.github.com)
+        - ``RELEASEPILOT_GITHUB_TOKEN`` - Personal access token or fine-grained token
+        - ``RELEASEPILOT_GITHUB_URL`` - API URL (defaults to https://api.github.com)
         """
         token = os.environ.get("RELEASEPILOT_GITHUB_TOKEN", "")
         base_url = os.environ.get("RELEASEPILOT_GITHUB_URL", "https://api.github.com")
@@ -131,7 +131,7 @@ class GitHubInspector:
     def inspect(self, owner: str, repo: str) -> GitHubRepoInspection:
         """Perform a full inspection of a remote GitHub repository.
 
-        Never raises — all errors are captured in the result.
+        Never raises - all errors are captured in the result.
         """
         diagnostics: list[str] = []
 

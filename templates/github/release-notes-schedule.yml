@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# ReleasePilot — Scheduled Release Notes (GitHub Actions)
+# ReleasePilot - Scheduled Release Notes (GitHub Actions)
 # ──────────────────────────────────────────────────────────────────────────────
 #
 # Generates release notes on a schedule (e.g. weekly, monthly).
@@ -18,7 +18,7 @@ name: "Scheduled Release Notes"
 
 on:
   schedule:
-    # Every Monday at 08:00 UTC — adjust to your cadence
+    # Every Monday at 08:00 UTC - adjust to your cadence
     - cron: "0 8 * * 1"
   workflow_dispatch:  # Allow manual trigger too
 

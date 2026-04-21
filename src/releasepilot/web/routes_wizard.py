@@ -1,6 +1,6 @@
 """Wizard routes for multi-source release note generation.
 
-Extracted from server.py — handles /api/wizard/* endpoints
+Extracted from server.py - handles /api/wizard/* endpoints
 and /api/sources/* and /api/scan-directory.
 """
 
@@ -502,7 +502,7 @@ async def api_wizard_dashboard(request: Request) -> Response:
     """Generate dashboard data using the wizard's stored state.
 
     Unlike ``/api/dashboard`` (which relies on ``state.config``), this
-    endpoint builds the pipeline configuration from the wizard session —
+    endpoint builds the pipeline configuration from the wizard session -
     ensuring the selected repositories (local **or** remote) are the
     actual source of truth for commit collection and generation.
     """
@@ -522,7 +522,7 @@ async def api_wizard_dashboard(request: Request) -> Response:
             status_code=400,
         )
 
-    # Build config from wizard state — this correctly sets github_owner,
+    # Build config from wizard state - this correctly sets github_owner,
     # github_repo, github_token, gitlab_*, multi_repo_sources, etc.
     gen_config = {**state.config, **state.wizard.to_generation_config()}
 
